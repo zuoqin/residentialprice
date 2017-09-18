@@ -9,7 +9,7 @@
             [om.dom :as omdom :include-macros true]
 
             [om-bootstrap.button :as b]
-
+            [shelters.settings :as settings]
             [clojure.string :as str]
             [goog.string :as gstring]
             [goog.string.format]
@@ -129,10 +129,10 @@
   (swap! app-state assoc-in [:view] 7)
 )
 
-(defn goPositions [e]
-  (aset js/window "location" "#/positions")
+(defn goMap [e]
+  (aset js/window "location" "#/map")
   (swap! app-state assoc :state 1)
-  (swap! app-state assoc-in [:view] 1)
+  (swap! app-state assoc-in [:view] 2)
 )
 
 (defn goPositions2 [e]
@@ -1033,7 +1033,7 @@
 )
 
 
-(defcomponent portfolios-navigation-view [data owner]
+(defcomponent map-navigation-view [data owner]
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
@@ -1057,14 +1057,6 @@
               (dom/div {:style {:margin-right "10px" :visibility (if (and (= (compare (:name (:current @app-state)) "Portfolios") 0) (or (= (:role (:user @app-state)) "admin") (= (:role (:user @app-state)) "admin")) ) "visible" "hidden")
 
 }} 
-                (omdom/select #js {:id "securities"
-                                   :className "selectpicker"
-                                   :data-show-subtext "true"
-                                   :data-live-search "true"
-                                   :onChange #(handle-change % owner)
-                                   }                
-                  (buildSecsList data owner)
-                )
               )
             )
             (dom/li
@@ -1107,7 +1099,7 @@
               )
               (dom/ul {:className "dropdown-menu dropdown-tasks"}
                 (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goPositions e))}
+                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
                     (dom/div
                       (dom/i {:className "fa fa-comment fa-fw"})
                       "Позиции"
@@ -1271,7 +1263,7 @@
               )
               (dom/ul {:className "dropdown-menu dropdown-tasks"}
                 (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goPositions e))}
+                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
                     (dom/div
                       (dom/i {:className "fa fa-comment fa-fw"})
                       "Позиции"
@@ -1372,7 +1364,7 @@
               )
               (dom/ul {:className "dropdown-menu dropdown-tasks"}
                 (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goPositions e))}
+                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
                     (dom/div
                       (dom/i {:className "fa fa-comment fa-fw"})
                       "Позиции"
@@ -1485,7 +1477,7 @@
               )
               (dom/ul {:className "dropdown-menu dropdown-tasks"}
                 (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goPositions e))}
+                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
                     (dom/div
                       (dom/i {:className "fa fa-comment fa-fw"})
                       "Позиции"
@@ -1573,7 +1565,7 @@
 (defmethod website-view 2
   [data owner] 
   ;(.log js/console "Two is found in view")
-  (portfolios-navigation-view data owner)
+  (map-navigation-view data owner)
 )
 
 (defmethod website-view 3

@@ -7,7 +7,8 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
             [shelters.core :as shelterscore]
-            ;;[sberweb.settings :as settings]
+            [shelters.settings :as settings]
+            [shelters.map :as mappage]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
             [om-bootstrap.button :as b]
@@ -157,14 +158,16 @@
   (
     let [     
       ;response1 (js->clj response)
-      newdata {:token (get response (keyword "access_token"))  :expires (get response (keyword "expires_in") ) }
+      tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
+      newdata {:token (get response "token")  :expires (get response "expires_in" ) }
     ]
     ;(.log js/console (str (:token newdata)))
     (swap! shelterscore/app-state assoc-in [:token] newdata )
     (swap! shelterscore/app-state assoc-in [:view] 2 )
     (swap! shelterscore/app-state assoc-in [:users] [] )
-    (requser {:token newdata})
-    ;(put! ch 43)
+    ;;(requser {:token newdata})
+    ;;(put! ch 43)
+    (put! ch 42)
   )
 )
 
@@ -187,10 +190,10 @@
   (swap! shelterscore/app-state assoc-in [:selecteduser] username)
 
 
-  (POST (str settings/apipath "token") {:handler OnLogin
+  (POST (str settings/apipath "verifyUser") {:handler OnLogin
                                             :error-handler onLoginError
-                                            :headers {:content-type "application/x-www-form-urlencoded"}
-                                            :body (str "grant_type=password&username=" username "&password=" password) 
+                                            :headers {:content-type "application/json"}
+                                            :body (str "\"username\":\"" username "\",\"password\":\"" password "\"") 
                                             })
 )
 
@@ -265,8 +268,8 @@
 
 (defn setcontrols [value]
   (case value
-    42 (shelterscore/goPositions 0)
-    43 (requser @shelterscore/app-state)
+    42 (shelterscore/goMap 0)
+    ;43 (requser @shelterscore/app-state)
   )
 )
 
