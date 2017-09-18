@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1>
+    <title>Sberbank Private Bank Global Asset Management System</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+
+
+    <link href="/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+    <link href="/css/bootstrap-theme.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/bootstrap-datepicker3.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <link href="/css/jquery.timepicker.css" rel="stylesheet" type="text/css">
+
+    <link href="/css/dataTables.bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="/css/dataTables.responsive.css" rel="stylesheet" type="text/css">
+    
+    <!-- MetisMenu CSS -->
+    <link href="/css/metisMenu.min.css" rel="stylesheet">
+
+    <!-- Timeline CSS -->
+    <link href="/css/timeline.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="/css/morris.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <link href="/css/bootstrap-select.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/select.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="/javascript/jquery.min.js"></script>
+    <script type="text/javascript" src="/javascript/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="/javascript/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript" src="/javascript/jquery.timepicker.min.js"></script>
+
+
+    <script type="text/javascript" src="/javascript/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/javascript/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="/javascript/dataTables.responsive.js"></script>
+    <script type="text/javascript" src="/javascript/dataTables.select.min.js"></script>
+
+    <script type="text/javascript" src="/javascript/bootstrap-select.min.js"></script>
+    <script type="text/javascript" src="/javascript/tinymce/tinymce.min.js"></script>    
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/javascript/metisMenu.min.js"></script>
+
+    
+<script type="text/javascript">
+
+  function getlatestidea() {
+
+    $.ajax({
+      url: "http://localhost:3000/api/syssetting",
+      type: "GET",
+      beforeSend: function(xhr){xhr.setRequestHeader('authorization', 'Bearer thebearer');},
+      success: function(result) {
+        //console.log(result);
+        for (var i = 0; i < result.length; i++) { 
+          if( result[i].code === 'TRADE_IDEA' ){
+            document.getElementById("mytextarea").innerHTML = result[i].data;
+          }
+        }
+      }
+    });
+  }
+
+ // @grant window.close
+  $(document).ready(function() {
+    var token = window.location.href.substr(window.location.href.lastIndexOf("/") + 1);
+    $('#mytoken').val(token);
+    getlatestidea();
+    if (token === "1") {
+
+      var retVal = confirm("Данные сохранены, вернуться в обратно в систему управления активами?");
+      if( retVal == true ){
+        //document.write ("User wants to continue!");
+        // @grant        window.close
+        window.close();
+        return true;
+      }
+      else{
+        //document.write ("User does not want to continue!");
+        return false;
+      }
+    }   
+  });
+   
+</script>
+
+<script type="text/javascript">
+ tinymce.init({
+   selector: '#mytextarea',
+
+   height: "480",
+
+   relative_urls: false,
+   remove_script_host: false,
+   document_base_url: "http://localhost:3000/",
+   images_upload_base_path: '/img/tradeidea',
+   images_upload_credentials: true,
+   file_picker_types: 'image',
+   plugins: "image imagetools",
+   imagetools_cors_hosts: ['mydomain.com', 'otherdomain.com'],
+   imagetools_proxy: 'proxy.php',
+   toolbar: "image",
+
+   // Support automatic image upload
+   images_upload_url: 'imageupload',
+   automatic_uploads: true,
+
+   setup: function (editor) {
+     editor.on('change', function (e) {
+       console.log('change event', e);
+       tinymce.triggerSave();
+       editor.save();
+       $('#full_html').val(tinymce.get('mytextarea').getContent());
+     });
+     editor.on('submit', function (e) {
+       console.log('submit event', e);
+       //editor.save();
+     });
+   },
+
+   
+   file_picker_callback: function(callback, value, meta) {
+     var input = document.createElement('input');
+     input.setAttribute('type', 'file');
+     input.setAttribute('accept', 'image/*');
+
+     input.onchange = function() {
+       var file = this.files[0];
+       
+       var reader = new FileReader();
+       reader.readAsDataURL(file);
+       reader.onload = function () {
+         // Note: Now we need to register the blob in TinyMCEs image blob
+         // registry. In the next release this part hopefully won't be
+         // necessary, as we are looking to handle it internally.
+         var id = 'blobid' + (new Date()).getTime();
+         var blobCache =  tinymce.activeEditor.editorUpload.blobCache;
+         var blobInfo = blobCache.create(id, file, reader.result);
+         blobCache.add(blobInfo);
+
+         // call the callback and populate the Title field with the file name
+         callback(blobInfo.blobUri(), { title: file.name });
+       };
+     };
+
+     input.click();
+   }
+ });
+
+ 
+</script>
+
+
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/javascript/sb-admin-2.js"></script>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico" >
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+  </head>
+  <body>
+  <h1>Редактировать текст торговой идеи</h1>
+
+  <form action="/tradeidea" method="post">
+    <textarea id="mytextarea"></textarea>
+
+    <iframe id="form_target" name="form_target" style="display:none"></iframe>
+
+    <input type="hidden" id="full_html" name="full_html" />
+
+    <input type="hidden" id="mytoken" name="mytoken" />
+    <input type="submit" value="Сохранить" style="margin-top: 5px">
+
+    <input type="button" id="close" onclick="window.close()" value="Закрыть"/>
+  </form>
+
+  </body>
+</html>
