@@ -19,7 +19,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :devices [{:id "1602323" :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.0853 :lan 34.7818} {:id 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 33.0853 :lan 35.7818 }]}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :devices [{:id "1602323" :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.0853 :lan 34.7818} {:id 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 33.0853 :lan 35.7818 }] :users [{:name "Alexey" :id 1 :login "zuoqin" :password "111"} {:name "Oleg" :id 2 :login "kossa" :password "www"}]}))
 
 
 
@@ -114,8 +114,8 @@
   (swap! app-state assoc-in [:view] 0)
 )
 
-(defn goCalcPortfs [e]
-  (aset js/window "location" "#/calcportfs")
+(defn goUserDetail [e]
+  ;(aset js/window "location" "#/userdetail")
   (swap! app-state assoc-in [:view] 4)
 )
 
@@ -685,17 +685,11 @@
 
 
 (defcomponent users-navigation-view [data owner]
-  (did-mount [_]
-    (onMount data)
-  )
-  (did-update [this prev-props prev-state]
-    onDidUpdate data
-  )
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "0px"} }
+      stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/nav {:className "navbar navbar-default navbar-static-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -705,18 +699,149 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"}  (:text (:current @data)) )
-          )
+            (dom/span {:id "pageTitle"} "Beeper")
+          )          
         )
-        (dom/ul {:className "nav navbar-top-links navbar-right"}
-          ;;(displayMessagesBlock data)
-          ;;(displayUserSettingsBlock data)
+
+
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
+            (dom/li
+              (dom/a {:href "/#/map"}
+                (dom/i {:className "fa fa-map-o"})
+                "Map View"
+              )
+            )
+            (dom/li
+              (dom/a {:href ""}
+                (dom/i {:className "fa fa-dashboard"})
+                "Dashboard"
+              )
+            )
+
+            (dom/li
+              (dom/a {:href "/#/users"}
+                (dom/i {:className "fa fa-key"})
+                "Users"
+              )
+            )
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Management"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/groups" :className "menu_item"}
+                        (dom/i {:className "fa fa-users"})
+                        "Groups"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/devices" :className "menu_item"}
+                        (dom/i {:className "fa fa-hdd-o"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/contacts" :className "menu_item"}
+                        (dom/i {:className "fa fa-phone"})
+                        "Contacts"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/polygons" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+
+
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Reports"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.availability" :className "menu_item"}
+                        (dom/i {:className "fa fa-line-chart"})
+                        "Groups"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                        (dom/i {:className "fa fa-bullhorn"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                        (dom/i {:className "fa fa-envelope-o"})
+                        "Contacts"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )        
         )
-        ;;(displaySideBarBlock data)
       )
     )
   )
 )
+
+
+
 (defn handleChange [e]
   (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
@@ -755,137 +880,158 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-        (dom/ul {:className "nav navbar-nav"}
-          (dom/li
-            (dom/a {:href ""}
-              (dom/i {:className "fa fa-map-o"})
-              "Map View"
-            )
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+        (dom/div {:className "navbar-header"}
+          (dom/button {:type "button" :className "navbar-toggle"
+            :data-toggle "collapse" :data-target ".navbar-collapse"}
+            (dom/span {:className "sr-only"} "Toggle navigation")
+            (dom/span {:className "icon-bar"})
+            (dom/span {:className "icon-bar"})
+            (dom/span {:className "icon-bar"})
           )
-          (dom/li
-            (dom/a {:href ""}
-              (dom/i {:className "fa fa-dashboard"})
-              "Dashboard"
-            )
-          )
+          (dom/a  (assoc stylehome :className "navbar-brand")
+            (dom/span {:id "pageTitle"} "Beeper")
+          )          
+        )
 
-          (dom/li
-            (dom/a {:href ""}
-              (dom/i {:className "fa fa-key"})
-              "Users"
-            )
-          )
 
-          (dom/li {:className "dropdown"}
-            (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-              (dom/span {:className "caret"})
-              (dom/i {:className "fa fa-archive"})
-              "Management"
-            )
-            (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/groups" :className "menu_item"}
-                      (dom/i {:className "fa fa-users"})
-                      "Groups"
-                    )
-                  )
-                )
-              )
-
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/devices" :className "menu_item"}
-                      (dom/i {:className "fa fa-hdd-o"})
-                      "Devices"
-                    )
-                  )
-                )
-              )
-
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/contacts" :className "menu_item"}
-                      (dom/i {:className "fa fa-phone"})
-                      "Contacts"
-                    )
-                  )
-                )
-              )
-
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/polygons" :className "menu_item"}
-                      (dom/i {:className "fa fa-globe"})
-                      "Polygons"
-                    )
-                  )
-                )
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
+            (dom/li
+              (dom/a {:href "/#/map"}
+                (dom/i {:className "fa fa-map-o"})
+                "Map View"
               )
             )
-          )
-
-
-
-          (dom/li {:className "dropdown"}
-            (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-              (dom/span {:className "caret"})
-              (dom/i {:className "fa fa-archive"})
-              "Reports"
+            (dom/li
+              (dom/a {:href ""}
+                (dom/i {:className "fa fa-dashboard"})
+                "Dashboard"
+              )
             )
-            (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.availability" :className "menu_item"}
-                      (dom/i {:className "fa fa-line-chart"})
-                      "Groups"
+
+            (dom/li
+              (dom/a {:href "/#/users"}
+                (dom/i {:className "fa fa-key"})
+                "Users"
+              )
+            )
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Management"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/groups" :className "menu_item"}
+                        (dom/i {:className "fa fa-users"})
+                        "Groups"
+                      )
                     )
                   )
                 )
-              )
 
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
-                      (dom/i {:className "fa fa-bullhorn"})
-                      "Devices"
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/devices" :className "menu_item"}
+                        (dom/i {:className "fa fa-hdd-o"})
+                        "Devices"
+                      )
                     )
                   )
                 )
-              )
 
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.notifications" :className "menu_item"}
-                      (dom/i {:className "fa fa-envelope-o"})
-                      "Contacts"
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/contacts" :className "menu_item"}
+                        (dom/i {:className "fa fa-phone"})
+                        "Contacts"
+                      )
                     )
                   )
                 )
-              )
 
-              (dom/li
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.senselog" :className "menu_item"}
-                      (dom/i {:className "fa fa-globe"})
-                      "Polygons"
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/polygons" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
                     )
                   )
                 )
               )
             )
-          )
-        )        
-      ) 
+
+
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Reports"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.availability" :className "menu_item"}
+                        (dom/i {:className "fa fa-line-chart"})
+                        "Groups"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                        (dom/i {:className "fa fa-bullhorn"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                        (dom/i {:className "fa fa-envelope-o"})
+                        "Contacts"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )        
+        ) 
+
+
+
+      )
+
+
 
 
     )
@@ -893,163 +1039,156 @@
 )
 
 
-(defcomponent calcportfs-navigation-view [data owner]
+(defcomponent userdetail-navigation-view [data owner]
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/nav {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-ex1-collapse"}
+            :data-toggle "collapse" :data-target ".navbar-collapse"}
             (dom/span {:className "sr-only"} "Toggle navigation")
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
           (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} (:text (:current @data)) )
-          )
+            (dom/span {:id "pageTitle"} "Beeper")
+          )          
         )
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "menu"}
-          (dom/ul {:className "nav navbar-nav" :style {:padding-top "17px" :visibility (if (= (compare (:name (:current @data))  "Portfolios") 0) "visible" "hidden")}}
+
+
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/div {:style {:margin-right "10px" :visibility (if (and (= (compare (:name (:current @data)) "Portfolios") 0) (or (= (:role (:user @data)) "admin") (= (:role (:user @data)) "admin")) ) "visible" "hidden")}} 
-                (omdom/select #js {:id "securities"
-                                   :className "selectpicker"
-                                   :data-show-subtext "true"
-                                   :data-live-search "true"
-                                   :onChange #(handle-change % owner)
-                                   }                
-                  (buildSecsList data owner)
-                )
+              (dom/a {:href "/#/map"}
+                (dom/i {:className "fa fa-map-o"})
+                "Map View"
               )
             )
             (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :width "100px" :margin-top "1px"} :value  (:search @data) :onChange (fn [e] (handleChange e )) })  )
+              (dom/a {:href ""}
+                (dom/i {:className "fa fa-dashboard"})
+                "Dashboard"
+              )
             )
 
-            (dom/li {:style {:margin-left "3px"}}              
-              (dom/label {:for "noholders" :style {:font-weight 100 :padding-right "1px" :padding-top "7px"}} "Оставить без бумаги:")
-            )
-            (dom/li {:style {:margin-left "1px"}}
-              (dom/input {:id "noholders" :type "checkbox" :style {:height "32px" :width "70px" :margin-top "1px"} :defaultChecked (if (= 0 (:noholders @data)) false true) :label "Оставить без бумаги" :onChange (fn [e] (handle-chkb-change e ))})
-            )
-            (dom/li {:style {:margin-left "3px"}}              
-              (dom/label {:for "fulllimit" :style {:font-weight 100 :padding-right "1px" :padding-top "7px"}} "Учитывать все активы:")
-            )
-            (dom/li {:style {:margin-left "1px"}}
-              (dom/input {:id "fulllimit" :type "checkbox" :style {:height "32px" :width "70px" :margin-top "1px"} :defaultChecked (if (= 0 (:fulllimit @data)) false true) :label "Учитывать все активы" :onChange (fn [e] (handle-chkb-change e ))})
-            )
-
-
-            (dom/li {:style {:margin-left "1px"}}
-              (dom/label {:for "percentage" :style {:font-weight 100 :padding-right "10px"}} "Процент: ")
-
-              (dom/input {:id "percentage" :type "number" :step "0.01" :style {:height "32px" :width "70px" :margin-top "1px"} :value  (:percentage @data) :onChange (fn [e] (handleChange e ))})
-            )
-            ;; (dom/li {:style {:margin-left "5px"}}
-            ;;         (dom/button #js {:id "btnrefresh" :disabled (if (= 1 (:state @data)) false true) :className (if (= 2 (:state @data)) "btn btn-info m-progress" "btn btn-info")  :type "button" :onClick (fn [e] (getCalcPortfolios))} "Обновить")
-            ;;         )
-
-            (dom/li {:style {:margin-left "15px" :padding-right "10px"}}
-                    (dom/label {:for "currencies" :style {:font-weight 100 :margin-top "7px"}} "Валюта: ")
-                    )
             (dom/li
-             (dom/div {:style {:margin-right "10px"}} 
-                      (omdom/select #js {:id "currencies"
-                                         :className "selectpicker"
-                                         :data-show-subtext "true"
-                                         :data-live-search "true"
-                                         :onChange #(handle-change-currency % owner)
-                                         }
-                                    (dom/option {:key "allcur" :value "all"
-                                                 :onChange #(handle-change-currency % owner)} "ВСЕ")
-                                    (dom/option {:key "usdcur" :value "usd"
-                                                 :onChange #(handle-change-currency % owner)} "USD")
-                                    (dom/option {:key "rubcur" :value "rub"
-                                                 :onChange #(handle-change-currency % owner)} "RUB")
-                                    (dom/option {:key "eurcur" :value "eur"
-                                                 :onChange #(handle-change-currency % owner)} "EUR")
-                                    (dom/option {:key "gbpcur" :value "gbp"
-                                                 :onChange #(handle-change-currency % owner)} "GBP")
-                                    ;;(buildSecsList data owner)
-                                    )
+              (dom/a {:href "/#/users"}
+                (dom/i {:className "fa fa-key"})
+                "Users"
+              )
+            )
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Management"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/groups" :className "menu_item"}
+                        (dom/i {:className "fa fa-users"})
+                        "Groups"
                       )
-             )
-            )
+                    )
+                  )
+                )
 
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/devices" :className "menu_item"}
+                        (dom/i {:className "fa fa-hdd-o"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
 
-          (dom/ul {:className "nav navbar-nav navbar-right"}
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-exchange"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-messages"}
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (printMonth) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-print"})
-                      "Печать"
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/contacts" :className "menu_item"}
+                        (dom/i {:className "fa fa-phone"})
+                        "Contacts"
+                      )
                     )
                   )
                 )
-              )
-            )
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-tasks fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-tasks"}
+
                 (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-comment fa-fw"})
-                      "Позиции"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/portfolios/0" :onClick (fn [e] (goPortfolios e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-twitter fa-fw"})
-                      "Держатели бумаги"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/syssettings" :onClick (fn [e] (goSysSettings e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-tasks fa-fw"})
-                      "Опции"
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/polygons" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
                     )
                   )
                 )
               )
             )
 
+
+
             (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-user fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Reports"
               )
-              (dom/ul {:className "dropdown-menu dropdown-user"}
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
-                  (dom/a {:href "#/login"}
-                    (dom/div
-                      (dom/i {:className "fa fa-sign-out fa-fw"})
-                      "Выход"
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.availability" :className "menu_item"}
+                        (dom/i {:className "fa fa-line-chart"})
+                        "Groups"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                        (dom/i {:className "fa fa-bullhorn"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                        (dom/i {:className "fa fa-envelope-o"})
+                        "Contacts"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
                     )
                   )
                 )
               )
             )
-          )
+          )        
         )
       )
     )
@@ -1124,7 +1263,7 @@
                 )
                 (dom/li {:className "divider"})
                 (dom/li
-                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goCalcPortfs e))}
+                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goUserDetail e))}
                     (dom/div
                       (dom/i {:className "fa fa-tasks fa-fw"})
                       "Расчеты"
@@ -1237,7 +1376,7 @@
                 )
                 (dom/li {:className "divider"})
                 (dom/li
-                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goCalcPortfs e))}
+                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goUserDetail e))}
                     (dom/div
                       (dom/i {:className "fa fa-tasks fa-fw"})
                       "Расчеты"
@@ -1313,7 +1452,7 @@
 (defmethod website-view 4
   [data owner] 
   ;(.log js/console "One is found in view")
-  (calcportfs-navigation-view app-state owner)
+  (userdetail-navigation-view app-state owner)
 )
 
 (defmethod website-view 5

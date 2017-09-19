@@ -1,4 +1,4 @@
-(ns shelters.devdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.userdetail  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -37,11 +37,11 @@
 
 (defn OnDeleteUserError [response]
   (let [     
-      newdata {:tripid (get response (keyword "tripid") ) }
+      newdata {:userid (get response (keyword "tripid") ) }
     ]
 
   )
-  ;; TO-DO: Delete Trip from Core
+  ;; TO-DO: Delete User from Core
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
@@ -49,10 +49,10 @@
 (defn OnDeleteUserSuccess [response]
   (let [
       users (:users @shelters/app-state    )  
-      newdevs (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
+      newusers (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
     ]
-    ;(swap! tripcore/app-state assoc-in [:token] newdata )
-    (swap! shelters/app-state assoc-in [:devs] newdevs)
+    ;(swap! shelters/app-state assoc-in [:token] newdata )
+    (swap! shelters/app-state assoc-in [:users] newusers)
   )
 
     (-> js/document
@@ -125,9 +125,9 @@
 (defn OnCreateUserSuccess [response]
   (let [
       users (:users @shelters/app-state    )  
-      adddev (into [] (conj users {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)} )) 
+      adduser (into [] (conj users {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)} )) 
     ]
-    (swap! shelters/app-state assoc-in [:users] adddev)
+    (swap! shelters/app-state assoc-in [:users] adduser)
 
     (-> js/document
       .-location
@@ -294,7 +294,7 @@
 
 
 
-(defcomponent devdetail-page-view [data owner]
+(defcomponent userdetail-page-view [data owner]
   (did-mount [_]
     (onMount data)
   )
@@ -310,72 +310,86 @@
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div {:style {:margin-top "70px"}})
-        (dom/a {:onClick (fn[e] (.back (.-history js/window))) :className "btn btn-default btn-sm pull-right" :style {:margin-top "15px" :margin-left "5px"}} "Back"
-          (dom/i {:className "fa fa-arrow-circle-right" :aria-hidden "true"})
-        )
-        (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "15px"} :onClick (fn[e] (.print js/window))}
-          (dom/i {:className "fa fa-print" :aria-hidden "true"})
-        )
-        (dom/h3
-          (dom/i {:className "fa fa-cube"})
-          (str "Device Info - " (:id @app-state))
-        )
-        (dom/div {:className "col-xs-3"}
-          (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}} 
-            (dom/h5 {:style {:display:inline true}} (str "Device ID: " (:id @app-state)))
-            (dom/h5 {:style {:display:inline true}} "Status: "
-              (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
-            )
-            (dom/h5 {:style {:display:inline true}} (str "Name: " (:name @app-state)))
-            (dom/h5 {:style {:display:inline true}} (str "Address: " (:address @app-state)))
-            (dom/h4 {:style {:display:inline true}} "Sensors"
-              (dom/table {:className "table table-responsive"}
-                (dom/tbody
-                  (dom/tr
-	                (dom/td
-	                  (dom/i {:className "fa fa-battery-three-quarters" :id "io1_" :style {:color "#ff0000"}})
-	                )
-	                (dom/td
-	                  "Battery power"
-	                )
-                  )
-                  (dom/tr {:className "hidden"}
-                  )
-                )
-              )
+        (dom/div {:id "user-detail-container"}
+          (dom/span
+            (dom/div  (assoc styleprimary  :className "panel panel-default"  :id "divUserInfo")
+              
+              (dom/div {:className "panel-heading"}
+                (dom/h5 "Login: " 
+                  (dom/input {:id "login" :type "text" :disabled (if (= (:isinsert @app-state) true) false true)  :onChange (fn [e] (handleChange e)) :value (:login @app-state)} )
 
+                )
+                
+                (dom/h5 "Password: "
+                  (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value (:password @app-state)})
+                )
+                ;; (dom/h5 "Role: "
+                ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
+                ;; )
+
+                (dom/div {:className "form-group"}
+                  (dom/p
+                    (dom/label {:className "control-label" :for "roles" }
+                      "Role: "
+                    )
+                  
+                  )
+                 
+                  (omdom/select #js {:id "roles"
+                                     :className "selectpicker"
+                                     :data-show-subtext "true"
+                                     :data-live-search "true"
+                                     :onChange #(handle-change % owner)
+                                     }                
+                    (buildRolesList data owner)
+                  )
+                  
+                )                
+              )              
             )
-            (dom/h4
-              (dom/i {:className "fa fa-phone"} "Contacts:")
-            )
-            (dom/b
-              (dom/i {:className "fa fa-user"} "שגיא שחף")
-            )
-            (dom/p "0545225655")
           )
         )
+        (dom/nav {:className "navbar navbar-default" :role "navigation"}
+          (dom/div {:className "navbar-header"}
+            (b/button {:className "btn btn-default" :onClick (fn [e] (if (= (:isinsert @app-state) 0) (createUser) (updateUser)) )} (if (= (:isinsert @app-state) true) "Insert" "Update"))
+            (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
 
-        (dom/div {:className "col-xs-9"}
-	    	      
-	    )
-	  )
-	)
+            (b/button {:className "btn btn-info"  :onClick (fn [e] (-> js/document
+      .-location
+      (set! "#/users")))  } "Cancel")
+          )
+        )
+      )
+    )
+
   )
 )
 
 
 
-
-
-(sec/defroute devdetail-page "/devdetail/:devid" [devid]
-  (let[
-      tr1 (swap! app-state assoc-in [:name]  "jhjgjhg" )   
-      tr1 (swap! app-state assoc-in [:id]  "57657657" )
-    ]
-    
-    (om/root devdetail-page-view
+(sec/defroute userdetail-page "/userdetail/:login" {login :login}
+  (
+    (swap! app-state assoc-in [:login]  login ) 
+    (swap! app-state assoc-in [:isinsert]  false )
+    (om/root userdetail-page-view
              shelters/app-state
+             {:target (. js/document (getElementById "app"))})
+
+  )
+)
+
+
+(sec/defroute userdetail-new-page "/userdetail" {}
+  (
+    (swap! app-state assoc-in [:login]  "" ) 
+    (swap! app-state assoc-in [:isinsert]  true )
+ 
+    (swap! app-state assoc-in [:role ]  "user" ) 
+    (swap! app-state assoc-in [:password] "" )
+
+
+    (om/root userdetail-page-view
+             app-state
              {:target (. js/document (getElementById "app"))})
 
   )

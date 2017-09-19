@@ -9,7 +9,9 @@
             [shelters.core :as shelterscore]
             [shelters.settings :as settings]
             [shelters.map :as mappage]
+            [shelters.users :as users]
             [shelters.devdetail :as devdetail]
+            [shelters.userdetail :as userdetail]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
             [om-bootstrap.button :as b]
@@ -166,7 +168,7 @@
     ;(.log js/console (str (:token newdata)))
     (swap! shelterscore/app-state assoc-in [:token] newdata )
     (swap! shelterscore/app-state assoc-in [:view] 2 )
-    (swap! shelterscore/app-state assoc-in [:users] [] )
+    ;(swap! shelterscore/app-state assoc-in [:users] [] )
     ;;(requser {:token newdata})
     ;;(put! ch 43)
     (put! ch 42)
