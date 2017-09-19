@@ -9,6 +9,7 @@
             [shelters.core :as shelterscore]
             [shelters.settings :as settings]
             [shelters.map :as mappage]
+            [shelters.devdetail :as devdetail]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
             [om-bootstrap.button :as b]
@@ -161,6 +162,7 @@
       tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
       newdata {:token (get response "token")  :expires (get response "expires_in" ) }
     ]
+    (swap! app-state assoc-in [:state] 0)    
     ;(.log js/console (str (:token newdata)))
     (swap! shelterscore/app-state assoc-in [:token] newdata )
     (swap! shelterscore/app-state assoc-in [:view] 2 )

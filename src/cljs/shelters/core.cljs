@@ -19,7 +19,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:state 0 :percentage "5.00" :noholders 0 :fulllimit 0 :selectedclient nil :search "" :selectedcurrency "all" :user {:role "admin"} :dealspage -1 :nomoredeals false}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :devices [{:id "1602323" :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.0853 :lan 34.7818} {:id 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 33.0853 :lan 35.7818 }]}))
 
 
 
@@ -165,65 +165,6 @@
               )
       )
     )
-  )
-)
-
-(defn calc_cashusdvalue
-  ([clientcode]
-    (let [
-           usdrate (:price (first (filter (fn [x] (if (= "USD" (:acode x)) true false)) (:securities @app-state))))
-           eurrate (:price (first (filter (fn [x] (if (= "EUR" (:acode x)) true false)) (:securities @app-state))))
-           gbprate (:price (first (filter (fn [x] (if (= "GBP" (:acode x)) true false)) (:securities @app-state))))
-           cashusdvalue (+ (:usd (first (filter (fn [x] (if (= (:code x) clientcode) true false)) (:clients @app-state)))) (* eurrate (/ (:eur (first (filter (fn [x] (if (= (:code x) clientcode) true false)) (:clients @app-state)))) usdrate)) (* gbprate (/ (:gbp (first (filter (fn [x] (if (= (:code x) clientcode) true false)) (:clients @app-state)))) usdrate)) (* 1.0 (/ (:rub (first (filter (fn [x] (if (= (:code x) clientcode) true false)) (:clients @app-state)))) usdrate)))
-    ]
-    cashusdvalue
-    )
-  )
-  ([]
-    (calc_cashusdvalue (:selectedclient @app-state))
-  )
-)
-
-
-(defn calc_cashvalue
-  ([clientcode]
-    (let [
-      client (first (filter (fn [x] (if (= (:selectedclient @app-state) (:code x)) true false)) (:clients @app-state)))
-      clientcurrencyrate (:price (first (filter (fn [x] (if (= (str/upper-case (:currency client)) (:acode x)) true false)) (:securities @app-state))))
-      usdrate (:price (first (filter (fn [x] (if (= "USD" (:acode x)) true false)) (:securities @app-state))))
-      ]
-      (/ (* (calc_cashusdvalue clientcode) usdrate) clientcurrencyrate)
-    )
-  )
-  ([]
-    (calc_cashvalue (:selectedclient @app-state))
-  )
-)
-
-(defn calc_portfusdvalue []
-  (let [
-         secsusdvalue (if (nil? (:selectedclient @app-state)) 0.0 (:usdvalue (reduce (fn [x y] {:usdvalue (+ (:usdvalue x) (:usdvalue y))}) (filter (fn [x] (let [
-                                                                                                                                     sec (first (filter (fn[y] (if (= (:id x) (:id y) ) true false)) (:securities @app-state)))
-                                                                                                                                     assettype (:assettype sec)]
-                                                                                                                                 (if (or (= 1 assettype) (= 5 assettype)) true false))) (:positions ((keyword (:selectedclient @app-state)) @app-state)))
-                                                 ))) 
-         cashusdvalue (calc_cashusdvalue) 
-
-         portfusdvalue (+ secsusdvalue cashusdvalue)
-  ]
-  portfusdvalue
-  )
-)
-
-(defn calc_portfvalue []
-  (let [
-      client (first (filter (fn [x] (if (= (:selectedclient @app-state) (:code x)) true false)) (:clients @app-state)))
-      clientcurrencyrate (if (nil? client) 1.0 (:price (first (filter (fn [x] (if (= (str/upper-case (:currency client)) (:acode x)) true false)) (:securities @app-state))))) 
-      usdrate (:price (first (filter (fn [x] (if (= "USD" (:acode x)) true false)) (:securities @app-state))))      
-
-      portfusdvalue (calc_portfusdvalue)
-    ]
-    (/ (* portfusdvalue usdrate) clientcurrencyrate) 
   )
 )
 
@@ -809,343 +750,144 @@
 
 
 
-(defn calculatetotallimit []
-  (let [
-    client (first (filter (fn [x] (if (= (:selectedclient @app-state) (:code x)) true false)) (:clients @app-state)))
-    signedadvisory (:signedadvisory client)
-
-    limit (if (or (= 5000001.0 signedadvisory) (some (partial = (:code client))  ["ELLQF" "INFLE" "AKTOS" "RWVQF" "XJZQF" "MADUN2" "XGNQF"] ) )  (calc_portfvalue) signedadvisory)
-    ]
-    limit
-  )
-)
-
-(defn calculatetotallimitusd []
-  (let [
-    client (first (filter (fn [x] (if (= (:selectedclient @app-state) (:code x)) true false)) (:clients @app-state)))
-    currency (:currency client)
-  
-    usdrate (:price (first (filter (fn [x] (if (= "USD" (:acode x)) true false)) (:securities @app-state))))
-
-    limit (calculatetotallimit)
-    ]
-    (if (= "USD" currency) limit (/ limit usdrate))
-  )
-)
-
-(defcomponent positions-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      currency (:currency (first (filter (fn [x] (if (= (:selectedclient @app-state) (:code x)) true false)) (:clients @app-state))))
-
-      portfvalue (calc_portfvalue)
-
-
-      totallimit (calculatetotallimit)
-      ]
-      
-      (dom/nav {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-ex1-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} (:text (:current @data)) )
-          )
-        )        
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "menu"}          
-          (dom/ul {:className "nav navbar-nav" :style {:padding-top "17px" :visibility (if (= (compare (:name (:current @data))  "Positions") 0 ) "visible" "hidden")}}
-            (dom/li
-              (dom/div {:style {:margin-right "10px" :visibility (if (and (= (compare (:name (:current @data)) "Positions") 0) (or (= (:role (:user @data)) "admin") (= (:role (:user @data)) "admin")) ) "visible" "hidden")}}
-                (omdom/select #js {:id "clients"
-                                   :className "selectpicker"
-                                   :data-show-subtext "true"
-                                   :data-live-search "true"
-                                   :onChange #(handle-change % owner)
-                                   }                
-                  (buildClientsList data owner)
-                )
-              )
-            )
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @data) :onChange (fn [e] (handleChange e )) })  )
-            )
-
-            (dom/li {:style {:margin-left "5px"}}
-                    (dom/button #js {:id "btnrefresh" :disabled (if (= 1 (:state @data)) false true) :className (if (= 2 (:state @data)) "btn btn-info m-progress" "btn btn-info")  :type "button" :onClick (fn [e] (reqsecurities))} "Обновить")
-            )
-
-            (if (= (nil? (:selectedclient @app-state)) false) (dom/li
-                (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "10px"}} (str "Всего лимит инвестирования: " (split-thousands (gstring/format "%.0f" totallimit))  " " currency (if (> (- totallimit portfvalue) 1000.0) (str " Не инвестировано: " (split-thousands (gstring/format "%.0f" (- totallimit portfvalue))) " " currency) " Все средства инвестированы.")  ) )))
-
-          )
-          (dom/ul {:className "nav navbar-nav navbar-right"}
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-exchange"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-messages"}
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (downloadPortfolio e) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-cloud-download"})
-                     "Сохранить в Excel"
-                    )
-                  )
-                )
-
-                (dom/li {:className "divider"})
-
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (downloadBloombergPortfolio e) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-bank"})
-                     "Сохранить Портфель Bloomberg"
-                    )
-                  )
-                )
-
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (downloadBloombergTransactions e) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-bars"})
-                     "Сохранить Транзакции Bloomberg"
-                    )
-                  )
-                )
-
-                (dom/li {:className "divider"})
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (printMonth) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-print"})
-                      "Печать"
-                    )
-                  )
-                )
-              )
-            )
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-tasks fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-tasks"}
-                ;; (dom/li
-                ;;   (dom/a {:href "#/positions2" :onClick (fn [e] (goPositions2 e))}
-                ;;     (dom/div
-                ;;       (dom/i {:className "fa fa-comment fa-fw"})
-                ;;       "Позиции с НКД"
-                ;;     )
-                ;;   )
-                ;; )
-                ;; (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/portfolios/0" :onClick (fn [e] (goPortfolios e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-twitter fa-fw"})
-                      "Держатели бумаги"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goCalcPortfs e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-tasks fa-fw"})
-                      "Расчеты"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/assets" :onClick (fn [e] (goAssets e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-twitter fa-fw"})
-                      "Все активы"
-                    )
-                  )
-                )
-
-
-
-
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href (str settings/apipath "tradeidea/" (:token (:token @app-state)))  :target "_blank"}
-                    (dom/div
-                      (dom/i {:className "fa fa-desktop fa-fw"})
-                      "Редактор торговой идеи"
-                    )
-                  )
-                )
-
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/syssettings" :onClick (fn [e] (goSysSettings e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-tasks fa-fw"})
-                      "Опции"
-                    )
-                  )
-                )
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-user fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-user"}
-
-                (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (onVersionInfo))}
-                    (dom/div
-                      (dom/i {:className "fa fa-desktop fa-fw"})
-                      "Информация о версии"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/login"}
-                    (dom/div
-                      (dom/i {:className "fa fa-sign-out fa-fw"})
-                      "Выход"
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )     
-    )
-  )
-)
-
-
 (defcomponent map-navigation-view [data owner]
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/nav {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-ex1-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} (:text (:current @data)) )
-          )
-        )
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "menu"}
-          (dom/ul {:className "nav navbar-nav" :style {:padding-top "17px" :visibility (if (= (compare (:name (:current @data))  "Portfolios") 0) "visible" "hidden")}}
-            (dom/li
-              (dom/div {:style {:margin-right "10px" :visibility (if (and (= (compare (:name (:current @app-state)) "Portfolios") 0) (or (= (:role (:user @app-state)) "admin") (= (:role (:user @app-state)) "admin")) ) "visible" "hidden")
-
-}} 
-              )
+      (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+        (dom/ul {:className "nav navbar-nav"}
+          (dom/li
+            (dom/a {:href ""}
+              (dom/i {:className "fa fa-map-o"})
+              "Map View"
             )
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
+          )
+          (dom/li
+            (dom/a {:href ""}
+              (dom/i {:className "fa fa-dashboard"})
+              "Dashboard"
             )
           )
 
-          (dom/ul {:className "nav navbar-nav navbar-right"}
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-exchange"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-messages"}
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedsec @app-state)) "none" "all")} :onClick (fn [e] (downloadSecPortfolios e) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-cloud-download"})
-                     "Сохранить в Excel"
-                    )
-                  )
-                )
-
-                (dom/li {:className "divider"})
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (printMonth) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-print"})
-                      "Печать"
-                    )
-                  )
-                )
-              )
+          (dom/li
+            (dom/a {:href ""}
+              (dom/i {:className "fa fa-key"})
+              "Users"
             )
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-tasks fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-tasks"}
-                (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-comment fa-fw"})
-                      "Позиции"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/positions2" :onClick (fn [e] (goPositions2 e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-twitter fa-fw"})
-                      "Позиции с НКД"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goCalcPortfs e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-tasks fa-fw"})
-                      "Расчеты"
-                    )
-                  )
-                )
-              )
-            )
+          )
 
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-user fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
+          (dom/li {:className "dropdown"}
+            (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+              (dom/span {:className "caret"})
+              (dom/i {:className "fa fa-archive"})
+              "Management"
+            )
+            (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/groups" :className "menu_item"}
+                      (dom/i {:className "fa fa-users"})
+                      "Groups"
+                    )
+                  )
+                )
               )
-              (dom/ul {:className "dropdown-menu dropdown-user"}
-                (dom/li
-                  (dom/a {:href "#/login"}
-                    (dom/div
-                      (dom/i {:className "fa fa-sign-out fa-fw"})
-                      "Выход"
+
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/devices" :className "menu_item"}
+                      (dom/i {:className "fa fa-hdd-o"})
+                      "Devices"
+                    )
+                  )
+                )
+              )
+
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/i {:className "fa fa-phone"})
+                      "Contacts"
+                    )
+                  )
+                )
+              )
+
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/polygons" :className "menu_item"}
+                      (dom/i {:className "fa fa-globe"})
+                      "Polygons"
                     )
                   )
                 )
               )
             )
           )
-        )
-      )
+
+
+
+          (dom/li {:className "dropdown"}
+            (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+              (dom/span {:className "caret"})
+              (dom/i {:className "fa fa-archive"})
+              "Reports"
+            )
+            (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.availability" :className "menu_item"}
+                      (dom/i {:className "fa fa-line-chart"})
+                      "Groups"
+                    )
+                  )
+                )
+              )
+
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                      (dom/i {:className "fa fa-bullhorn"})
+                      "Devices"
+                    )
+                  )
+                )
+              )
+
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.notifications" :className "menu_item"}
+                      (dom/i {:className "fa fa-envelope-o"})
+                      "Contacts"
+                    )
+                  )
+                )
+              )
+
+              (dom/li
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.senselog" :className "menu_item"}
+                      (dom/i {:className "fa fa-globe"})
+                      "Polygons"
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )        
+      ) 
+
+
     )
   )
 )
@@ -1554,12 +1296,6 @@
   (logout-view data owner)
 )
 
-
-(defmethod website-view 1
-  [data owner] 
-  ;(.log js/console "One is found in view")
-  (positions-navigation-view data owner)
-)
 
 
 (defmethod website-view 2

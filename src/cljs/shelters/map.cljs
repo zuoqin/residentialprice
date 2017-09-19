@@ -74,7 +74,7 @@
 
 (defn onMount [data]
   ;;(getPortfolios)
-  ;;(put! ch 42)
+  (put! ch 42)
   ;;(swap! sbercore/app-state assoc-in [:current] {:name "Portfolios" :text "Portfolios with this security: "} )
 
   ;;(swap! sbercore/app-state assoc-in [:view] 2)
@@ -82,32 +82,11 @@
 )
 
 
-(defn setcontrols []
-  ;;(sbercore/setSecsDropDown)
-  ;;(if (not (= nil (:selectedsec @sbercore/app-state)))
-  ;;  (sbercore/getPortfolios)
-  ;;)
-  ;;(.log js/console "fieldcode" )
-)
-
-;;(defn initqueue []
-;;  (doseq [n (range 1000)]
-;;    (go ;(while true)
-;;      (take! ch(
-;;        fn [v] (
-;;           setcontrols
-;;          )
-;;        )
-;;      )
-;;    )
-;;  )
-;;)
-
-;;(initqueue)
-
-(defn addMarker []
+(defn addMarker [device]
   (let [
-      wnd1  (str "<div id=\"content\">"
+    ;tr1 (.log js/console (str "tran: " tran ))
+
+    wnd1  (str "<div id=\"content\">"
       "<div id=\"siteNotice\">"
       "</div>"
       "<h1 id=\"firstHeading\" class=\"firstHeading\">Uluru</h1>"
@@ -122,18 +101,18 @@
       "Aboriginal people of the area. It has many springs, waterholes, "
       "rock caves and ancient paintings. Uluru is listed as a World "
       "Heritage Site.</p>"
-      "<p>Attribution: Uluru, <a href=\"https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194\">"
-      "https://en.wikipedia.org/w/index.php?title=Uluru</a>"
+      "<p>" (:address device) ", <a href=\"/#/devdetail/" (:id device) "\">"
+      "Go to visit device</a>"
       "(last visited June 22, 2009).</p>"
       "</div>"
       "</div>")
-      window-options (clj->js {"content" wnd1})
-      infownd (js/google.maps.InfoWindow. window-options)
 
-      marker-options (clj->js {"position" (google.maps.LatLng. 32.0853, 34.7818) "map" (:map @app-state) "title" "The best title"})
-      marker (js/google.maps.Marker. marker-options)
+    window-options (clj->js {"content" wnd1})
+    infownd (js/google.maps.InfoWindow. window-options)
+    tr1 (.log js/console (str  "Lan=" (:lan device) " Lat=" (:lat device)))
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lan device)) "map" (:map @app-state) "title" (:name device)})
+    marker (js/google.maps.Marker. marker-options)
     ]
-
     (jquery
       (fn []
         (-> marker
@@ -147,6 +126,32 @@
     )
   )
 )
+
+(defn addMarkers []
+  (let[
+    
+    ]
+    (doall (map addMarker (:devices @shelters/app-state)))
+  )
+)
+
+(defn initqueue []
+  (doseq [n (range 1000)]
+    (go ;(while true)
+      (take! ch(
+        fn [v] (
+           addMarkers
+          )
+        )
+      )
+    )
+  )
+)
+
+(initqueue)
+
+
+
 
 (defcomponent map-view [data owner]
 
@@ -172,7 +177,7 @@
         ;;(om/build sbercore/website-view sbercore/app-state {})
         (dom/div  {:id "map" :style {:height "500px"}})
         (dom/div
-          (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarker))} "Add marker")
+          (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
         )
       ) 
     )
