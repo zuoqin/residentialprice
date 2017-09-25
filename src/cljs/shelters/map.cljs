@@ -145,11 +145,18 @@
 
     tr1 (.log js/console (str "city=" city " obj=" thecity))
     ]
-    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thecity), (:lat thecity)))
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thecity), (:lon thecity)))
   )
 )
 
 (defn setcenterbydevice [device]
+  (let [
+    thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @shelters/app-state)))
+
+    tr1 (.log js/console (str "device=" device " obj=" thedev))
+    ]
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
+  )
 )
 
 (defn setTreeControl []
@@ -211,7 +218,7 @@
   (did-mount [_]
     (let [
       map-canvas (. js/document (getElementById "map"))
-      map-options (clj->js {"center" (google.maps.LatLng. (:lat (:selectedcenter @data)), (:lat (:selectedcenter @data))) "zoom" 8})
+      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @shelters/app-state)) :lng (:lon (:selectedcenter @shelters/app-state))} "zoom" 12})
       map (js/google.maps.Map. map-canvas map-options)
       tr1 (swap! app-state assoc-in [:map] map  )
       ]   

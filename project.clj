@@ -60,8 +60,8 @@
 
                 :compiler {:main shelters.login
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/shelters.js"
-                           :output-dir "resources/public/js/compiled/out"
+                           :output-to "resources/public/js/compiled2/shelters.js"
+                           :output-dir "resources/public/js/compiled2/out"
                            :source-map-timestamp true
                            :optimizations :none
                            :pretty-print true}}
@@ -80,6 +80,7 @@
                              "cljsjs/common/bootstrap.ext.js"
                              "cljsjs/common/jquery-timepicker.ext.js"
                              "resources/public/javascript/bootstrap-datepicker.min.js"
+                             "resources/public/javascript/bootstrap-treeview-1.2.0/dist/bootstrap-treeview.min.js"
                              "cljsjs/common/jquery.ext.js"
                              "resources/public/javascript/tinymce/tinymce.min.js"
                              "resources/public/javascript/externs.js"
@@ -97,8 +98,8 @@
                 :jar true
                 :compiler {:main shelters.login
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled2/shelters.js"
-                           :output-dir "resources/public/js/compiled2/out"
+                           :output-to "resources/public/js/compiled/shelters.js"
+                           :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp false
                            :optimizations :simple
                            :closure-warnings {:externs-validation :off}
@@ -106,6 +107,7 @@
                              "cljsjs/common/bootstrap.ext.js"
                              "cljsjs/common/jquery-timepicker.ext.js"
                              "resources/public/javascript/bootstrap-datepicker.min.js"
+                             "resources/public/javascript/bootstrap-treeview-1.2.0/dist/bootstrap-treeview.min.js"
                              "cljsjs/common/jquery.ext.js"
                              "resources/public/javascript/tinymce/tinymce.min.js"
                              "resources/public/javascript/externs.js"
