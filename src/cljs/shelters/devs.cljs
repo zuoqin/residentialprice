@@ -41,16 +41,16 @@
 )
 
 
-(defn comp-users
-  [user1 user2]
-  (if (> (compare (:login user1) (:login user2)) 0)
+(defn comp-devs
+  [dev1 dev2]
+  (if (> (compare (:id dev1) (:id dev2)) 0)
       false
       true
   )
 )
 
 
-(defcomponent showusers-view [data owner]
+(defcomponent showdevices-view [data owner]
   (render
     [_]
     (dom/div {:className "list-group" :style {:display "block"}}
@@ -63,7 +63,7 @@
             ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
           ) 
         )                  
-        )(sort (comp comp-users) (:users @shelters/app-state ))
+        )(sort (comp comp-devs) (:devices @data ))
       )
     )
   )
@@ -74,13 +74,13 @@
 (defn onMount [data]
   ; (getUsers data)
   (swap! shelters/app-state assoc-in [:current] 
-    "Users"
+    "Dashboard"
   )
 )
 
 
 
-(defcomponent users-view [data owner]
+(defcomponent dashboard-view [data owner]
   (will-mount [_]
     (onMount data)
   )
@@ -89,14 +89,59 @@
       styleprimary {:style {:margin-top "70px"}}
       ]
       (dom/div
-        ;(om/build tripcore/website-view tripcore/app-state {})
+        (om/build shelters/website-view data {})
+        (dom/div {:className "container" :style {:margin-top "70px"}}
+          (dom/div {:className "col-md-12"}
+            (dom/div
+              (dom/div
+                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
+                  (dom/i {:className "fa fa-info-circle"}) "Help"
+                )
+                (dom/a {:href "/download/gg" :className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
+                  (dom/i {:className "fa fa-file-excel-o"}) "Export to CSV"
+                )
+                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
+                  (dom/i {:className "fa fa-print"}) "Print"
+                )
+
+                (dom/h4 {:className "pull-left" :style {:margin-top "0px"}}
+                  (dom/i {:className "fa fa-table"}) "EQ - Devices table"
+                  (dom/span "(1375)")
+                )
+              )
+            )
+            (dom/div {:className "table-responsive"}
+              (dom/label
+                (dom/input {:type "search" :className "form-control" :placeholder "Search"})
+              )
+            )
+            (dom/table {:className "table table-hover table-responsive table-bordered floatThead-table"}
+              (dom/thead
+                (dom/tr {:className "info" :role "row"}
+                  (dom/th {:style {:width "15px" :valign "middle" }}
+                    (dom/i {:className "fa fa-square-o"})
+                  )
+                  (dom/th {:style {:width "100px"}}
+                    (dom/i {:className "fa fa-bullseye"})
+                    (dom/b "Device")
+                  )
+                )
+              )
+              (dom/tbody
+                (dom/tr {:role "row" :className "odd"}
+                  (dom/td
+                    (dom/input { :type "text" :className "device_checkbox" :value "888"})
+                  )
+                )
+              )
+
+            )
+
+          )
+
+        )
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
         )
-          (dom/div
-            (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
-          .-location
-          (set! "#/userdetail")))} "Add New")
-          )
           ; (dom/div {:className "panel-heading"}
           ;   (dom/div {:className "row"}
           ;     ; (dom/div {:className "col-md-10"}
@@ -107,7 +152,7 @@
           ;     ; )
           ;   )
           ; )
-          (om/build showusers-view  data {})
+          (om/build showdevices-view  data {})
         )
       ) 
 
@@ -119,9 +164,9 @@
 
 
 
-(sec/defroute users-page "/users" []
-  (om/root users-view
-           app-state
+(sec/defroute dashboard-page "/dashboard" []
+  (om/root dashboard-view
+           shelters/app-state
            {:target (. js/document (getElementById "app"))}))
 
 

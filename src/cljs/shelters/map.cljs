@@ -33,6 +33,9 @@
 
 (def ch (chan (dropping-buffer 2)))
 
+(def js-object  (clj->js  {:data [ {:text "All cities"  :nodes [{:text "Tel Aviv" :nodes [{:text "1602323"}]} {:text "Ness Ziona" :nodes [{:text "2"}]} ]}]} ))
+
+
 (defn OnGetPortfolios [response]
   ;;(swap! sbercore/app-state assoc-in [(keyword (:selectedsec @sbercore/app-state)) :portfolios] response  )
   ;;(sbercore/setSecsDropDown)
@@ -75,6 +78,7 @@
 (defn onMount [data]
   ;;(getPortfolios)
   (put! ch 42)
+  (put! ch 43)
   ;;(swap! sbercore/app-state assoc-in [:current] {:name "Portfolios" :text "Portfolios with this security: "} )
 
   ;;(swap! sbercore/app-state assoc-in [:view] 2)
@@ -109,8 +113,8 @@
 
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
-    tr1 (.log js/console (str  "Lan=" (:lan device) " Lat=" (:lat device)))
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lan device)) "map" (:map @app-state) "title" (:name device)})
+    tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "map" (:map @app-state) "title" (:name device)})
     marker (js/google.maps.Marker. marker-options)
     ]
     (jquery
@@ -135,12 +139,61 @@
   )
 )
 
+(defn setcenterbycity [city]
+  (let [
+    thecity (first (filter (fn [x] (if (= (:name x) city) true false)) (:cities @shelters/app-state)))
+
+    tr1 (.log js/console (str "city=" city " obj=" thecity))
+    ]
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thecity), (:lat thecity)))
+  )
+)
+
+(defn setcenterbydevice [device]
+)
+
+(defn setTreeControl []
+  (.log js/console "Set Tree called")
+  ;(.log js/console (count (:employees @app-state)))
+  (jquery
+    (fn []
+      (-> (jquery "#tree" )
+        (.treeview js-object)
+        (.on "nodeSelected"
+          (fn [event data] (
+             let [
+               ;table (-> (jquery "#dataTables-example") (.DataTable) )
+               ;res (.data (.row table (.. e -currentTarget)) )
+               res (js->clj data)
+               
+             ]
+             (.log js/console res)
+             (.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
+             (if (= 0 (get res "parentId")) (setcenterbycity (get res "text")) (setcenterbydevice (get res "text")))
+             ;(gotoSelection (first res)) 
+            )
+          )
+        )
+      )      
+    )
+  )
+)
+
+(defn setcontrols [value]
+  (case value
+    42 (setTreeControl)
+    43 (addMarkers)
+  )
+  
+)
+
+
 (defn initqueue []
   (doseq [n (range 1000)]
     (go ;(while true)
       (take! ch(
         fn [v] (
-           addMarkers
+           setcontrols v
           )
         )
       )
@@ -156,12 +209,12 @@
 (defcomponent map-view [data owner]
 
   (did-mount [_]
-    (let [map-canvas (. js/document (getElementById "map"))
-          map-options (clj->js {"center" (google.maps.LatLng. 32.0853, 34.7818) "zoom" 8})
-          map (js/google.maps.Map. map-canvas map-options)
-          tr1 (swap! app-state assoc-in [:map] map  )
-         ]
-         
+    (let [
+      map-canvas (. js/document (getElementById "map"))
+      map-options (clj->js {"center" (google.maps.LatLng. (:lat (:selectedcenter @data)), (:lat (:selectedcenter @data))) "zoom" 8})
+      map (js/google.maps.Map. map-canvas map-options)
+      tr1 (swap! app-state assoc-in [:map] map  )
+      ]   
     )
   )
 
@@ -174,10 +227,12 @@
       styleprimary {:style {:margin-top "70px" :margin-left "0px" :margin-right "0px"}}
       ]
       (dom/div
-        ;;(om/build sbercore/website-view sbercore/app-state {})
-        (dom/div  {:id "map" :style {:height "500px"}})
-        (dom/div
-          (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
+        (om/build shelters/website-view data {})
+        
+        (dom/div {:className "row"}
+          (dom/div  {:className "col-md-2" :id "tree" :style {:height "500px" :margin-top "70px"}})
+          (dom/div  {:className "col-md-10" :id "map" :style {:height "500px" :margin-top "70px"}})
+          ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
         )
       ) 
     )

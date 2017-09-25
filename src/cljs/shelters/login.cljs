@@ -10,6 +10,7 @@
             [shelters.settings :as settings]
             [shelters.map :as mappage]
             [shelters.users :as users]
+            [shelters.devs :as devs]
             [shelters.devdetail :as devdetail]
             [shelters.userdetail :as userdetail]
             [ajax.core :refer [GET POST]]

@@ -19,7 +19,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :devices [{:id "1602323" :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.0853 :lan 34.7818} {:id 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 33.0853 :lan 35.7818 }] :users [{:name "Alexey" :id 1 :login "zuoqin" :password "111"} {:name "Oleg" :id 2 :login "kossa" :password "www"}]}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 32.08088 :lon 34.78057}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868}] :devices [{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }] :users [{:name "Alexey" :id 1 :login "zuoqin" :password "111"} {:name "Oleg" :id 2 :login "kossa" :password "www"}]}))
 
 
 
@@ -904,7 +904,7 @@
               )
             )
             (dom/li
-              (dom/a {:href ""}
+              (dom/a {:href "/#/dashboard"}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
