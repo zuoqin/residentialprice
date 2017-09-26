@@ -49,20 +49,62 @@
   )
 )
 
+(defn goDevice [devid]
+  (aset js/window "location" (str "#/devdetail/" devid) )
+  (swap! shelters/app-state assoc-in [:view] 7)
+)
 
 (defcomponent showdevices-view [data owner]
   (render
     [_]
-    (dom/div {:className "list-group" :style {:display "block"}}
+
+    (dom/tbody
       (map (fn [item]
-        (dom/span
-          (dom/a {:className "list-group-item" :href (str  "#/userdetail/" (:login item ) ) }
-            (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:login item)}} nil)
-            ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
-            (dom/h6 {:className "paddingleft2"} (get item "senddate"))
-            ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
-          ) 
-        )                  
+        (dom/tr {:role "row" :className "odd"}
+          (dom/td
+            (dom/input { :type "checkbox" :className "device_checkbox" :value (:id item)})
+          )
+
+          (dom/td
+            (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice e))}
+              (dom/i {:className "fa fa-hdd-o"})
+              (:id item)
+            )
+          )
+
+          (dom/td
+            (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+            (case (:status item) 3 "Inactive" "Active")
+          )
+
+
+          (dom/td
+            (:address item)
+          )
+
+          (dom/td
+            (:address item)
+          )
+
+          (dom/td
+            (dom/i {:className (case (:status item) 3 "fa fa-bullhorn" "fa fa-battery-three-quarters") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+            ;(case (:status item) 3 "Inactive" "Active")
+          )
+
+
+          (dom/td
+            
+            ;(case (:status item) 3 "Inactive" "Active")
+          )
+
+          (dom/td
+            (:address item)
+          )
+
+          (dom/td
+            (:address item)
+          )
+        )
         )(sort (comp comp-devs) (:devices @data ))
       )
     )
@@ -115,24 +157,69 @@
                 (dom/input {:type "search" :className "form-control" :placeholder "Search"})
               )
             )
-            (dom/table {:className "table table-hover table-responsive table-bordered floatThead-table"}
+            (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
               (dom/thead
                 (dom/tr {:className "info" :role "row"}
-                  (dom/th {:style {:width "15px" :valign "middle" }}
+                  (dom/th {:className "sorting_asc" :style {:width "15px" :valign "middle" }}
                     (dom/i {:className "fa fa-square-o"})
                   )
-                  (dom/th {:style {:width "100px"}}
+                  (dom/th {:className "sorting" :style {:width "100px"}}
                     (dom/i {:className "fa fa-bullseye"})
                     (dom/b "Device")
                   )
-                )
-              )
-              (dom/tbody
-                (dom/tr {:role "row" :className "odd"}
-                  (dom/td
-                    (dom/input { :type "text" :className "device_checkbox" :value "888"})
+
+                  (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                    ;(dom/i {:className "fa fa-bullseye"})
+                    (dom/b "Status")
+                  )
+
+                  (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
+                    (dom/i {:className "fa fa-map-marker"})
+                    (dom/b "Location")
+                  )
+
+                  (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
+                    (dom/i {:className "fa fa-bullhorn"})
+                    (dom/b "Alert")
+                  )
+
+                  (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                    ;(dom/i {:className "fa fa-bullhorn"})
+                    (dom/b "Bars")
+                  )
+
+                  (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                    ;(dom/i {:className "fa fa-bullhorn"})
+                    (dom/b "Practice")
+                  )
+
+                  (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
+                    ;(dom/i {:className "fa fa-bullhorn"})
+                    (dom/b "Contact 1")
+                  )
+
+                  (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
+                    ;(dom/i {:className "fa fa-bullhorn"})
+                    (dom/b "Contact 2")
                   )
                 )
+              )
+
+              (dom/colgroup
+                (dom/col {:style {:width "30px"}})
+                (dom/col {:style {:width "91px"}})
+                (dom/col {:style {:width "68px"}})
+                (dom/col {:style {:width "342px"}})
+                (dom/col {:style {:width "184px"}})
+                (dom/col {:style {:width "70px"}})
+                (dom/col {:style {:width "70px"}})
+                (dom/col {:style {:width "127px"}})
+                (dom/col {:style {:width "127px"}})
+              )
+              (om/build showdevices-view  data {})
+              (
+                
+                
               )
 
             )
@@ -152,7 +239,7 @@
           ;     ; )
           ;   )
           ; )
-          (om/build showdevices-view  data {})
+          
         )
       ) 
 

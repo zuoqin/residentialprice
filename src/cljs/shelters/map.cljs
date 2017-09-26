@@ -236,9 +236,9 @@
       (dom/div
         (om/build shelters/website-view data {})
         
-        (dom/div {:className "row"}
-          (dom/div  {:className "col-md-2" :id "tree" :style {:height "500px" :margin-top "70px"}})
-          (dom/div  {:className "col-md-10" :id "map" :style {:height "500px" :margin-top "70px"}})
+        (dom/div {:className "row" :style {:height "100%"}}
+          (dom/div  {:className "col-md-2" :id "tree" :style {:height "100%" :margin-top "70px"}})
+          (dom/div  {:className "col-md-10" :id "map" :style {:height "100%" :margin-top "70px"}})
           ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
         )
       ) 

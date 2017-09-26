@@ -26,7 +26,7 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-(defonce app-state (atom  {:login "" :password "" :roles [{:name "admin"} {:name "manager"} {:name "user"}] :isinsert false :role "admin" :view 1 :current "User Detail"} ))
+(defonce app-state (atom  {:login "" :password "" :roles [{:name "admin"} {:name "manager"} {:name "user"}] :isinsert false :role "admin" :view 1 :current "Device Detail" :device nil} ))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
@@ -292,7 +292,23 @@
   )
 )
 
+(defcomponent showcontacts-view [data owner]
+  (render
+    [_]
+    (dom/div
+      (map (fn [item]
+        (dom/div
+          (dom/b
+            (dom/i {:className "fa fa-user"} (:name item))
+          )
+          (dom/p (:tel item))
 
+        )
+      )
+      (:contacts (:device @app-state)))
+    )
+  )
+)
 
 (defcomponent devdetail-page-view [data owner]
   (did-mount [_]
@@ -319,16 +335,16 @@
         )
         (dom/h3
           (dom/i {:className "fa fa-cube"})
-          (str "Device Info - " (:id @app-state))
+          (str "Device Info - " (:id (:device @app-state)) )
         )
         (dom/div {:className "col-xs-3"}
           (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}} 
-            (dom/h5 {:style {:display:inline true}} (str "Device ID: " (:id @app-state)))
+            (dom/h5 {:style {:display:inline true}} (str "Device ID: " (:id (:device @app-state))))
             (dom/h5 {:style {:display:inline true}} "Status: "
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
             )
-            (dom/h5 {:style {:display:inline true}} (str "Name: " (:name @app-state)))
-            (dom/h5 {:style {:display:inline true}} (str "Address: " (:address @app-state)))
+            (dom/h5 {:style {:display:inline true}} (str "Name: " (:name (:device @app-state))))
+            (dom/h5 {:style {:display:inline true}} (str "Address: " (:address (:device @app-state))))
             (dom/h4 {:style {:display:inline true}} "Sensors"
               (dom/table {:className "table table-responsive"}
                 (dom/tbody
@@ -349,18 +365,14 @@
             (dom/h4
               (dom/i {:className "fa fa-phone"} "Contacts:")
             )
-            (dom/b
-              (dom/i {:className "fa fa-user"} "שגיא שחף")
-            )
-            (dom/p "0545225655")
+            (om/build showcontacts-view data {})
           )
         )
 
         (dom/div {:className "col-xs-9"}
-	    	      
-	    )
-	  )
 	)
+      )
+    )
   )
 )
 
@@ -370,8 +382,9 @@
 
 (sec/defroute devdetail-page "/devdetail/:devid" [devid]
   (let[
-      tr1 (swap! app-state assoc-in [:name]  "jhjgjhg" )   
-      tr1 (swap! app-state assoc-in [:id]  "57657657" )
+      dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))
+      tr1 (swap! app-state assoc-in [:device] dev )
+      ;tr2 (.log js/console "hjkhkh")
     ]
     
     (om/root devdetail-page-view
