@@ -19,7 +19,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 32.08088 :lon 34.78057}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868}] :devices [{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }] :users []}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868} {:id 3 :name "Jerusalem" :lat 31.7683 :lon 35.2137}] :devices [{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }] :users []}))
 
 
 
@@ -121,7 +121,7 @@
 
 (defn goRoleDetail [e]
   ;(aset js/window "location" "#/portfolios/0")
-  (swap! app-state assoc-in [:view] 2)
+  (swap! app-state assoc-in [:view] 6)
 )
 
 (defn goAssets [e]
@@ -713,7 +713,7 @@
               )
             )
             (dom/li
-              (dom/a {:href ""}
+              (dom/a {:href "/#/dashboard"}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -736,7 +736,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/groups" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "Groups"
                       )
@@ -791,7 +791,164 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.availability" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
+                        (dom/i {:className "fa fa-line-chart"})
+                        "Groups"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                        (dom/i {:className "fa fa-bullhorn"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                        (dom/i {:className "fa fa-envelope-o"})
+                        "Contacts"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )        
+        )
+      )
+    )
+  )
+)
+
+
+(defcomponent roledetail-navigation-view [data owner]
+  (render [_]
+    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
+      stylehome {:style {:margin-top "10px"} }
+      ]
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+        (dom/div {:className "navbar-header"}
+          (dom/button {:type "button" :className "navbar-toggle"
+            :data-toggle "collapse" :data-target ".navbar-collapse"}
+            (dom/span {:className "sr-only"} "Toggle navigation")
+            (dom/span {:className "icon-bar"})
+            (dom/span {:className "icon-bar"})
+            (dom/span {:className "icon-bar"})
+          )
+          (dom/a  (assoc stylehome :className "navbar-brand")
+            (dom/span {:id "pageTitle"} "Beeper")
+          )          
+        )
+
+
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
+            (dom/li
+              (dom/a {:href "/#/map"}
+                (dom/i {:className "fa fa-map-o"})
+                "Map View"
+              )
+            )
+            (dom/li
+              (dom/a {:href "/#/dashboard"}
+                (dom/i {:className "fa fa-dashboard"})
+                "Dashboard"
+              )
+            )
+
+            (dom/li
+              (dom/a {:href "/#/users"}
+                (dom/i {:className "fa fa-key"})
+                "Users"
+              )
+            )
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Management"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
+                        (dom/i {:className "fa fa-users"})
+                        "Groups"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/devices" :className "menu_item"}
+                        (dom/i {:className "fa fa-hdd-o"})
+                        "Devices"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/contacts" :className "menu_item"}
+                        (dom/i {:className "fa fa-phone"})
+                        "Contacts"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/polygons" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "Polygons"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+
+
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "Reports"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "Groups"
                       )
@@ -927,7 +1084,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/groups" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "Groups"
                       )
@@ -982,7 +1139,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.availability" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "Groups"
                       )
@@ -1091,7 +1248,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/groups" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "Groups"
                       )
@@ -1146,7 +1303,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.availability" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "Groups"
                       )
@@ -1361,7 +1518,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/groups" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "Groups"
                       )
@@ -1416,7 +1573,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.availability" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "Groups"
                       )
@@ -1509,7 +1666,7 @@
 (defmethod website-view 6
   [data owner] 
   ;(.log js/console "One is found in view")
-  (settings-navigation-view data owner)
+  (roledetail-navigation-view data owner)
 )
 
 (defmethod website-view 7

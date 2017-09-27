@@ -26,7 +26,7 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-(defonce app-state (atom  {:role "" :description "" :isinsert false :view 1 :current "Role Detail"} ))
+(defonce app-state (atom  {:name "" :description "" :isinsert false :view 1 :current "Role Detail"} ))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
@@ -62,9 +62,9 @@
 
 (defn OnUpdateRoleError [response]
   (let [     
-      newdata {:tripid (get response (keyword "tripid") ) }
+      ;newdata {:tripid (get response (keyword "tripid") ) }
+      tr1 (.log js/console (str "In OnUpdateRoleError " response))
     ]
-
   )
   ;; TO-DO: Delete Trip from Core
   ;;(.log js/console (str  (get (first response)  "Title") ))
@@ -74,15 +74,16 @@
 (defn OnUpdateRoleSuccess [response]
   (let [
       roles (:roles @shelters/app-state)
-      delrole (remove (fn [role] (if (= (:role role) (:role @app-state) ) true false  )) roles)
-      addrole (into [] (conj delrole {:role (:role @app-state) :description (:description @app-state)})) 
+      delrole (remove (fn [role] (if (= (:name role) (:name @app-state)) true false)) roles)
+      addrole (into [] (conj delrole {:name (:name @app-state) :description (:description @app-state)}))
+
+      tr1 (.log js/console (str "In OnUpdateRoleSuccess " response))
     ]
     (swap! shelters/app-state assoc-in [:roles] addrole)
 
     (-> js/document
       .-location
       (set! "#/roles"))
-
   )
 )
 
@@ -100,14 +101,18 @@
 
 
 (defn updateRole []
-  (PUT (str settings/apipath  "api/user") {
-    :handler OnUpdateRoleSuccess
-    :error-handler OnUpdateRoleError
-    :headers {
-      :content-type "application/json" 
-      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
-    :format :json
-    :params {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state) }})
+  (let [
+    tr1 (.log js/console (str "In updateRole"))
+    ]
+    (PUT (str settings/apipath  "updateRole") {
+      :handler OnUpdateRoleSuccess
+      :error-handler OnUpdateRoleError
+      :headers {
+        :content-type "application/json" 
+        :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+      :format :json
+      :params {:roleName (:name @app-state) :roleLevel 0 :roleDescription (:description @app-state) }})
+  )
 )
 
 
@@ -137,14 +142,18 @@
 )
 
 (defn createRole []
-  (POST (str settings/apipath  "api/user") {
-    :handler OnCreateRoleSuccess
-    :error-handler OnCreateRoleError
-    :headers {
-      :content-type "application/json" 
-      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
-    :format :json
-    :params { :login (:login @app-state) :password (:password @app-state) :role (:role @app-state) }})
+  (let [
+    tr1 (.log js/console (str "In updateRole"))
+    ]
+    (POST (str settings/apipath  "addRole") {
+      :handler OnCreateRoleSuccess
+      :error-handler OnCreateRoleError
+      :headers {
+        :content-type "application/json" 
+        :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+      :format :json
+      :params { :roleName (:name @app-state) :roleLevel 0 :roleDescription (:description @app-state) }})
+  )
 )
 
 
@@ -183,11 +192,23 @@
   (swap! app-state assoc-in [(keyword key)] val)
 )
 
+(defn setRole []
+  (let [
+    ;roles (:roles @shelters/app-state)        
+    role (first (filter (fn [role] (if (= (:name @app-state) (:name role)  )  true false)) (:roles @shelters/app-state )))
+
+    ;tr1 (.log js/console (str "role=" role))
+      
+    ]
+    (swap! app-state assoc-in [:name ]  (:name role) ) 
+    (swap! app-state assoc-in [:description] (:description role) )
+  )
+)
 
 
 (defn setcontrols [value]
   (case value
-    46 (setRolesDropDown)
+    46 (setRole)
   )
 )
 
@@ -220,16 +241,6 @@
   )
 )
 
-(defn setRole []
-  (let [
-        roles (:roles @shelters/app-state)
-        role (first (filter (fn [role] (if (= (:role @app-state) (:name role)  )  true false)) (:roles @shelters/app-state )))
-        ]
-    (swap! app-state assoc-in [:name ]  (:name role) ) 
-    (swap! app-state assoc-in [:description] (:description role) )
-  )
-)
-
 
 
 
@@ -249,11 +260,10 @@
   ;(.log js/console (str "token: " " " (:token  (first (:token @t5pcore/app-state)))       ))
   (if
     (and 
-      (not= (:login @app-state) nil)
-      (not= (:login @app-state) "")
+      (not= (:name @app-state) nil)
+      (not= (:name @app-state) "")
     )
     (setRole)
-  
   )
 )
 
@@ -269,7 +279,7 @@
     "Role Detail"
   )
   (getRoleDetail)
-  (setcontrols 46)
+  (put! ch 46)
 )
 
 
@@ -299,59 +309,39 @@
   )
   (did-update [this prev-props prev-state]
     (.log js/console "Update happened") 
-
-    ;(put! ch 46)
   )
   (render
     [_]
     (let [style {:style {:margin "10px;" :padding-bottom "0px;"}}
       styleprimary {:style {:margin-top "70px"}}
+      ;tr1 (.log js/console (str "name= " @data))
       ]
       (dom/div
-        (om/build shelters/website-view data {})
+        (om/build shelters/website-view shelters/app-state {})
         (dom/div {:id "user-detail-container"}
           (dom/span
             (dom/div  (assoc styleprimary  :className "panel panel-default"  :id "divUserInfo")
               
               (dom/div {:className "panel-heading"}
-                (dom/h5 "Login: " 
-                  (dom/input {:id "login" :type "text" :disabled (if (= (:isinsert @app-state) true) false true)  :onChange (fn [e] (handleChange e)) :value (:login @app-state)} )
+                (dom/h5 "Name: " 
+                  (dom/input {:id "rolename" :type "text" :disabled (if (:isinsert @data) false true) :onChange (fn [e] (handleChange e)) :value (:name @data)} )
 
                 )
                 
-                (dom/h5 "Password: "
-                  (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value (:password @app-state)})
+                (dom/h5 "Description: "
+                  (dom/input {:id "description" :type "text" :onChange (fn [e] (handleChange e)) :value (:description @data)})
                 )
                 ;; (dom/h5 "Role: "
                 ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
                 ;; )
-
-                (dom/div {:className "form-group"}
-                  (dom/p
-                    (dom/label {:className "control-label" :for "roles" }
-                      "Role: "
-                    )
-                  
-                  )
-                 
-                  (omdom/select #js {:id "roles"
-                                     :className "selectpicker"
-                                     :data-show-subtext "true"
-                                     :data-live-search "true"
-                                     :onChange #(handle-change % owner)
-                                     }                
-                    (buildRolesList data owner)
-                  )
-                  
-                )                
-              )              
+              )         
             )
           )
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :onClick (fn [e] (if (= (:isinsert @app-state) 0) (createRole) (updateRole)) )} (if (= (:isinsert @app-state) true) "Insert" "Update"))
-            (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteRole (:login @app-state)))} "Delete")
+            (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createRole) (updateRole)) )} (if (:isinsert @app-state) "Insert" "Update"))
+            (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteRole (:name @app-state)))} "Delete")
 
             (b/button {:className "btn btn-info"  :onClick (fn [e] (-> js/document
       .-location
@@ -368,8 +358,9 @@
 
 (sec/defroute roledetail-page "/roledetail/:role" {role :role}
   (
-    (swap! app-state assoc-in [:role]  role ) 
+    (swap! app-state assoc-in [:name]  role ) 
     (swap! app-state assoc-in [:isinsert]  false )
+    (setRole)
     (om/root roledetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})
@@ -380,7 +371,7 @@
 
 (sec/defroute roledetail-new-page "/roledetail" {}
   (
-    (swap! app-state assoc-in [:role]  "" ) 
+    (swap! app-state assoc-in [:name]  "" ) 
     (swap! app-state assoc-in [:isinsert]  true )
  
     ;(swap! app-state assoc-in [:role ]  "role" ) 

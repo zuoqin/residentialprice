@@ -8,7 +8,7 @@
 
 
             [om-bootstrap.button :as b]
-
+            [clojure.string :as str]
             [shelters.settings :as settings]
   )
   (:import goog.History)
@@ -16,8 +16,11 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:users [] :trips [] }))
+(defonce app-state (atom  {:users [] }))
 
+(defn printDevices []
+  (.print js/window)
+)
 
 (defn OnGetUsers [response]
    (swap! app-state assoc :users  (get response "Users")  )
@@ -27,6 +30,15 @@
 
 (defn error-handler [{:keys [status status-text]}]
   (.log js/console (str "something bad happened: " status " " status-text))
+)
+
+
+(defn handleChange [e]
+  (let [
+    tr1 (.log js/console (str (.. e -nativeEvent -target -id)))
+    ]
+  )
+  (swap! shelters/app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 
@@ -105,7 +117,7 @@
             (:address item)
           )
         )
-        )(sort (comp comp-devs) (:devices @data ))
+        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (:id x) (:search @data)) true false)) (:devices @data )))
       )
     )
   )
@@ -132,9 +144,9 @@
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div {:className "container" :style {:margin-top "70px"}}
+        (dom/div {:className "container" :style {:margin-top "70px" :width "100%"}}
           (dom/div {:className "col-md-12"}
-            (dom/div
+            (dom/div {:className "row"}
               (dom/div
                 (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
                   (dom/i {:className "fa fa-info-circle"}) "Help"
@@ -142,7 +154,7 @@
                 (dom/a {:href "/download/gg" :className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
                   (dom/i {:className "fa fa-file-excel-o"}) "Export to CSV"
                 )
-                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
+                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"} :onClick (fn [e] (printDevices) )}
                   (dom/i {:className "fa fa-print"}) "Print"
                 )
 
@@ -153,79 +165,78 @@
               )
             )
             (dom/div {:className "table-responsive"}
-              (dom/label
-                (dom/input {:type "search" :className "form-control" :placeholder "Search"})
-              )
-            )
-            (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
-              (dom/thead
-                (dom/tr {:className "info" :role "row"}
-                  (dom/th {:className "sorting_asc" :style {:width "15px" :valign "middle" }}
-                    (dom/i {:className "fa fa-square-o"})
-                  )
-                  (dom/th {:className "sorting" :style {:width "100px"}}
-                    (dom/i {:className "fa fa-bullseye"})
-                    (dom/b "Device")
+              (dom/div {:className "floatThead-wrapper" :style {:position "relative" :clear "both"}}
+                (dom/label
+                  (dom/input {:id "search" :type "search" :className "form-control" :placeholder "Search" :onChange (fn [e] (handleChange e ))})
+                )
+
+
+                (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
+                  (dom/thead
+                    (dom/tr {:className "info" :role "row"}
+                      (dom/th {:className "sorting_asc" :style {:width "15px" :valign "middle" }}
+                        (dom/i {:className "fa fa-square-o"})
+                      )
+                      (dom/th {:className "sorting" :style {:width "100px"}}
+                        (dom/i {:className "fa fa-bullseye"})
+                        (dom/b "Device")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                        ;(dom/i {:className "fa fa-bullseye"})
+                        (dom/b "Status")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
+                        (dom/i {:className "fa fa-map-marker"})
+                        (dom/b "Location")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
+                        (dom/i {:className "fa fa-bullhorn"})
+                        (dom/b "Alert")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                        ;(dom/i {:className "fa fa-bullhorn"})
+                        (dom/b "Bars")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                        ;(dom/i {:className "fa fa-bullhorn"})
+                        (dom/b "Practice")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
+                        ;(dom/i {:className "fa fa-bullhorn"})
+                        (dom/b "Contact 1")
+                      )
+
+                      (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
+                        ;(dom/i {:className "fa fa-bullhorn"})
+                        (dom/b "Contact 2")
+                      )
+                    )
                   )
 
-                  (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
-                    ;(dom/i {:className "fa fa-bullseye"})
-                    (dom/b "Status")
+                  (dom/colgroup
+                    (dom/col {:style {:width "30px"}})
+                    (dom/col {:style {:width "91px"}})
+                    (dom/col {:style {:width "68px"}})
+                    (dom/col {:style {:width "342px"}})
+                    (dom/col {:style {:width "184px"}})
+                    (dom/col {:style {:width "70px"}})
+                    (dom/col {:style {:width "70px"}})
+                    (dom/col {:style {:width "127px"}})
+                    (dom/col {:style {:width "127px"}})
                   )
-
-                  (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
-                    (dom/i {:className "fa fa-map-marker"})
-                    (dom/b "Location")
-                  )
-
-                  (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
-                    (dom/i {:className "fa fa-bullhorn"})
-                    (dom/b "Alert")
-                  )
-
-                  (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
-                    ;(dom/i {:className "fa fa-bullhorn"})
-                    (dom/b "Bars")
-                  )
-
-                  (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
-                    ;(dom/i {:className "fa fa-bullhorn"})
-                    (dom/b "Practice")
-                  )
-
-                  (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
-                    ;(dom/i {:className "fa fa-bullhorn"})
-                    (dom/b "Contact 1")
-                  )
-
-                  (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
-                    ;(dom/i {:className "fa fa-bullhorn"})
-                    (dom/b "Contact 2")
+                  (om/build showdevices-view  data {})
+                  (
                   )
                 )
               )
-
-              (dom/colgroup
-                (dom/col {:style {:width "30px"}})
-                (dom/col {:style {:width "91px"}})
-                (dom/col {:style {:width "68px"}})
-                (dom/col {:style {:width "342px"}})
-                (dom/col {:style {:width "184px"}})
-                (dom/col {:style {:width "70px"}})
-                (dom/col {:style {:width "70px"}})
-                (dom/col {:style {:width "127px"}})
-                (dom/col {:style {:width "127px"}})
-              )
-              (om/build showdevices-view  data {})
-              (
-                
-                
-              )
-
             )
-
           )
-
         )
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
         )

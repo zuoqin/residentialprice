@@ -93,6 +93,47 @@
   (.log js/console (str "something bad happened: " status " " status-text))
 )
 
+
+
+
+
+
+(defn map-unit [unit]
+  (let [
+    id (str (get unit "unitId"))
+    name (get unit "name")
+    status (case (get unit "status") "Normal" 0 3)
+    lat (get unit "latitude")
+    lon (get unit "longitude")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id id :city 3 :name name :status status :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat lat :lon lon :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    ]
+    ;
+    result
+  )
+)
+
+
+(defn OnGetUnits [response]
+  (swap! shelterscore/app-state assoc-in [:devices] (map map-unit response) )
+  ;(reqsecurities)
+  (put! ch 42)
+)
+
+
+
+
+(defn requnits []
+  (GET (str settings/apipath "getUnits")
+       {:handler OnGetUnits
+        :error-handler error-handler
+        :headers {:content-type "application/json"
+                  :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
+       })
+)
+
+
+
 (defn map-role [role]
   (let [
     level (get role "roleLevel")
@@ -110,7 +151,7 @@
 (defn OnGetRoles [response]
   (swap! shelterscore/app-state assoc-in [:roles] (map map-role response) )
   ;(reqsecurities)
-  (put! ch 42)
+  (requnits)
 )
 
 

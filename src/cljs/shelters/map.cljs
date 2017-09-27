@@ -33,11 +33,28 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(def js-object  (clj->js  {:data [ {:text "All cities"  :nodes [{:text "Tel Aviv" :nodes [{:text "1602323"}]} {:text "Ness Ziona" :nodes [{:text "2"}]} ]}]} ))
+
+(defn map-dev-node [dev]
+  {:text (:id dev)}
+)
+
+(defn buildNodes [id]
+  (let [
+    devices (filter (fn [x] (if (= id (:city x)) true false)) (:devices @shelters/app-state))
+    nodes (into [] (map map-dev-node devices))
+    tr1 (.log js/console nodes)
+    ]
+    nodes
+  )
+)
+
+
+
+(def js-object  (clj->js  {:data [ {:text "All cities" :nodes [{:text "Tel Aviv" :nodes (buildNodes 1)} {:text "Ness Ziona" :nodes (buildNodes 2)} {:text "Jerusalem" :nodes (buildNodes 3)} ]}]} ))
 
 
 (defn OnGetPortfolios [response]
-  ;;(swap! sbercore/app-state assoc-in [(keyword (:selectedsec @sbercore/app-state)) :portfolios] response  )
+  ;;
   ;;(sbercore/setSecsDropDown)
   ;;(.log js/console (:client @app-state)) 
 )
@@ -122,6 +139,7 @@
         (-> marker
           (.addListener "click"
             (fn []
+              
               (.open infownd (:map @app-state) marker)
             )
           )
@@ -143,7 +161,8 @@
   (let [
     thecity (first (filter (fn [x] (if (= (:name x) city) true false)) (:cities @shelters/app-state)))
 
-    tr1 (.log js/console (str "city=" city " obj=" thecity))
+    ;tr1 (.log js/console (str "city=" city " obj=" thecity))
+    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thecity) :lon (:lon thecity) }  )
     ]
     (.panTo (:map @app-state) (google.maps.LatLng. (:lat thecity), (:lon thecity)))
   )
@@ -153,7 +172,8 @@
   (let [
     thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @shelters/app-state)))
 
-    tr1 (.log js/console (str "device=" device " obj=" thedev))
+    ;tr1 (.log js/console (str "device=" device " obj=" thedev))
+    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
     ]
     (.panTo (:map @app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
   )

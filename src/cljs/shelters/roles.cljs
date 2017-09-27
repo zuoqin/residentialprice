@@ -57,7 +57,7 @@
       (map (fn [item]
         (dom/span
           (dom/a {:className "list-group-item" :href (str "#/roledetail/" (:name item)) :onClick (fn [e] (shelters/goRoleDetail e))}
-            (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:login item)}} nil)
+            (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:description item)}} nil)
             ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
             ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
             ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
