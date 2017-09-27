@@ -10,9 +10,11 @@
             [shelters.settings :as settings]
             [shelters.map :as mappage]
             [shelters.users :as users]
+            [shelters.roles :as roles]
             [shelters.devs :as devs]
             [shelters.devdetail :as devdetail]
             [shelters.userdetail :as userdetail]
+            [shelters.roledetail :as roledetail]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
             [om-bootstrap.button :as b]
@@ -91,34 +93,65 @@
   (.log js/console (str "something bad happened: " status " " status-text))
 )
 
-(defn OnGetSecurities [response]
-  (swap! shelterscore/app-state assoc-in [:securities] response )
-  (swap! app-state assoc-in [:state] 0)
-  ;(swap! shelterscore/app-state assoc-in [:view] 1 )
-  ;(aset js/window "location" "#/positions")
+(defn map-role [role]
+  (let [
+    level (get role "roleLevel")
+    description (get role "roleDescription")
+    rolename (get role "roleName")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:name rolename :level level :description description}
+    ]
+    ;
+    result
+  )
+)
+
+
+(defn OnGetRoles [response]
+  (swap! shelterscore/app-state assoc-in [:roles] (map map-role response) )
+  ;(reqsecurities)
   (put! ch 42)
 )
 
-(defn reqsecurities []
-  (GET (str settings/apipath "api/security")
-       {:handler OnGetSecurities
+
+
+
+(defn reqroles []
+  (GET (str settings/apipath "getRoles")
+       {:handler OnGetRoles
         :error-handler error-handler
         :headers {:content-type "application/json"
                   :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
        })
 )
 
-(defn OnGetClients [response]
-  (swap! shelterscore/app-state assoc-in [:clients] response )
-  (reqsecurities)
+
+
+(defn map-user [user]
+  (let [
+    login (get (get user "credentials") "userName")
+    username (get (get user "details") "key")
+    role (get (get user "role") "roleName")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:name username :role role :login login}
+    ]
+    ;
+    result
+  )
 )
 
+(defn OnGetUsers [response]
+  (swap! shelterscore/app-state assoc-in [:users] (map map-user response) )
+  (swap! app-state assoc-in [:state] 0)
+  ;(swap! shelterscore/app-state assoc-in [:view] 1 )
+  ;(aset js/window "location" "#/positions")
+  (reqroles)
+  
+)
 
-
-
-(defn reqclients []
-  (GET (str settings/apipath "api/client")
-       {:handler OnGetClients
+(defn requsers []
+  (GET (str settings/apipath "getUsers")
+       {:handler OnGetUsers
         :error-handler error-handler
         :headers {:content-type "application/json"
                   :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
@@ -145,7 +178,7 @@
 (defn OnGetUser [response]
   ;(.log js/console (str "In On GetUser"))
   (doall (map setUser response))
-  (reqclients)  
+  ;(reqclients)  
 )
 
 
@@ -169,10 +202,11 @@
     ;(.log js/console (str (:token newdata)))
     (swap! shelterscore/app-state assoc-in [:token] newdata )
     (swap! shelterscore/app-state assoc-in [:view] 2 )
-    ;(swap! shelterscore/app-state assoc-in [:users] [] )
+    (swap! shelterscore/app-state assoc-in [:users] [] )
+    (requsers)
     ;;(requser {:token newdata})
     ;;(put! ch 43)
-    (put! ch 42)
+    ;(put! ch 42)
   )
 )
 

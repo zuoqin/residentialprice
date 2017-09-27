@@ -1,4 +1,4 @@
-(ns shelters.userdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.roledetail  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -26,8 +26,7 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-
-(defonce app-state (atom  {:login "" :password "" :isinsert false :role "admin" :view 1 :current "User Detail"} ))
+(defonce app-state (atom  {:role "" :description "" :isinsert false :view 1 :current "Role Detail"} ))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
@@ -36,32 +35,32 @@
 )
 
 
-(defn OnDeleteUserError [response]
+(defn OnDeleteRoleError [response]
   (let [     
-      newdata {:userid (get response (keyword "tripid") ) }
+      newdata {:roleid (get response (keyword "tripid") ) }
     ]
 
   )
-  ;; TO-DO: Delete User from Core
+  ;; TO-DO: Delete Role from Core
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
 
-(defn OnDeleteUserSuccess [response]
+(defn OnDeleteRoleSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      newusers (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
+      roles (:roles @shelters/app-state)
+      newroles (remove (fn [role] (if (= (:role role) (:role @app-state) ) true false  )) roles)
     ]
-    ;(swap! shelters/app-state assoc-in [:token] newdata )
-    (swap! shelters/app-state assoc-in [:users] newusers)
+    ;(swap! sbercore/app-state assoc-in [:token] newdata )
+    (swap! shelters/app-state assoc-in [:roles] newroles)
   )
 
     (-> js/document
       .-location
-      (set! "#/users"))
+      (set! "#/roles"))
 )
 
-(defn OnUpdateUserError [response]
+(defn OnUpdateRoleError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
@@ -72,84 +71,80 @@
 )
 
 
-(defn OnUpdateUserSuccess [response]
+(defn OnUpdateRoleSuccess [response]
   (let [
-      users (:users @shelters/app-state)  
-      deluser (remove (fn [user] (if (= (:login user) (:login @app-state)) true false  )) users)
-      adduser (into [] (conj deluser {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)}  )) 
+      roles (:roles @shelters/app-state)
+      delrole (remove (fn [role] (if (= (:role role) (:role @app-state) ) true false  )) roles)
+      addrole (into [] (conj delrole {:role (:role @app-state) :description (:description @app-state)})) 
     ]
-    (swap! shelters/app-state assoc-in [:users] adduser)
+    (swap! shelters/app-state assoc-in [:roles] addrole)
 
     (-> js/document
       .-location
-      (set! "#/users"))
+      (set! "#/roles"))
 
   )
 )
 
 
-(defn deleteUser [login]
-  (DELETE (str settings/apipath  "deleteUser") {
-    :handler OnDeleteUserSuccess
-    :error-handler OnDeleteUserError
+(defn deleteRole [role]
+  (DELETE (str settings/apipath  "api/user?login=" role) {
+    :handler OnDeleteRoleSuccess
+    :error-handler OnDeleteRoleError
     :headers {
       :content-type "application/json" 
-    }
+      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
     :format :json})
 )
 
 
 
-(defn updateUser []
-  (PUT (str settings/apipath  "updateUser") {
-    :handler OnUpdateUserSuccess
-    :error-handler OnUpdateUserError
+(defn updateRole []
+  (PUT (str settings/apipath  "api/user") {
+    :handler OnUpdateRoleSuccess
+    :error-handler OnUpdateRoleError
     :headers {
-      :content-type "application/json"
-    }
+      :content-type "application/json" 
+      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
     :format :json
-    :params { :credentials {:userName (:login @app-state) :password (:password @app-state)} :token (:token (:token @shelters/app-state)) :role {:roleName (:role @app-state) :roleLevel 0 :roleDescription (:role @app-state)} :details [{:key (:login @app-state) :value (:login @app-state)}] }})
+    :params {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state) }})
 )
 
 
-(defn OnCreateUserError [response]
+(defn OnCreateRoleError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
 
   )
   ;; TO-DO: Delete Trip from Core
-  (.log js/console (str response))
+  ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
 
-(defn OnCreateUserSuccess [response]
+(defn OnCreateRoleSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      adduser (into [] (conj users {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)} )) 
+      roles (:roles @shelters/app-state    )  
+      addrole (into [] (conj roles {:role (:role @app-state) :description (:description @app-state)})) 
     ]
-    (swap! shelters/app-state assoc-in [:users] adduser)
+    (swap! shelters/app-state assoc-in [:roles] addrole)
 
     (-> js/document
       .-location
-      (set! "#/users"))
+      (set! "#/roles"))
 
   )
 )
 
-(defn createUser []
-  (let [
-    tr1 (.log js/console (str "In createUser"))
-    ]
-    (POST (str settings/apipath  "addUser") {
-      :handler OnCreateUserSuccess
-      :error-handler OnCreateUserError
-      :headers {
-        :content-type "application/json" 
-        :Authorization (str "Bearer "  )}
-      :format :json
-      :params { :credentials {:userName (:login @app-state) :password (:password @app-state)} :token (:token (:token @shelters/app-state)) :role {:roleName (:role @app-state) :roleLevel 0 :roleDescription (:role @app-state)} :details [{:key (:login @app-state) :value (:login @app-state)}] }})
-  )
+(defn createRole []
+  (POST (str settings/apipath  "api/user") {
+    :handler OnCreateRoleSuccess
+    :error-handler OnCreateRoleError
+    :headers {
+      :content-type "application/json" 
+      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+    :format :json
+    :params { :login (:login @app-state) :password (:password @app-state) :role (:role @app-state) }})
 )
 
 
@@ -184,7 +179,7 @@
 )
 
 
-(defn setNewUserValue [key val]
+(defn setNewRoleValue [key val]
   (swap! app-state assoc-in [(keyword key)] val)
 )
 
@@ -225,14 +220,13 @@
   )
 )
 
-(defn setUser []
+(defn setRole []
   (let [
-        users (:users @shelters/app-state)
-        user (first (filter (fn [user] (if (= (:login @app-state) (:login user)  )  true false)) (:users @shelters/app-state )))
+        roles (:roles @shelters/app-state)
+        role (first (filter (fn [role] (if (= (:role @app-state) (:name role)  )  true false)) (:roles @shelters/app-state )))
         ]
-    (swap! app-state assoc-in [:login ]  (:login user) ) 
-    (swap! app-state assoc-in [:role ]  (:role user) ) 
-    (swap! app-state assoc-in [:password] (:password user) )
+    (swap! app-state assoc-in [:name ]  (:name role) ) 
+    (swap! app-state assoc-in [:description] (:description role) )
   )
 )
 
@@ -251,14 +245,14 @@
 )
 
 
-(defn getUserDetail []
+(defn getRoleDetail []
   ;(.log js/console (str "token: " " " (:token  (first (:token @t5pcore/app-state)))       ))
   (if
     (and 
       (not= (:login @app-state) nil)
       (not= (:login @app-state) "")
     )
-    (setUser)
+    (setRole)
   
   )
 )
@@ -272,9 +266,9 @@
 
 (defn onMount [data]
   (swap! app-state assoc-in [:current] 
-    "User Detail"
+    "Role Detail"
   )
-  (getUserDetail)
+  (getRoleDetail)
   (setcontrols 46)
 )
 
@@ -293,13 +287,13 @@
       (dom/option {:key (:name text) :value (:name text)
                     :onChange #(handle-change % owner)} (:name text))
     )
-    (:roles @shelters/app-state )
+    (:roles @app-state )
   )
 )
 
 
 
-(defcomponent userdetail-page-view [data owner]
+(defcomponent roledetail-page-view [data owner]
   (did-mount [_]
     (onMount data)
   )
@@ -356,12 +350,12 @@
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "Insert" "Update"))
-            (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
+            (b/button {:className "btn btn-default" :onClick (fn [e] (if (= (:isinsert @app-state) 0) (createRole) (updateRole)) )} (if (= (:isinsert @app-state) true) "Insert" "Update"))
+            (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteRole (:login @app-state)))} "Delete")
 
             (b/button {:className "btn btn-info"  :onClick (fn [e] (-> js/document
       .-location
-      (set! "#/users")))  } "Cancel")
+      (set! "#/roles")))  } "Cancel")
           )
         )
       )
@@ -372,29 +366,29 @@
 
 
 
-(sec/defroute userdetail-page "/userdetail/:login" {login :login}
+(sec/defroute roledetail-page "/roledetail/:role" {role :role}
   (
-    (swap! app-state assoc-in [:login]  login ) 
+    (swap! app-state assoc-in [:role]  role ) 
     (swap! app-state assoc-in [:isinsert]  false )
-    (om/root userdetail-page-view
-             shelters/app-state
+    (om/root roledetail-page-view
+             app-state
              {:target (. js/document (getElementById "app"))})
 
   )
 )
 
 
-(sec/defroute userdetail-new-page "/userdetail" {}
+(sec/defroute roledetail-new-page "/roledetail" {}
   (
-    (swap! app-state assoc-in [:login]  "")
-    (swap! app-state assoc-in [:isinsert]  true)
+    (swap! app-state assoc-in [:role]  "" ) 
+    (swap! app-state assoc-in [:isinsert]  true )
  
-    ;(swap! app-state assoc-in [:role ]  "user" ) 
+    ;(swap! app-state assoc-in [:role ]  "role" ) 
     ;(swap! app-state assoc-in [:password] "" )
 
 
-    (om/root userdetail-page-view
-             shelters/app-state
+    (om/root roledetail-page-view
+             app-state
              {:target (. js/document (getElementById "app"))})
 
   )

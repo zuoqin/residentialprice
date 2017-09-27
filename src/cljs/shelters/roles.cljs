@@ -1,4 +1,4 @@
-(ns shelters.users (:use [net.unit8.tower :only [t]])
+(ns shelters.roles (:use [net.unit8.tower :only [t]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -16,12 +16,12 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:users [] :trips [] }))
+(defonce app-state (atom  {:roles []}))
 
 
-(defn OnGetUsers [response]
-   (swap! app-state assoc :users  (get response "Users")  )
-   (.log js/console (:users @app-state)) 
+(defn OnGetRoles [response]
+   (swap! app-state assoc :roles  (get response "Roles")  )
+   (.log js/console (:roles @app-state)) 
 
 )
 
@@ -30,9 +30,9 @@
 )
 
 
-(defn getUsers [data] 
+(defn getRoles [data] 
   (GET (str settings/apipath "api/user") {
-    :handler OnGetUsers
+    :handler OnGetRoles
     :error-handler error-handler
     :headers {
       :content-type "application/json"
@@ -41,29 +41,29 @@
 )
 
 
-(defn comp-users
-  [user1 user2]
-  (if (> (compare (:login user1) (:login user2)) 0)
+(defn comp-roles
+  [role1 role2]
+  (if (> (compare (:name role1) (:name role2)) 0)
       false
       true
   )
 )
 
 
-(defcomponent showusers-view [data owner]
+(defcomponent showroles-view [data owner]
   (render
     [_]
     (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
         (dom/span
-          (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:login item)) :onClick (fn [e] (shelters/goUserDetail e))}
+          (dom/a {:className "list-group-item" :href (str "#/roledetail/" (:name item)) :onClick (fn [e] (shelters/goRoleDetail e))}
             (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:login item)}} nil)
             ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
             ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
             ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
           ) 
         )                  
-        )(sort (comp comp-users) (:users @shelters/app-state ))
+        )(sort (comp comp-roles) (:roles @shelters/app-state ))
       )
     )
   )
@@ -72,15 +72,15 @@
 
 
 (defn onMount [data]
-  ; (getUsers data)
+  ; (getRoles data)
   (swap! shelters/app-state assoc-in [:current] 
-    "Users"
+    "Roles"
   )
 )
 
 
 
-(defcomponent users-view [data owner]
+(defcomponent roles-view [data owner]
   (will-mount [_]
     (onMount data)
   )
@@ -93,10 +93,9 @@
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
         )
           (dom/div
-            (b/button {:className "btn btn-primary" :onClick (fn [e] (
-              (shelters/goUserDetail e)
-              (-> js/document .-location (set! "#/userdetail"))
-))} "Add New")
+            (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
+          .-location
+          (set! "#/roledetail")))} "Add New")
           )
           ; (dom/div {:className "panel-heading"}
           ;   (dom/div {:className "row"}
@@ -108,7 +107,7 @@
           ;     ; )
           ;   )
           ; )
-          (om/build showusers-view  data {})
+          (om/build showroles-view  data {})
         )
       )
     )
@@ -118,8 +117,8 @@
 
 
 
-(sec/defroute users-page "/users" []
-  (om/root users-view
+(sec/defroute roles-page "/roles" []
+  (om/root roles-view
            shelters/app-state
            {:target (. js/document (getElementById "app"))}))
 

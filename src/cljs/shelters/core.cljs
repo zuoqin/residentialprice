@@ -19,7 +19,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 32.08088 :lon 34.78057}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868}] :devices [{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }] :users [{:name "Alexey" :id 1 :login "zuoqin" :password "111"} {:name "Oleg" :id 2 :login "kossa" :password "www"}]}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 32.08088 :lon 34.78057}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868}] :devices [{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }] :users []}))
 
 
 
@@ -119,8 +119,8 @@
   (swap! app-state assoc-in [:view] 4)
 )
 
-(defn goPortfolios [e]
-  (aset js/window "location" "#/portfolios/0")
+(defn goRoleDetail [e]
+  ;(aset js/window "location" "#/portfolios/0")
   (swap! app-state assoc-in [:view] 2)
 )
 
@@ -1068,7 +1068,7 @@
               )
             )
             (dom/li
-              (dom/a {:href ""}
+              (dom/a {:href "/#/dashboard"}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1254,7 +1254,7 @@
                 )
                 (dom/li {:className "divider"})
                 (dom/li
-                  (dom/a {:href "#/portfolios/0" :onClick (fn [e] (goPortfolios e))}
+                  (dom/a {:href "#/portfolios/0" :onClick (fn [e] (goUserDetail e))}
                     (dom/div
                       (dom/i {:className "fa fa-twitter fa-fw"})
                       "Держатели бумаги"
