@@ -72,13 +72,13 @@
   (let [
 
 
-    tr1 (.log js/console (str "id in calcGroupLatLon=" id))
+    ;tr1 (.log js/console (str "id in calcGroupLatLon=" id))
     units (getChildUnits id [])
  
     minlat (apply min (map (fn [x] (:lat x)) units))
     maxlat (apply max (map (fn [x] (:lat x)) units))
 
-    tr1 (.log js/console (str "first unit=" (first units)))
+    ;tr1 (.log js/console (str "first unit=" (first units)))
     lat (/ (+ minlat maxlat) 2)
 
     minlon (apply min (map (fn [x] (:lon x)) units))
@@ -107,7 +107,7 @@
       let [
         childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
         ]
-        (if (> (count childs) 0) {:text (:id x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes childs} {:text (:id x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false}})
+        (if (> (count childs) 0) {:text (:name x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes childs} {:text (:name x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false}})
       ) ) children))
     ;tr1 (.log js/console nodes)
     ]
@@ -233,10 +233,12 @@
 
 (defn setcenterbycity [city]
   (let [
-    thecity (first (filter (fn [x] (if (= (:id x) city) true false)) (:groups @shelters/app-state)))
+    
+
+    thecity (first (filter (fn [x] (if (= (:name x) city) true false)) (:groups @shelters/app-state)))
 
     latlon (calcGroupLatLon (:id thecity))
-    tr1 (.log js/console (str "city=" city " obj=" thecity))
+    ;tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
     tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) }  )
     ]
     (.panTo (:map @app-state) (google.maps.LatLng. (:lat latlon), (:lon latlon)))
@@ -255,7 +257,7 @@
 )
 
 (defn setTreeControl []
-  (.log js/console "Set Tree called")
+  ;(.log js/console "Set Tree called")
   ;(.log js/console (count (:employees @app-state)))
   (jquery
     (fn []
