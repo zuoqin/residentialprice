@@ -33,24 +33,98 @@
 
 (def ch (chan (dropping-buffer 2)))
 
+(def iconBase "/images/")
 
 (defn map-dev-node [dev]
-  {:text (:id dev)}
+  {:text (:id dev)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} }
 )
 
-(defn buildNodes [id]
+
+(defn buildUnits [id]
   (let [
-    devices (filter (fn [x] (if (= id (:city x)) true false)) (:devices @shelters/app-state))
+    devices (if (> (count (:devices @shelters/app-state)) 0) (filter (fn [x] (if (> (.indexOf (:groups x) id) -1) true false)) (:devices @shelters/app-state)) []) 
     nodes (into [] (map map-dev-node devices))
-    tr1 (.log js/console nodes)
+    ;tr1 (.log js/console nodes)
     ]
     nodes
   )
 )
 
 
+(defn getChildUnits [id children]
+  (let [
+    childgroups (filter (fn [x] (if (= id (:parent x)) true false)) (:groups @shelters/app-state))
+      
+    childs (concat children (buildUnits id))
+    childdevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) childs)
 
-(def js-object  (clj->js  {:data [ {:text "All cities" :nodes [{:text "Tel Aviv" :nodes (buildNodes 1)} {:text "Ness Ziona" :nodes (buildNodes 2)} {:text "Jerusalem" :nodes (buildNodes 3)} ]}]} ))
+    nextchildunits (distinct (flatten (map (fn [x] (buildUnits (:id x))) childgroups)))
+
+    nextchilddevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) nextchildunits)
+    ]
+    (distinct (flatten (concat nextchilddevs childdevs)))
+    ;childgroups
+    ;(if (> (count childgroups) 0) (concat ))
+  )
+)
+
+(defn calcGroupLatLon [id]
+  (let [
+
+
+    tr1 (.log js/console (str "id in calcGroupLatLon=" id))
+    units (getChildUnits id [])
+ 
+    minlat (apply min (map (fn [x] (:lat x)) units))
+    maxlat (apply max (map (fn [x] (:lat x)) units))
+
+    tr1 (.log js/console (str "first unit=" (first units)))
+    lat (/ (+ minlat maxlat) 2)
+
+    minlon (apply min (map (fn [x] (:lon x)) units))
+    maxlon (apply max (map (fn [x] (:lon x)) units))
+
+
+    lon (/ (+ minlon maxlon) 2)
+    ]
+    {:lat lat :lon lon}
+  )
+)
+
+;; (defn map-city-node [city]
+;;   {:text (:id city)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes (into [] (concat (buildCities (:id city)) (buildUnits (:id city)))) }
+;; )
+
+(defn buildCities [id]
+  (let [
+    children (filter (fn [x] (if (= id (:parent x)) true false)) (:groups @shelters/app-state))
+
+
+    
+
+ 
+    nodes (into [] (map (fn [x] (
+      let [
+        childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
+        ]
+        (if (> (count childs) 0) {:text (:id x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes childs} {:text (:id x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false}})
+      ) ) children))
+    ;tr1 (.log js/console nodes)
+    ]
+    nodes
+  )
+)
+
+(defn buildTreeGroups []
+  (do (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities "00000000-0000-9999-0000-000000000000") (buildUnits "00000000-0000-9999-0000-000000000000")))}]}))
+)
+
+
+;(def js-object (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities "00000000-0000-9999-0000-000000000000") (buildUnits "00000000-0000-9999-0000-000000000000")))}]}))
+
+
+
+;(def js-object  (do (clj->js  {:multiSelect true :data [ {:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes [{:text "Tel Aviv" :selectedIcon "glyphicon glyphicon-stop" :selectable true :nodes (buildNodes 1) } {:text "Ness Ziona" :selectedIcon "glyphicon glyphicon-stop" :selectable true :nodes (buildNodes 2) } {:text "Jerusalem" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (buildNodes 3)} ]}]} )))
 
 
 (defn OnGetPortfolios [response]
@@ -130,8 +204,8 @@
 
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
-    tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "map" (:map @app-state) "title" (:name device)})
+    ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "parking_lot_maps.png" "library_maps.png")) "map" (:map @app-state) "title" (:name device)})
     marker (js/google.maps.Marker. marker-options)
     ]
     (jquery
@@ -159,12 +233,13 @@
 
 (defn setcenterbycity [city]
   (let [
-    thecity (first (filter (fn [x] (if (= (:name x) city) true false)) (:cities @shelters/app-state)))
+    thecity (first (filter (fn [x] (if (= (:id x) city) true false)) (:groups @shelters/app-state)))
 
-    ;tr1 (.log js/console (str "city=" city " obj=" thecity))
-    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thecity) :lon (:lon thecity) }  )
+    latlon (calcGroupLatLon (:id thecity))
+    tr1 (.log js/console (str "city=" city " obj=" thecity))
+    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) }  )
     ]
-    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thecity), (:lon thecity)))
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat latlon), (:lon latlon)))
   )
 )
 
@@ -185,7 +260,7 @@
   (jquery
     (fn []
       (-> (jquery "#tree" )
-        (.treeview js-object)
+        (.treeview (buildTreeGroups) ) ;;js-object
         (.on "nodeSelected"
           (fn [event data] (
              let [
@@ -194,8 +269,8 @@
                res (js->clj data)
                
              ]
-             (.log js/console res)
-             (.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
+             ;(.log js/console res)
+             ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
              (if (= 0 (get res "parentId")) (setcenterbycity (get res "text")) (setcenterbydevice (get res "text")))
              ;(gotoSelection (first res)) 
             )

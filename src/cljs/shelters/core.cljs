@@ -19,7 +19,10 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868} {:id 3 :name "Jerusalem" :lat 31.7683 :lon 35.2137}] :devices [{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }] :users []}))
+
+;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
+
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868} {:id 3 :name "Jerusalem" :lat 31.7683 :lon 35.2137}] :devices [] :users []}))
 
 
 

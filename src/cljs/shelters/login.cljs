@@ -94,8 +94,39 @@
 )
 
 
+(defn map-group [group]
+  (let [
+    id (str (get group "groupId"))
+    name (get group "groupName")
+    parent (get group "parentGroupId")
+
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id id :name name :parent parent}
+    ]
+    ;
+    result
+  )
+)
 
 
+(defn OnGetGroups [response]
+  (swap! shelterscore/app-state assoc-in [:groups] (map map-group response) )
+  ;(reqsecurities)
+  (swap! app-state assoc-in [:state] 0)
+  (put! ch 42)
+)
+
+
+
+
+(defn reqgroups []
+  (GET (str settings/apipath "getGroups")
+       {:handler OnGetGroups
+        :error-handler error-handler
+        :headers {:content-type "application/json"
+                  :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
+       })
+)
 
 
 (defn map-unit [unit]
@@ -105,8 +136,10 @@
     status (case (get unit "status") "Normal" 0 3)
     lat (get unit "latitude")
     lon (get unit "longitude")
+    groups (get unit "parentGroups")
+    address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id id :city 3 :name name :status status :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat lat :lon lon :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    result {:id id :city 3 :name name :status status :address address :lat lat :lon lon :groups groups :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
     ]
     ;
     result
@@ -117,7 +150,8 @@
 (defn OnGetUnits [response]
   (swap! shelterscore/app-state assoc-in [:devices] (map map-unit response) )
   ;(reqsecurities)
-  (put! ch 42)
+  (swap! app-state assoc-in [:state] 0)
+  (reqgroups)
 )
 
 
@@ -183,7 +217,6 @@
 
 (defn OnGetUsers [response]
   (swap! shelterscore/app-state assoc-in [:users] (map map-user response) )
-  (swap! app-state assoc-in [:state] 0)
   ;(swap! shelterscore/app-state assoc-in [:view] 1 )
   ;(aset js/window "location" "#/positions")
   (reqroles)
