@@ -363,11 +363,11 @@
   )
   (render
     [_]
-    (dom/div {:className "container" :style {:width "100%" :padding-top "283px" :backgroundImage "url(/images/loginbackground.png)" :backgroundSize "cover"}  }
+    (dom/div {:className "container" :style {:width "100%" :padding-top "10px" :backgroundImage "url(/images/loginbackground.png)" :backgroundSize "224px 105px" :backgroundRepeat "no-repeat" :backgroundPosition "top center"}  }
       ;(om/build t5pcore/website-view data {})
       ;(dom/h1 "Login Page")
       ;(dom/img {:src "images/LogonBack.jpg" :className "img-responsive company-logo-logon"})
-      (dom/form {:className "form-signin"}
+      (dom/form {:className "form-signin" :style {:padding-top "150px"}}
         (dom/input #js {:type "text" :ref "txtUserName"
            :defaultValue  settings/demouser  :className "form-control" :placeholder "User Name" } )
         (dom/input {:className "form-control" :ref "txtPassword" :id "txtPassword" :defaultValue settings/demopassword :type "password"  :placeholder "Password"} )

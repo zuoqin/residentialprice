@@ -701,8 +701,9 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} "Beeper")
+          (dom/a {:className "navbar-brand"}
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            ;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
 
@@ -858,8 +859,9 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} "Beeper")
+          (dom/a {:className "navbar-brand"}
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
 
@@ -1049,8 +1051,9 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} "Beeper")
+          (dom/a {:className "navbar-brand"}
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
 
@@ -1213,8 +1216,9 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} "Beeper")
+          (dom/a {:className "navbar-brand"}
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
 
@@ -1369,7 +1373,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a  (assoc stylehome :className "navbar-brand")
+          (dom/a {:className "navbar-brand"}
             (dom/span {:id "pageTitle"} (:text (:current @data)) )
           )
         )
@@ -1483,8 +1487,9 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a  (assoc stylehome :className "navbar-brand")
-            (dom/span {:id "pageTitle"} "Beeper")
+          (dom/a {:className "navbar-brand"} 
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
 

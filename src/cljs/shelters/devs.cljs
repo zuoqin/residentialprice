@@ -62,7 +62,7 @@
 )
 
 (defn goDevice [devid]
-  (aset js/window "location" (str "#/devdetail/" devid) )
+  ;;(aset js/window "location" (str "#/devdetail/" devid) )
   (swap! shelters/app-state assoc-in [:view] 7)
 )
 

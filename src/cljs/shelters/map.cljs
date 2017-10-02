@@ -184,28 +184,21 @@
     wnd1  (str "<div id=\"content\">"
       "<div id=\"siteNotice\">"
       "</div>"
-      "<h1 id=\"firstHeading\" class=\"firstHeading\">Uluru</h1>"
+      "<h1 id=\"firstHeading\" class=\"firstHeading\">"
+      (:name device)
+      "</h1>"
       "<div id=\"bodyContent\">"
-      "<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large "
-      "sandstone rock formation in the southern part of the "
-      "Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) "
-      "south west of the nearest large town, Alice Springs; 450&#160;km "
-      "(280&#160;mi) by road. Kata Tjuta and Uluru are the two major "
-      "features of the Uluru - Kata Tjuta National Park. Uluru is "
-      "sacred to the Pitjantjatjara and Yankunytjatjara, the "
-      "Aboriginal people of the area. It has many springs, waterholes, "
-      "rock caves and ancient paintings. Uluru is listed as a World "
-      "Heritage Site.</p>"
+      "<p><b>Controller: </b>" (:id device) "</p>"
       "<p>" (:address device) ", <a href=\"/#/devdetail/" (:id device) "\">"
-      "Go to visit device</a>"
-      "(last visited June 22, 2009).</p>"
+      "Go to device</a>"
+      "</p>"
       "</div>"
       "</div>")
 
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
     ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "parking_lot_maps.png" "library_maps.png")) "map" (:map @app-state) "title" (:name device)})
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "red_point.png" "green_point.png")) "map" (:map @app-state) "title" (:name device)})
     marker (js/google.maps.Marker. marker-options)
     ]
     (jquery
