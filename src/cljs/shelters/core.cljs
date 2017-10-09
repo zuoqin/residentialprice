@@ -713,7 +713,7 @@
             (dom/li
               (dom/a {:href "/#/map"}
                 (dom/i {:className "fa fa-map-o"})
-                "Map View"
+                "מפה"
               )
             )
             (dom/li
@@ -726,7 +726,7 @@
             (dom/li
               (dom/a {:href "/#/users"}
                 (dom/i {:className "fa fa-key"})
-                "Users"
+                "משתמשים והרשאות"
               )
             )
 
@@ -734,7 +734,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Management"
+                "ניהול מערכת"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -742,7 +742,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
-                        "Groups"
+                        "ניהול קבוצות"
                       )
                     )
                   )
@@ -753,7 +753,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
-                        "Devices"
+                        " מאגר יחידות"
                       )
                     )
                   )
@@ -764,7 +764,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
-                        "Contacts"
+                        "אנשי קשר"
                       )
                     )
                   )
@@ -775,7 +775,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/polygons" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "ניהול Polygons"
                       )
                     )
                   )
@@ -789,7 +789,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Reports"
+                "דו״חות"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -797,7 +797,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
-                        "Groups"
+                        "דו״ח זמינות יחידות"
                       )
                     )
                   )
@@ -808,7 +808,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
-                        "Devices"
+                        "דו״ח תרגולים"
                       )
                     )
                   )
@@ -819,7 +819,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
-                        "Contacts"
+                        "דו״ח דיוור התראות"
                       )
                     )
                   )
@@ -830,7 +830,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "דו״ רעידות אדמה"
                       )
                     )
                   )
@@ -865,13 +865,12 @@
           )          
         )
 
-
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
               (dom/a {:href "/#/map"}
                 (dom/i {:className "fa fa-map-o"})
-                "Map View"
+                "מפה"
               )
             )
             (dom/li
@@ -884,7 +883,7 @@
             (dom/li
               (dom/a {:href "/#/users"}
                 (dom/i {:className "fa fa-key"})
-                "Users"
+                "משתמשים והרשאות"
               )
             )
 
@@ -892,7 +891,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Management"
+                "ניהול מערכת"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -900,7 +899,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
-                        "Groups"
+                        "ניהול קבוצות"
                       )
                     )
                   )
@@ -911,7 +910,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
-                        "Devices"
+                        " מאגר יחידות"
                       )
                     )
                   )
@@ -922,7 +921,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
-                        "Contacts"
+                        "אנשי קשר"
                       )
                     )
                   )
@@ -933,7 +932,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/polygons" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "ניהול Polygons"
                       )
                     )
                   )
@@ -947,7 +946,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Reports"
+                "דו״חות"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -955,7 +954,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
-                        "Groups"
+                        "דו״ח זמינות יחידות"
                       )
                     )
                   )
@@ -966,7 +965,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
-                        "Devices"
+                        "דו״ח תרגולים"
                       )
                     )
                   )
@@ -977,7 +976,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
-                        "Contacts"
+                        "דו״ח דיוור התראות"
                       )
                     )
                   )
@@ -988,7 +987,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "דו״ רעידות אדמה"
                       )
                     )
                   )
@@ -1042,7 +1041,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top navbar-inverse" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1057,13 +1056,12 @@
           )          
         )
 
-
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
               (dom/a {:href "/#/map"}
                 (dom/i {:className "fa fa-map-o"})
-                "Map View"
+                "מפה"
               )
             )
             (dom/li
@@ -1076,7 +1074,7 @@
             (dom/li
               (dom/a {:href "/#/users"}
                 (dom/i {:className "fa fa-key"})
-                "Users"
+                "משתמשים והרשאות"
               )
             )
 
@@ -1084,7 +1082,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Management"
+                "ניהול מערכת"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -1092,7 +1090,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
-                        "Groups"
+                        "ניהול קבוצות"
                       )
                     )
                   )
@@ -1103,7 +1101,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
-                        "Devices"
+                        " מאגר יחידות"
                       )
                     )
                   )
@@ -1114,7 +1112,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
-                        "Contacts"
+                        "אנשי קשר"
                       )
                     )
                   )
@@ -1125,7 +1123,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/polygons" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "ניהול Polygons"
                       )
                     )
                   )
@@ -1139,7 +1137,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Reports"
+                "דו״חות"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -1147,7 +1145,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
-                        "Groups"
+                        "דו״ח זמינות יחידות"
                       )
                     )
                   )
@@ -1158,7 +1156,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
-                        "Devices"
+                        "דו״ח תרגולים"
                       )
                     )
                   )
@@ -1169,7 +1167,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
-                        "Contacts"
+                        "דו״ח דיוור התראות"
                       )
                     )
                   )
@@ -1180,7 +1178,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "דו״ רעידות אדמה"
                       )
                     )
                   )
@@ -1188,15 +1186,8 @@
               )
             )
           )        
-        ) 
-
-
-
+        )
       )
-
-
-
-
     )
   )
 )
@@ -1222,13 +1213,12 @@
           )          
         )
 
-
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
               (dom/a {:href "/#/map"}
                 (dom/i {:className "fa fa-map-o"})
-                "Map View"
+                "מפה"
               )
             )
             (dom/li
@@ -1241,7 +1231,7 @@
             (dom/li
               (dom/a {:href "/#/users"}
                 (dom/i {:className "fa fa-key"})
-                "Users"
+                "משתמשים והרשאות"
               )
             )
 
@@ -1249,7 +1239,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Management"
+                "ניהול מערכת"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -1257,7 +1247,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
-                        "Groups"
+                        "ניהול קבוצות"
                       )
                     )
                   )
@@ -1268,7 +1258,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
-                        "Devices"
+                        " מאגר יחידות"
                       )
                     )
                   )
@@ -1279,7 +1269,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
-                        "Contacts"
+                        "אנשי קשר"
                       )
                     )
                   )
@@ -1290,7 +1280,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/polygons" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "ניהול Polygons"
                       )
                     )
                   )
@@ -1304,7 +1294,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Reports"
+                "דו״חות"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -1312,7 +1302,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
-                        "Groups"
+                        "דו״ח זמינות יחידות"
                       )
                     )
                   )
@@ -1323,7 +1313,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
-                        "Devices"
+                        "דו״ח תרגולים"
                       )
                     )
                   )
@@ -1334,7 +1324,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
-                        "Contacts"
+                        "דו״ח דיוור התראות"
                       )
                     )
                   )
@@ -1345,14 +1335,14 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "דו״ רעידות אדמה"
                       )
                     )
                   )
                 )
               )
             )
-          )        
+          )
         )
       )
     )
@@ -1487,19 +1477,18 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"} 
+          (dom/a {:className "navbar-brand"}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
-
 
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
               (dom/a {:href "/#/map"}
                 (dom/i {:className "fa fa-map-o"})
-                "Map View"
+                "מפה"
               )
             )
             (dom/li
@@ -1512,7 +1501,7 @@
             (dom/li
               (dom/a {:href "/#/users"}
                 (dom/i {:className "fa fa-key"})
-                "Users"
+                "משתמשים והרשאות"
               )
             )
 
@@ -1520,7 +1509,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Management"
+                "ניהול מערכת"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -1528,7 +1517,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
-                        "Groups"
+                        "ניהול קבוצות"
                       )
                     )
                   )
@@ -1539,7 +1528,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
-                        "Devices"
+                        " מאגר יחידות"
                       )
                     )
                   )
@@ -1550,7 +1539,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
-                        "Contacts"
+                        "אנשי קשר"
                       )
                     )
                   )
@@ -1561,7 +1550,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/polygons" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "ניהול Polygons"
                       )
                     )
                   )
@@ -1575,7 +1564,7 @@
               (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
-                "Reports"
+                "דו״חות"
               )
               (dom/ul {:id "login-dp2" :className "dropdown-menu"}
                 (dom/li
@@ -1583,7 +1572,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/#/roles" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
-                        "Groups"
+                        "דו״ח זמינות יחידות"
                       )
                     )
                   )
@@ -1594,7 +1583,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
-                        "Devices"
+                        "דו״ח תרגולים"
                       )
                     )
                   )
@@ -1605,7 +1594,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
-                        "Contacts"
+                        "דו״ח דיוור התראות"
                       )
                     )
                   )
@@ -1616,14 +1605,14 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
-                        "Polygons"
+                        "דו״ רעידות אדמה"
                       )
                     )
                   )
                 )
               )
             )
-          )        
+          )
         )
       )
     )
