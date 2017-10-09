@@ -692,7 +692,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top navbar-inverse" :role "navigation"}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1042,7 +1042,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top navbar-inverse" :role "navigation"}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
