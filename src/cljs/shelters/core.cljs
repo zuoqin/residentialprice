@@ -132,20 +132,23 @@
   (swap! app-state assoc-in [:view] 6)
 )
 
-(defn goAssets [e]
-  (aset js/window "location" "#/assets")
-  (swap! app-state assoc-in [:view] 7)
+(defn goGroups [e]
+  (aset js/window "location" "#/groups")
+  (set! (.-title js/document) "ניהול קבוצות")
+  (swap! app-state assoc-in [:view] 8)
 )
 
 (defn goMap [e]
   (aset js/window "location" "#/map")
+  (set! (.-title js/document) "מפה")
   (swap! app-state assoc :state 1)
   (swap! app-state assoc-in [:view] 2)
 )
 
-(defn goPositions2 [e]
-  (aset js/window "location" "#/positions2")
-  (swap! app-state assoc-in [:view] 1)
+(defn goDashboard [e]
+  (aset js/window "location" "/#/dashboard")
+  (set! (.-title js/document) "Dashboard")
+  (swap! app-state assoc-in [:view] 8)
 )
 
 (defn goUsers [data]
@@ -716,13 +719,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map"}
+              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard"}
+              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -745,7 +748,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -758,7 +761,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
+                        "מאגר יחידות"
                       )
                     )
                   )
@@ -873,13 +876,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map"}
+              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard"}
+              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -902,7 +905,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1064,13 +1067,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map"}
+              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard"}
+              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1093,7 +1096,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1197,6 +1200,161 @@
   )
 )
 
+(defcomponent dashboard-navigation-view [data owner]
+  (render [_]
+    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
+      stylehome {:style {:margin-top "10px"} }
+      ]
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+        (dom/div {:className "navbar-header"}
+          (dom/button {:type "button" :className "navbar-toggle"
+            :data-toggle "collapse" :data-target ".navbar-collapse"}
+            (dom/span {:className "sr-only"} "Toggle navigation")
+            (dom/span {:className "icon-bar"})
+            (dom/span {:className "icon-bar"})
+            (dom/span {:className "icon-bar"})
+          )
+          (dom/a {:className "navbar-brand"}
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            ;;(dom/span {:id "pageTitle"} "Beeper")
+          )          
+        )
+
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
+            (dom/li
+              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
+                (dom/i {:className "fa fa-map-o"})
+                "מפה"
+              )
+            )
+            (dom/li
+              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
+                (dom/i {:className "fa fa-dashboard"})
+                "Dashboard"
+              )
+            )
+
+            (dom/li
+              (dom/a {:href "/#/users"}
+                (dom/i {:className "fa fa-key"})
+                "משתמשים והרשאות"
+              )
+            )
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "ניהול מערכת"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                        (dom/i {:className "fa fa-users"})
+                        "ניהול קבוצות"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/devices" :className "menu_item"}
+                        (dom/i {:className "fa fa-hdd-o"})
+                        " מאגר יחידות"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/contacts" :className "menu_item"}
+                        (dom/i {:className "fa fa-phone"})
+                        "אנשי קשר"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/polygons" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "ניהול Polygons"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+
+
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-archive"})
+                "דו״חות"
+              )
+              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/#/reportunits" :className "menu_item"}
+                        (dom/i {:className "fa fa-line-chart"})
+                        "דו״ח זמינות יחידות"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                        (dom/i {:className "fa fa-bullhorn"})
+                        "דו״ח תרגולים"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                        (dom/i {:className "fa fa-envelope-o"})
+                        "דו״ח דיוור התראות"
+                      )
+                    )
+                  )
+                )
+
+                (dom/li
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                        (dom/i {:className "fa fa-globe"})
+                        "דו״ רעידות אדמה"
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )        
+        )
+      )
+    )
+  )
+)
 
 (defcomponent userdetail-navigation-view [data owner]
   (render [_]
@@ -1221,13 +1379,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map"}
+              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard"}
+              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1250,7 +1408,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1491,13 +1649,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map"}
+              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard"}
+              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1520,7 +1678,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1675,4 +1833,10 @@
   [data owner] 
   ;(.log js/console "One is found in view")
   (devdetail-navigation-view data owner)
+)
+
+(defmethod website-view 8
+  [data owner] 
+  ;(.log js/console "One is found in view")
+  (dashboard-navigation-view data owner)
 )

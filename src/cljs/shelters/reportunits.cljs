@@ -83,7 +83,7 @@
                                    :backgroundColor "#F08080"}]}}
     ]
     (set! (.-defaultFontSize (.-global (.-defaults js/Chart)))  36)
-    ;(set! (.-height (.getElementById js/document "rev-chartjs")) 400)
+    (set! (.-title js/document) "דו״ח זמינות יחידות")
     (js/Chart. context (clj->js chart-data))
   )
 )

@@ -64,6 +64,7 @@
 (defn goDevice [devid]
   ;;(aset js/window "location" (str "#/devdetail/" devid) )
   (swap! shelters/app-state assoc-in [:view] 7)
+  (set! (.-title js/document) (str "יחידה:" devid) )
 )
 
 (defcomponent showdevices-view [data owner]
@@ -76,9 +77,8 @@
           (dom/td
             (dom/input { :type "checkbox" :className "device_checkbox" :value (:id item)})
           )
-
           (dom/td
-            (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice e))}
+            (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
               (dom/i {:className "fa fa-hdd-o"})
               (:id item)
             )
@@ -249,12 +249,9 @@
           ;     ;   (dom/span {:className "badge" :style {:float "right" }} (str (:msgcount data))  )
           ;     ; )
           ;   )
-          ; )
-          
+          ; )          
         )
       ) 
-
-
     )
   )
 )
