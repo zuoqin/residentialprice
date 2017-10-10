@@ -1,4 +1,5 @@
 (ns shelters.reportunits (:use [net.unit8.tower :only [t]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -8,7 +9,7 @@
             [cljsjs.chartjs]
 
             [om-bootstrap.button :as b]
-
+            [cljs.core.async :refer [put! dropping-buffer chan take! <!]]
             [shelters.settings :as settings]
   )
   (:import goog.History)
@@ -17,6 +18,9 @@
 (enable-console-print!)
 
 (defonce app-state (atom  {:groups []}))
+
+(def jquery (js* "$"))
+(def ch (chan (dropping-buffer 2)))
 
 
 (defn OnGetGroups [response]
@@ -49,23 +53,38 @@
   )
 )
 
+;(def theChart (js/Chart.))
 
-(defcomponent showreport-view [data owner]
-  (render
-    [_]
-    (let [
-      context (.getContext (.getElementById js/document "rev-chartjs") "2d")
-      chart-data {:type "bar"
-                  :data {:labels ["2012" "2013" "2014" "2015" "2016"]
-                         :datasets [{:data [5 10 15 20 25]
-                                     :label "Rev in MM"
-                                     :backgroundColor "#90EE90"}
-                                    {:data [3 6 9 12 15]
-                                     :label "Cost in MM"
-                                     :backgroundColor "#F08080"}]}}
-      ]
-      (js/Chart. context (clj->js chart-data))
-    )
+(defn setPieChart[]
+  (let [
+    context (.getContext (.getElementById js/document "rev-chartjs") "2d")
+    chart-data {:type "bar"
+                :options {
+                  :legend {
+                    :display true
+                    :labels {
+                      :fontSize 72
+                    }
+                  }
+                  :scales {
+                    :xAxes [
+                      {
+                        :fontSize 72
+                      }
+                    ] 
+                  }
+                }
+                :data {:labels ["2012" "2013" "2014" "2015" "2016"]
+                       :datasets [{:data [5 10 15 20 25]
+                                   :label "Rev in MM"
+                                   :backgroundColor "#90EE90"}
+                                  {:data [3 6 9 12 15]
+                                   :label "Cost in MM"
+                                   :backgroundColor "#F08080"}]}}
+    ]
+    (set! (.-defaultFontSize (.-global (.-defaults js/Chart)))  36)
+    ;(set! (.-height (.getElementById js/document "rev-chartjs")) 400)
+    (js/Chart. context (clj->js chart-data))
   )
 )
 
@@ -76,7 +95,34 @@
   (swap! shelters/app-state assoc-in [:current] 
     "Groups"
   )
+  (put! ch 46)
 )
+
+(defn setcontrols [value]
+  (case value
+    46 (setPieChart)
+  )
+)
+
+(defn initqueue []
+  (doseq [n (range 1000)]
+    (go ;(while true)
+      (take! ch(
+        fn [v] (
+           ;.log js/console v
+           ;(setcalculatedfields) 
+           setcontrols v
+           
+           ;(.log js/console v)  
+          )
+        )
+      )
+    )
+  )
+)
+
+
+(initqueue)
 
 
 
@@ -90,9 +136,8 @@
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
-        )
-          (dom/div {:id "rev-chartjs"}
+        (dom/div  {:className "panel panel-primary" :style {:margin-top "70px" :direction "ltr"}}
+          (dom/canvas {:id "rev-chartjs" :width "400" :height "400" :style {:width "400px !important" :height "400px !important"}}
             ;(om/build showreport-view  data {})
           )          
         )

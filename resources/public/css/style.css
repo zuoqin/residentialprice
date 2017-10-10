@@ -8,6 +8,11 @@ html, body {
   padding: 0;
 }
 
+#rev-chartjs{
+  width: 400px !important;
+  height: 400px !important;
+}
+
 #legend {
   font-family: Arial, sans-serif;
   background: #fff;
