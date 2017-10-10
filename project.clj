@@ -24,7 +24,9 @@
                  [incanter "1.5.7"]
                  [net.unit8/tower-cljs "0.1.0"]   ;;internalization technique
                  [clj-http "2.3.0"]
-                 [org.clojure/data.json "0.2.6"]                 
+                 [org.clojure/data.json "0.2.6"] 
+
+                 [cljsjs/chartjs "2.6.0-0"]
                 ]
 
   :plugins [[lein-cljsbuild "1.1.3"]

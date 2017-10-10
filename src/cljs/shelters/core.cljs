@@ -127,6 +127,11 @@
   (swap! app-state assoc-in [:view] 6)
 )
 
+(defn goGroupDetail [e]
+  ;(aset js/window "location" "#/portfolios/0")
+  (swap! app-state assoc-in [:view] 6)
+)
+
 (defn goAssets [e]
   (aset js/window "location" "#/assets")
   (swap! app-state assoc-in [:view] 7)
@@ -740,7 +745,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -795,7 +800,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -897,7 +902,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -952,7 +957,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -1088,7 +1093,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1143,7 +1148,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -1245,7 +1250,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1300,7 +1305,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -1515,7 +1520,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/groups" :className "menu_item"}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1570,7 +1575,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item"}
+                      (dom/a {:href "/#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )

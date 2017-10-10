@@ -13,7 +13,13 @@
             [shelters.roles :as roles]
             [shelters.devs :as devs]
             [shelters.devdetail :as devdetail]
+
+            [shelters.groups :as groups]
+            [shelters.groupdetail :as groupdetail]
             [shelters.userdetail :as userdetail]
+
+            [shelters.reportunits :as reportunits]
+
             [shelters.roledetail :as roledetail]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
