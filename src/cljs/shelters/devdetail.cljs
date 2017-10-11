@@ -26,7 +26,8 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-(defonce app-state (atom  {:login "" :password "" :roles [{:name "admin"} {:name "manager"} {:name "user"}] :isinsert false :role "admin" :view 1 :current "Device Detail" :device nil} ))
+
+(defonce app-state (atom  {:device {} :isinsert false :view 1 :current "Device Detail"} ))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
@@ -325,7 +326,7 @@
       styleprimary {:style {:margin-top "70px"}}
       ]
       (dom/div
-        (om/build shelters/website-view data {})
+        (om/build shelters/website-view shelters/app-state {})
         (dom/div {:style {:margin-top "70px"}})
         (dom/a {:onClick (fn[e] (.back (.-history js/window))) :className "btn btn-default btn-sm pull-right" :style {:margin-top "15px" :margin-left "5px"}} "Back"
           (dom/i {:className "fa fa-arrow-circle-right" :aria-hidden "true"})
@@ -333,13 +334,21 @@
         (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "15px"} :onClick (fn[e] (.print js/window))}
           (dom/i {:className "fa fa-print" :aria-hidden "true"})
         )
-        (dom/h3
-          (dom/i {:className "fa fa-cube"})
-          (str "Device Info - " (:id (:device @app-state)) )
+        (if (:isinsert @data)
+
+          (dom/h3
+            (dom/i {:className "fa fa-cube"})
+            (str "Device Info - " (:id (:device @app-state)) )
+          )
         )
+
         (dom/div {:className "col-xs-3"}
-          (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}} 
-            (dom/h5 {:style {:display:inline true}} (str "Device ID: " (:id (:device @app-state))))
+          (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}}
+             (dom/h5 "Controller Id: " 
+               (dom/input {:id "id" :type "text" :disabled (if (:isinsert @data) false true) :onChange (fn [e] (handleChange e)) :value (:id (:device @data))} )
+
+             )          
+
             (dom/h5 {:style {:display:inline true}} "Status: "
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
             )
@@ -388,7 +397,24 @@
     ]
     
     (om/root devdetail-page-view
-             shelters/app-state
+             app-state
+             {:target (. js/document (getElementById "app"))})
+
+  )
+)
+
+
+(sec/defroute devdetail-new-page "/devdetail" {}
+  (
+    (swap! app-state assoc-in [:device]  {} ) 
+    (swap! app-state assoc-in [:isinsert]  true )
+    (swap! shelters/app-state assoc-in [:view] 7) 
+    ;(swap! app-state assoc-in [:group ]  "group" ) 
+    ;(swap! app-state assoc-in [:password] "" )
+
+
+    (om/root devdetail-page-view
+             app-state
              {:target (. js/document (getElementById "app"))})
 
   )

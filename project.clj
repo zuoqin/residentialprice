@@ -13,7 +13,7 @@
                  [ring.middleware.logger "0.5.0"]
                  [compojure "1.5.0"] 
                  [environ "1.0.3"]
-
+                 [jarohen/chord "0.8.1"]
                  [prismatic/om-tools "0.4.0"]
                  [secretary "1.2.3"]   
               

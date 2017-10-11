@@ -1,5 +1,5 @@
 (ns shelters.login  (:use [net.unit8.tower :only [t]])
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -25,8 +25,8 @@
             [om-bootstrap.input :as i]
             [om-bootstrap.button :as b]
             [om-bootstrap.panel :as p]
-	    
-            [cljs.core.async :refer [put! dropping-buffer chan take! <!]]
+	    [chord.client :refer [ws-ch]]
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! >!]]
   )
   (:import goog.History)
 )
@@ -104,10 +104,10 @@
   (let [
     id (str (get group "groupId"))
     name (get group "groupName")
-    parent (get group "parentGroupId")
+    parents (get group "parentGroups")
 
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id id :name name :parent parent}
+    result {:id id :name name :parents parents}
     ]
     ;
     result
@@ -130,7 +130,7 @@
        {:handler OnGetGroups
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
+                  :token (str (:token  (:token @shelterscore/app-state))) }
        })
 )
 
@@ -138,15 +138,16 @@
 (defn map-unit [unit]
   (let [
     id (str (get unit "controllerId"))
-    name (get unit "name")
+    name (get unit "controllerId")
     status (case (get unit "status") "Normal" 0 3)
     lat (get unit "latitude")
     lon (get unit "longitude")
     groups (get unit "parentGroups")
     unitid (str (get unit "unitId"))    
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
+    phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id id :city 3 :name name :status status :address address :lat lat :lon lon :groups groups :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    result {:id unitid :city 3 :name name :status status :address address :lat lat :lon lon :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
     ]
     ;
     result
@@ -169,7 +170,7 @@
        {:handler OnGetUnits
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
+                  :token (str (:token  (:token @shelterscore/app-state))) }
        })
 )
 
@@ -203,7 +204,7 @@
        {:handler OnGetRoles
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
+                  :token (str (:token  (:token @shelterscore/app-state))) }
        })
 )
 
@@ -235,8 +236,9 @@
        {:handler OnGetUsers
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :Authorization (str "Bearer " (:token  (:token @shelterscore/app-state))) }
-       })
+                  :token (str (:token  (:token @shelterscore/app-state)))}
+       }
+  )
 )
 
 
@@ -310,11 +312,13 @@
   (swap! shelterscore/app-state assoc-in [:selecteduser] username)
 
 
-  (POST (str settings/apipath "verifyUser") {:handler OnLogin
-                                            :error-handler onLoginError
-                                            :headers {:content-type "application/json"}
-                                            :body (str "\"username\":\"" username "\",\"password\":\"" password "\"") 
-                                            })
+  (POST (str settings/apipath "verifyUser")
+    {:handler OnLogin
+     :error-handler onLoginError
+     :format :json
+     :params {:userName "beeper" :password "123456"} 
+    }
+  )
 )
 
 
@@ -442,6 +446,5 @@
 
   ;;(aset js/window "location" "#/login")
 )
-
 
 (main)

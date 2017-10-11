@@ -15,7 +15,7 @@
 ;;(def apipath "https://api.sberpb.com/")
 
 
-;;(def apipath "http://localhost:3000/")
-(def apipath "https://virtserver.swaggerhub.com/Inocodes/Shelters/1.0.0/")
+(def apipath "http://52.14.180.219:5050/")
+;(def apipath "https://virtserver.swaggerhub.com/Inocodes/Shelters/1.0.0/")
 (def demouser "beeper")
-(def demopassword "")
+(def demopassword "123456")

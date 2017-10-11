@@ -9,7 +9,8 @@
             [shelters.settings :as settings]
             [om-bootstrap.button :as b]
 
-            [cljs.core.async :refer [put! dropping-buffer chan take! <!]]
+	    [chord.client :refer [ws-ch]]
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! >!]]
 
             [cljs-time.format :as tf]
             [cljs-time.coerce :as tc]
@@ -23,7 +24,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:map nil}))
+(defonce app-state (atom  {:map nil :markers []}))
 
 (def jquery (js* "$"))
 
@@ -36,7 +37,7 @@
 (def iconBase "/images/")
 
 (defn map-dev-node [dev]
-  {:text (:id dev)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} }
+  {:text (:name dev) :unitid (:id dev) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} }
 )
 
 
@@ -98,11 +99,6 @@
 (defn buildCities [id]
   (let [
     children (filter (fn [x] (if (= id (:parent x)) true false)) (:groups @shelters/app-state))
-
-
-    
-
- 
     nodes (into [] (map (fn [x] (
       let [
         childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
@@ -116,7 +112,7 @@
 )
 
 (defn buildTreeGroups []
-  (do (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities "00000000-0000-9999-0000-000000000000") (buildUnits "00000000-0000-9999-0000-000000000000")))}]}))
+  (do (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
 )
 
 
@@ -188,7 +184,7 @@
       (:name device)
       "</h1>"
       "<div id=\"bodyContent\">"
-      "<p><b>Controller: </b>" (:id device) "</p>"
+      "<p><b>Controller: </b>" (:name device) "</p>"
       "<p>" (:address device) ", <a href=\"/#/devdetail/" (:id device) "\">"
       "Go to device</a>"
       "</p>"
@@ -198,27 +194,27 @@
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
     ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "red_point.png" "green_point.png")) "map" (:map @app-state) "title" (:name device)})
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "red_point.png" "green_point.png")) "map" (:map @app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
     ]
     (jquery
       (fn []
         (-> marker
           (.addListener "click"
-            (fn []
-              
+            (fn []              
               (.open infownd (:map @app-state) marker)
             )
           )
         )
       )
     )
+    (swap! app-state assoc-in [:markers] (conj (:markers @app-state) marker))
   )
 )
 
 (defn addMarkers []
   (let[
-    
+       tr1 (swap! app-state assoc-in [:markers] [])
     ]
     (doall (map addMarker (:devices @shelters/app-state)))
   )
@@ -266,7 +262,7 @@
              ]
              ;(.log js/console res)
              ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
-             (if (= 0 (get res "parentId")) (setcenterbycity (get res "text")) (setcenterbydevice (get res "text")))
+             (if (= 0 (get res "parentId")) (setcenterbycity (get res "text")) (setcenterbydevice (get res "unitid")))
              ;(gotoSelection (first res)) 
             )
           )
@@ -343,3 +339,64 @@
    (om/root map-view
             shelters/app-state
             {:target (. js/document (getElementById "app"))}))
+
+
+
+;; (go
+;;   (let [{:keys [ws-channel error]} (<! (ws-ch "ws://52.14.180.219:5060"))]
+;;     (if-not error
+;;       (>! ws-channel "Hello server from client!")
+;;       (js/console.log "Error:" (pr-str error)))))
+
+(defn updateMarkerIcon [marker icon]
+  (let []
+  )
+)
+
+(defn updateUnit [unit id newunit]
+  (if (= (:id unit) id)
+    (assoc unit :status (:status newunit))
+    unit
+  )
+)
+
+(defn processMessage [notification]
+  (let [
+    unitid (get notification "UnitId")
+    status (get notification "Status")
+    ;tr1 (.log js/console (str "unitid in Notification: " unitid))
+    marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
+
+    newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
+    
+    ]
+    (.setIcon marker (str iconBase (case status 3 "red_point.png" "green_point.png")))
+    (swap! shelters/app-state assoc-in [:devices] newunits )
+  )
+)
+
+(defn processNotification [notifications]
+  (let [
+      tr1 (js/console.log "Hooray! Message:" (pr-str notifications))
+    ]
+    (doall (map processMessage notifications))
+  )
+)
+
+
+(defn initsocket []
+  (go
+    (let [
+        {:keys [ws-channel]} (<! (ws-ch "ws://52.14.180.219:5060" {:format :json}))
+        {:keys [message error]} (<! ws-channel)
+      ]
+      (if error
+        (js/console.log "Uh oh:" error)
+        (processNotification message)      
+      )
+      (initsocket)
+    )
+  )
+)
+
+(initsocket)

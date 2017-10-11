@@ -148,6 +148,11 @@
           (dom/div {:className "col-md-12"}
             (dom/div {:className "row"}
               (dom/div
+                (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
+              .-location
+              (set! "#/devdetail")))} "Add New")
+              )
+              (dom/div
                 (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
                   (dom/i {:className "fa fa-info-circle"}) "Help"
                 )
