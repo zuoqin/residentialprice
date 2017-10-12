@@ -54,16 +54,32 @@
 
 (defn getChildUnits [id children]
   (let [
-    childgroups (filter (fn [x] (if (= id (:parent x)) true false)) (:groups @shelters/app-state))
-      
+    childgroups (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @shelters/app-state))
+    ;(filter (fn [x] (if (> (.indexOf (:parents x) id) -1) true false)) (:groups @shelters/app-state))
+
+    
     childs (concat children (buildUnits id))
-    childdevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) childs)
+        
+    childdevs (
+      loop [result [] groups childgroups]
+        (if (seq groups)
+          (let [
+            thegroup (first groups)
+            tr1 (.log js/console (str "Current group: " (:name thegroup)))
+            ]
+            (recur (conj result (getChildUnits (:id thegroup) [])) (rest groups))
+          )
+          result
+        )
+    )
+    ;; childdevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) childs)
 
-    nextchildunits (distinct (flatten (map (fn [x] (buildUnits (:id x))) childgroups)))
+    ;; nextchildunits (distinct (flatten (map (fn [x] (buildUnits (:id x))) childgroups)))
 
-    nextchilddevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) nextchildunits)
+    ;; nextchilddevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) nextchildunits)
     ]
-    (distinct (flatten (concat nextchilddevs childdevs)))
+
+    (distinct (flatten (concat childs childdevs)))
     ;childgroups
     ;(if (> (count childgroups) 0) (concat ))
   )
@@ -71,10 +87,8 @@
 
 (defn calcGroupLatLon [id]
   (let [
-
-
     ;tr1 (.log js/console (str "id in calcGroupLatLon=" id))
-    units (getChildUnits id [])
+    units (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:unitid x)) true false)) (:devices @shelters/app-state)))) (getChildUnits id [])) 
  
     minlat (apply min (map (fn [x] (:lat x)) units))
     maxlat (apply max (map (fn [x] (:lat x)) units))
@@ -98,12 +112,12 @@
 
 (defn buildCities [id]
   (let [
-    children (filter (fn [x] (if (= id (:parent x)) true false)) (:groups @shelters/app-state))
+    children (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @shelters/app-state))
     nodes (into [] (map (fn [x] (
       let [
         childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
         ]
-        (if (> (count childs) 0) {:text (:name x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes childs} {:text (:name x)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false}})
+        (if (> (count childs) 0) {:text (:name x) :groupid (:id x) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes childs} {:text (:name x) :groupid (:id x) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false}})
       ) ) children))
     ;tr1 (.log js/console nodes)
     ]
@@ -222,12 +236,10 @@
 
 (defn setcenterbycity [city]
   (let [
-    
+    thecity (first (filter (fn [x] (if (= (:id x) city) true false)) (:groups @shelters/app-state)))
 
-    thecity (first (filter (fn [x] (if (= (:name x) city) true false)) (:groups @shelters/app-state)))
-
-    latlon (calcGroupLatLon (:id thecity))
-    ;tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
+    latlon (calcGroupLatLon (:id thecity)) ;{:lat 32.08088 :lon 34.78057}
+    tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
     tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) }  )
     ]
     (.panTo (:map @app-state) (google.maps.LatLng. (:lat latlon), (:lon latlon)))
@@ -260,9 +272,9 @@
                res (js->clj data)
                
              ]
-             ;(.log js/console res)
+             (.log js/console res)
              ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
-             (if (= 0 (get res "parentId")) (setcenterbycity (get res "text")) (setcenterbydevice (get res "unitid")))
+             (if (nil? (get res "unitid")) (setcenterbycity (get res "groupid")) (setcenterbydevice (get res "unitid")))
              ;(gotoSelection (first res)) 
             )
           )

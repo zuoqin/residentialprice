@@ -55,7 +55,7 @@
 
 (defn comp-devs
   [dev1 dev2]
-  (if (> (compare (:id dev1) (:id dev2)) 0)
+  (if (> (compare (:name dev1) (:name dev2)) 0)
       false
       true
   )
@@ -80,7 +80,7 @@
           (dom/td
             (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
               (dom/i {:className "fa fa-hdd-o"})
-              (:id item)
+              (:name item)
             )
           )
 
@@ -117,7 +117,7 @@
             (:address item)
           )
         )
-        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (:id x) (:search @data)) true false)) (:devices @data )))
+        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (:name x) (:search @data)) true false)) (:devices @data )))
       )
     )
   )

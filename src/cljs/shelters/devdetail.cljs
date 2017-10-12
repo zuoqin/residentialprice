@@ -29,6 +29,29 @@
 
 (defonce app-state (atom  {:device {} :isinsert false :view 1 :current "Device Detail"} ))
 
+(defn comp-groups
+  [group1 group2]
+  ;(.log js/console group1)
+  ;(.log js/console group2)
+  (if (> (compare (:name group1) (:name group2)) 0)
+      false
+      true
+  )
+)
+
+(defn handle-chkbsend-change [e]
+  (let [
+      id (str/join (drop 9 (.. e -currentTarget -id)))
+      groups (:groups (:device @app-state))
+      newgroups (if (= true (.. e -currentTarget -checked)) (conj groups id) (remove (fn [x] (if (= x id) true false)) groups))
+    ]
+    (.stopPropagation e)
+    (.stopImmediatePropagation (.. e -nativeEvent) )
+    (swap! app-state assoc-in [:device :groups] newgroups)
+  )
+)
+
+
 (defn handleChange [e]
   ;(.log js/console e  )  
   ;(.log js/console "The change ....")
@@ -36,7 +59,7 @@
 )
 
 
-(defn OnDeleteUserError [response]
+(defn OnDeleteUnitError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
@@ -47,7 +70,7 @@
 )
 
 
-(defn OnDeleteUserSuccess [response]
+(defn OnDeleteUnitSuccess [response]
   (let [
       users (:users @shelters/app-state    )  
       newdevs (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
@@ -61,7 +84,7 @@
       (set! "#/users"))
 )
 
-(defn OnUpdateUserError [response]
+(defn OnUpdateUnitError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
@@ -72,7 +95,7 @@
 )
 
 
-(defn OnUpdateUserSuccess [response]
+(defn OnUpdateUnitSuccess [response]
   (let [
       users (:users @shelters/app-state    )  
       deluser (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
@@ -88,10 +111,10 @@
 )
 
 
-(defn deleteUser [login]
+(defn deleteUnit [login]
   (DELETE (str settings/apipath  "api/user?login=" login) {
-    :handler OnDeleteUserSuccess
-    :error-handler OnDeleteUserError
+    :handler OnDeleteUnitSuccess
+    :error-handler OnDeleteUnitError
     :headers {
       :content-type "application/json" 
       :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
@@ -100,19 +123,19 @@
 
 
 
-(defn updateUser []
-  (PUT (str settings/apipath  "api/user") {
-    :handler OnUpdateUserSuccess
-    :error-handler OnUpdateUserError
+(defn updateUnit []
+  (PUT (str settings/apipath  "updateUnit") {
+    :handler OnUpdateUnitSuccess
+    :error-handler OnUpdateUnitError
     :headers {
       :content-type "application/json" 
-      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+      :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state) }})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:name (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port 5000 :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
 )
 
 
-(defn OnCreateUserError [response]
+(defn OnCreateUnitError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
@@ -123,7 +146,7 @@
 )
 
 
-(defn OnCreateUserSuccess [response]
+(defn OnCreateUnitSuccess [response]
   (let [
       users (:users @shelters/app-state    )  
       adddev (into [] (conj users {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)} )) 
@@ -137,10 +160,10 @@
   )
 )
 
-(defn createUser []
+(defn createUnit []
   (POST (str settings/apipath  "api/user") {
-    :handler OnCreateUserSuccess
-    :error-handler OnCreateUserError
+    :handler OnCreateUnitSuccess
+    :error-handler OnCreateUnitError
     :headers {
       :content-type "application/json" 
       :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
@@ -180,7 +203,7 @@
 )
 
 
-(defn setNewUserValue [key val]
+(defn setNewUnitValue [key val]
   (swap! app-state assoc-in [(keyword key)] val)
 )
 
@@ -221,7 +244,7 @@
   )
 )
 
-(defn setUser []
+(defn setUnit []
   (let [
         users (:users @shelters/app-state)
         user (first (filter (fn [user] (if (= (:login @app-state) (:login user)  )  true false)) (:users @shelters/app-state )))
@@ -247,14 +270,14 @@
 )
 
 
-(defn getUserDetail []
+(defn getUnitDetail []
   ;(.log js/console (str "token: " " " (:token  (first (:token @t5pcore/app-state)))       ))
   (if
     (and 
       (not= (:login @app-state) nil)
       (not= (:login @app-state) "")
     )
-    (setUser)
+    (setUnit)
   
   )
 )
@@ -268,9 +291,9 @@
 
 (defn onMount [data]
   (swap! app-state assoc-in [:current] 
-    "User Detail"
+    "Unit Detail"
   )
-  (getUserDetail)
+  (getUnitDetail)
   (setcontrols 46)
 )
 
@@ -291,6 +314,28 @@
     )
     (:roles @app-state )
   )
+)
+
+(defcomponent parentgroups-view [data owner]
+  (render
+    [_]
+    (dom/div
+      (map (fn [item]
+        (let [            
+            isparent (if (and (nil? (:groups (:device @app-state)))) false (if (> (.indexOf (:groups (:device @app-state)) (:id item)) -1) true false))
+          ]
+          (dom/form
+            (dom/label
+              (:name item)
+              (dom/input {:id (str "chckgroup" (:id item)) :type "checkbox" :checked isparent :onChange (fn [e] (handle-chkbsend-change e ))})
+            )
+          )
+        )
+      )
+      (sort (comp comp-groups) (:groups @shelters/app-state)))
+    )
+  )
+
 )
 
 (defcomponent showcontacts-view [data owner]
@@ -345,7 +390,7 @@
         (dom/div {:className "col-xs-3"}
           (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}}
              (dom/h5 "Controller Id: " 
-               (dom/input {:id "id" :type "text" :disabled (if (:isinsert @data) false true) :onChange (fn [e] (handleChange e)) :value (:id (:device @data))} )
+               (dom/input {:id "id" :type "text" :disabled (if (:isinsert @data) false true) :onChange (fn [e] (handleChange e)) :value (:name (:device @data))} )
 
              )          
 
@@ -375,6 +420,17 @@
               (dom/i {:className "fa fa-phone"} "Contacts:")
             )
             (om/build showcontacts-view data {})
+            (om/build parentgroups-view data {})
+
+            (dom/div
+
+              (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
+              (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit (:name @app-state)))} "Delete")
+
+              (b/button {:className "btn btn-info"  :onClick (fn [e] (shelters/goDashboard e))  } "Cancel")
+            )
+
+            
           )
         )
 

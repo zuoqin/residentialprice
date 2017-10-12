@@ -137,8 +137,8 @@
 
 (defn map-unit [unit]
   (let [
-    id (str (get unit "controllerId"))
-    name (get unit "controllerId")
+    controller (str (get unit "controllerId"))
+    name (if (nil? (get unit "name")) controller (get unit "name"))
     status (case (get unit "status") "Normal" 0 3)
     lat (get unit "latitude")
     lon (get unit "longitude")
@@ -147,7 +147,7 @@
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :city 3 :name name :status status :address address :lat lat :lon lon :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    result {:id unitid :controller controller :city 3 :name name :status status :address address :lat lat :lon lon :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
     ]
     ;
     result
