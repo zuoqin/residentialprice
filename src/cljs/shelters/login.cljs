@@ -139,6 +139,7 @@
   (let [
     controller (str (get unit "controllerId"))
     name (if (nil? (get unit "name")) controller (get unit "name"))
+    port (get unit "port")
     status (case (get unit "status") "Normal" 0 3)
     lat (get unit "latitude")
     lon (get unit "longitude")
@@ -147,7 +148,7 @@
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :city 3 :name name :status status :address address :lat lat :lon lon :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    result {:id unitid :controller controller :city 3 :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
     ]
     ;
     result
@@ -174,15 +175,14 @@
        })
 )
 
-
-
 (defn map-role [role]
   (let [
+    id (get role "roleId")
     level (get role "roleLevel")
     description (get role "roleDescription")
     rolename (get role "roleName")
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:name rolename :level level :description description}
+    result {:id id :name rolename :level level :description description}
     ]
     ;
     result
@@ -212,11 +212,14 @@
 
 (defn map-user [user]
   (let [
-    login (get (get user "credentials") "userName")
-    username (get (get user "details") "key")
-    role (get (get user "role") "roleName")
+    username (get user "userName")
+    userid (get user "userId")
+    role (get user "role")
+    firstname (get (first (filter (fn [x] (if (= (get x "key") "firstName") true false)) (get user "details"))) "value")
+    lastname (get (first (filter (fn [x] (if (= (get x "key") "lastName") true false)) (get user "details"))) "value")
+
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:name username :role role :login login}
+    result {:login username :userid userid :role role :firstname firstname :lastname lastname}
     ]
     ;
     result
@@ -276,12 +279,12 @@
 
 (defn onLoginSuccess [response]
   (
-    let [     
+    let [
       ;response1 (js->clj response)
       tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
-      newdata {:token (get response "token")  :expires (get response "expires_in" ) }
+      newdata {:token (get response "token") :userid (get response "userId" ) }
     ]
-    (swap! app-state assoc-in [:state] 0)    
+    (swap! app-state assoc-in [:state] 0)
     ;(.log js/console (str (:token newdata)))
     (swap! shelterscore/app-state assoc-in [:token] newdata )
     (swap! shelterscore/app-state assoc-in [:view] 2 )
@@ -361,6 +364,10 @@
   )
 )
 
+(defn onMount [data owner]
+  (.focus (om/get-node owner "txtUserName" ))
+  (set! (.-title js/document) "Beeper Login")
+)
 
 
 (defcomponent login-page-view [data owner]
@@ -369,7 +376,7 @@
     
   )
   (did-mount [_]
-    (.focus (om/get-node owner "txtUserName" ))
+    (onMount data owner)
   )
   (render
     [_]

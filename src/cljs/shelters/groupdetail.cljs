@@ -26,12 +26,25 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-(defonce app-state (atom  {:group {} :parentgroup "" :isinsert false :view 1 :current "Group Detail"} ))
+(defonce app-state (atom  {:group {} :isinsert false :view 1 :current "Group Detail"} ))
+
+
+(defn comp-groups
+  [group1 group2]
+  ;(.log js/console group1)
+  ;(.log js/console group2)
+  (if (> (compare (:name group1) (:name group2)) 0)
+      false
+      true
+  )
+)
+
+
 
 (defn handleChange [e]
   ;(.log js/console e  )  
   ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+  (swap! app-state assoc-in [:group (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 
@@ -74,16 +87,13 @@
 (defn OnUpdateGroupSuccess [response]
   (let [
       groups (:groups @shelters/app-state)
-      delgroup (remove (fn [group] (if (= (:name group) (:name (:group @app-state))) true false)) groups)
-      addgroup (into [] (conj delgroup {:name (:name (:group @app-state))}))
+      delgroup (remove (fn [group] (if (= (:id group) (:id (:group @app-state))) true false)) groups)
+      addgroup (conj delgroup (:group @app-state))
 
       tr1 (.log js/console (str "In OnUpdateGroupSuccess " response))
     ]
     (swap! shelters/app-state assoc-in [:groups] addgroup)
-
-    (-> js/document
-      .-location
-      (set! "#/groups"))
+    (shelters/goGroups nil)
   )
 )
 
@@ -108,10 +118,9 @@
       :handler OnUpdateGroupSuccess
       :error-handler OnUpdateGroupError
       :headers {
-        :content-type "application/json" 
-        :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+        :token (:token (:token @shelters/app-state))}
       :format :json
-      :params {:groupName (:name @app-state) :groupLevel 0 :groupDescription (:description @app-state) }})
+      :params {:groupName (:name (:group @app-state)) :groupId (:id (:group @app-state)) :parentGroups (:parents (:group @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key1" :value "44"} {:key "key2" :value "444"}]}})
   )
 )
 
@@ -291,17 +300,38 @@
   ) 
 )
 
-
-(defn buildGroupsList [data owner]
-  (map
-    (fn [group]
-      (dom/option {:key (:id group) :value (:id group)
-                    :onChange #(handle-change % owner)} (:name group))
-    )
-    (filter (fn [x] (if (= (:id x) (:id (:group @data))) false true)) (:groups @shelters/app-state))
+(defn handle-chkbsend-change [e]
+  (let [
+      id (str/join (drop 9 (.. e -currentTarget -id)))
+      groups (:parents (:group @app-state))
+      newgroups (if (= true (.. e -currentTarget -checked)) (conj groups id) (remove (fn [x] (if (= x id) true false)) groups))
+    ]
+    (.stopPropagation e)
+    (.stopImmediatePropagation (.. e -nativeEvent) )
+    (swap! app-state assoc-in [:group :parents] newgroups)
   )
 )
 
+(defcomponent parentgroups-view [data owner]
+  (render
+    [_]
+    (dom/div
+      (map (fn [item]
+        (let [            
+            isparent (if (and (nil? (:parents (:group @app-state)))) false (if (> (.indexOf (:parents (:group @app-state)) (:id item)) -1) true false))
+          ]
+          (dom/form
+            (dom/label
+              (:name item)
+              (dom/input {:id (str "chckgroup" (:id item)) :type "checkbox" :checked isparent :onChange (fn [e] (handle-chkbsend-change e ))})
+            )
+          )
+        )
+      )
+      (sort (comp comp-groups) (filter (fn [x] (if (= (:id x) (:id (:group @app-state))) false true)) (:groups @shelters/app-state))))
+    )
+  )
+)
 
 
 (defcomponent groupdetail-page-view [data owner]
@@ -325,36 +355,9 @@
               
               (dom/div {:className "panel-heading"}
                 (dom/h5 "Name: " 
-                  (dom/input {:id "groupname" :type "text" :disabled (if (:isinsert @data) false false) :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
-
-                )
-                
-                (dom/h5 "Description: "
-                  (dom/input {:id "description" :type "text" :onChange (fn [e] (handleChange e)) :value (:description @data)})
-                )
-
-                (dom/div {:className "form-group"}
-                  (dom/p
-                    (dom/label {:className "control-label" :for "groups" }
-                      "Parent Group: "
-                    )
-                  
-                  )
-                 
-                  (omdom/select #js {:id "groups"
-                                     :multiple true
-                                     :className "selectpicker"
-                                     :data-show-subtext "true"
-                                     :data-live-search "true"
-                                     :onChange #(handle-change % owner)
-                                     }                
-                    (buildGroupsList data owner)
-                  )
-                  
-                )
-                ;; (dom/h5 "Group: "
-                ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
-                ;; )
+                  (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
+                )                
+                (om/build parentgroups-view data {})
               )
             )
           )
@@ -364,7 +367,7 @@
             (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createGroup) (updateGroup)) )} (if (:isinsert @app-state) "Insert" "Update"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteGroup (:id (:group @data))))} "Delete")
 
-            (b/button {:className "btn btn-info"  :onClick (fn [e] (-> js/document
+            (b/button {:className "btn btn-info" :onClick (fn [e] (-> js/document
       .-location
       (set! "#/groups")))  } "Cancel")
           )

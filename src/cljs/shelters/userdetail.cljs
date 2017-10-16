@@ -27,7 +27,7 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(defonce app-state (atom  {:login "" :password "" :isinsert false :role "admin" :view 1 :current "User Detail"} ))
+(defonce app-state (atom  {:user {} :isinsert false :view 1 :current "User Detail"}))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
@@ -314,19 +314,20 @@
       styleprimary {:style {:margin-top "70px"}}
       ]
       (dom/div
-        (om/build shelters/website-view data {})
+        (om/build shelters/website-view shelters/app-state {})
         (dom/div {:id "user-detail-container"}
           (dom/span
             (dom/div  (assoc styleprimary  :className "panel panel-default"  :id "divUserInfo")
               
               (dom/div {:className "panel-heading"}
-                (dom/h5 "Login: " 
-                  (dom/input {:id "login" :type "text" :disabled (if (= (:isinsert @app-state) true) false true)  :onChange (fn [e] (handleChange e)) :value (:login @app-state)} )
-
-                )
+                (dom/h5 "ID: " (:userid (:user @app-state)))
                 
-                (dom/h5 "Password: "
-                  (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value (:password @app-state)})
+                (dom/h5 "First Name: "
+                  (dom/input {:id "firstname" :type "text" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))})
+                )
+
+                (dom/h5 "Last Name: "
+                  (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))})
                 )
                 ;; (dom/h5 "Role: "
                 ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
@@ -359,9 +360,7 @@
             (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "Insert" "Update"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
 
-            (b/button {:className "btn btn-info"  :onClick (fn [e] (-> js/document
-      .-location
-      (set! "#/users")))  } "Cancel")
+            (b/button {:className "btn btn-info" :onClick (fn [e] (shelters/goUsers e))} "Cancel")
           )
         )
       )
@@ -372,12 +371,17 @@
 
 
 
-(sec/defroute userdetail-page "/userdetail/:login" {login :login}
-  (
-    (swap! app-state assoc-in [:login]  login ) 
+(sec/defroute userdetail-page "/userdetail/:userid" {userid :userid}
+  (let [
+    user (first (filter (fn [x] (if (= userid (:userid x)) true false)) (:users @shelters/app-state)))
+
+    tr1 (swap! app-state assoc-in [:user] user)
+    ]
+    ;(swap! app-state assoc-in [:userid]  userid) 
     (swap! app-state assoc-in [:isinsert]  false )
+    (swap! shelters/app-state assoc-in [:view] 4)
     (om/root userdetail-page-view
-             shelters/app-state
+             app-state
              {:target (. js/document (getElementById "app"))})
 
   )
@@ -386,15 +390,15 @@
 
 (sec/defroute userdetail-new-page "/userdetail" {}
   (
-    (swap! app-state assoc-in [:login]  "")
+    ;(swap! app-state assoc-in [:login]  "")
     (swap! app-state assoc-in [:isinsert]  true)
- 
+    (swap! shelters/app-state assoc-in [:view] 4)
     ;(swap! app-state assoc-in [:role ]  "user" ) 
     ;(swap! app-state assoc-in [:password] "" )
 
 
     (om/root userdetail-page-view
-             shelters/app-state
+             app-state
              {:target (. js/document (getElementById "app"))})
 
   )

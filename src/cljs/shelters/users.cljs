@@ -55,14 +55,24 @@
     [_]
     (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
-        (dom/span
-          (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:login item)) :onClick (fn [e] (shelters/goUserDetail e))}
-            (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:login item)}} nil)
-            ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
-            ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
-            ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
-          ) 
-        )                  
+        (dom/div {:className "row"}
+          (dom/div {:className "col-xs-4"}
+            (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+              (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:login item)}} nil)
+            )
+          )
+          (dom/div {:className "col-xs-4"}
+            (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+              (:firstname item)
+            )
+          )
+
+          (dom/div {:className "col-xs-4"}
+            (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+              (:lastname item)
+            )
+          )
+        )   
         )(sort (comp comp-users) (:users @shelters/app-state ))
       )
     )
@@ -73,9 +83,7 @@
 
 (defn onMount [data]
   ; (getUsers data)
-  (swap! shelters/app-state assoc-in [:current] 
-    "Users"
-  )
+  (swap! shelters/app-state assoc-in [:current] "Users")
 )
 
 

@@ -55,7 +55,7 @@
 (defn handleChange [e]
   ;(.log js/console e  )  
   ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+  (swap! app-state assoc-in [:device (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 
@@ -97,16 +97,12 @@
 
 (defn OnUpdateUnitSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      deluser (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
-      adduser (into [] (conj deluser {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)}  )) 
+      units (:devices @shelters/app-state)
+      delunit (remove (fn [unit] (if (= (:id unit) (:id (:device @app-state)) ) true false  )) units)
+      addunit (conj delunit (:device @app-state)) 
     ]
-    (swap! shelters/app-state assoc-in [:users] adduser)
-
-    (-> js/document
-      .-location
-      (set! "#/users"))
-
+    (swap! shelters/app-state assoc-in [:devices] addunit)
+    (shelters/goDashboard nil)
   )
 )
 
@@ -128,10 +124,10 @@
     :handler OnUpdateUnitSuccess
     :error-handler OnUpdateUnitError
     :headers {
-      :content-type "application/json" 
+      ;:content-type "application/json" 
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:name (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port 5000 :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:name (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
 )
 
 
@@ -390,15 +386,18 @@
         (dom/div {:className "col-xs-3"}
           (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}}
              (dom/h5 "Controller Id: " 
-               (dom/input {:id "id" :type "text" :disabled (if (:isinsert @data) false true) :onChange (fn [e] (handleChange e)) :value (:name (:device @data))} )
-
+               (dom/input {:id "controller" :type "text" :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))} )
              )          
 
             (dom/h5 {:style {:display:inline true}} "Status: "
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
             )
-            (dom/h5 {:style {:display:inline true}} (str "Name: " (:name (:device @app-state))))
-            (dom/h5 {:style {:display:inline true}} (str "Address: " (:address (:device @app-state))))
+            (dom/h5 {:style {:display:inline true}}
+               (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))} )
+            )
+            (dom/h5 {:style {:display:inline true}} (str "Address: " (:address (:device @app-state)))
+               (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))} )
+            )
             (dom/h4 {:style {:display:inline true}} "Sensors"
               (dom/table {:className "table table-responsive"}
                 (dom/tbody
@@ -427,7 +426,7 @@
               (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
               (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit (:name @app-state)))} "Delete")
 
-              (b/button {:className "btn btn-info"  :onClick (fn [e] (shelters/goDashboard e))  } "Cancel")
+              (b/button {:className "btn btn-info" :onClick (fn [e] (shelters/goDashboard e))  } "Cancel")
             )
 
             

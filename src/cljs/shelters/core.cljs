@@ -155,6 +155,10 @@
   (swap! app-state assoc-in [:view] 3)
 )
 
+(defn goRoles [data]
+  (swap! app-state assoc-in [:view] 3)
+)
+
 (defn goSysSettings [data]
   ;(aset js/window "location" "#/syssettings")
   (swap! app-state assoc-in [:view] 5)
@@ -1080,7 +1084,7 @@
             )
 
             (dom/li
-              (dom/a {:href "/#/users"}
+              (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
                 (dom/i {:className "fa fa-key"})
                 "משתמשים והרשאות"
               )
@@ -1118,7 +1122,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/a {:href "/#/roles" :className "menu_item" :onClick (fn [e] (goRoles e))}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )

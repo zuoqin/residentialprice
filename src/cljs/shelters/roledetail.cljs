@@ -26,12 +26,12 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-(defonce app-state (atom  {:name "" :description "" :isinsert false :view 1 :current "Role Detail"} ))
+(defonce app-state (atom  {:role {} :isinsert false :view 1 :current "Role Detail"} ))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
   ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+  (swap! app-state assoc-in [:role (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 
@@ -74,8 +74,8 @@
 (defn OnUpdateRoleSuccess [response]
   (let [
       roles (:roles @shelters/app-state)
-      delrole (remove (fn [role] (if (= (:name role) (:name @app-state)) true false)) roles)
-      addrole (into [] (conj delrole {:name (:name @app-state) :description (:description @app-state)}))
+      delrole (remove (fn [role] (if (= (:id role) (:id (:role @app-state))) true false)) roles)
+      addrole (conj delrole {:id (:id (:role @app-state)) :name (:name (:role @app-state)) :description (:description (:role @app-state)) :level (:level (:role @app-state))})
 
       tr1 (.log js/console (str "In OnUpdateRoleSuccess " response))
     ]
@@ -108,10 +108,9 @@
       :handler OnUpdateRoleSuccess
       :error-handler OnUpdateRoleError
       :headers {
-        :content-type "application/json" 
-        :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+        :token (str (:token (:token @shelters/app-state)))}
       :format :json
-      :params {:roleName (:name @app-state) :roleLevel 0 :roleDescription (:description @app-state) }})
+      :params {:roleName (:name (:role @app-state)) :roleLevel (:level (:role @app-state)) :roleId (:id (:role @app-state)) :roleDescription (:description (:role @app-state)) }})
   )
 )
 
@@ -126,11 +125,25 @@
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
+(defn map-role [role]
+  (let [
+    id (get role "roleId")
+    level (get role "roleLevel")
+    description (get role "roleDescription")
+    rolename (get role "roleName")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id id :name rolename :level level :description description}
+    ]
+    ;
+    result
+  )
+)
 
 (defn OnCreateRoleSuccess [response]
   (let [
-      roles (:roles @shelters/app-state    )  
-      addrole (into [] (conj roles {:role (:role @app-state) :description (:description @app-state)})) 
+      role (map-role response)
+      roles (:roles @shelters/app-state)
+      addrole (conj roles {:id (:id role) :name (:name role) :description (:description role) :level (:level role)}) 
     ]
     (swap! shelters/app-state assoc-in [:roles] addrole)
 
@@ -149,10 +162,9 @@
       :handler OnCreateRoleSuccess
       :error-handler OnCreateRoleError
       :headers {
-        :content-type "application/json" 
-        :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+        :token (str (:token (:token @shelters/app-state)))}
       :format :json
-      :params { :roleName (:name @app-state) :roleLevel 0 :roleDescription (:description @app-state) }})
+      :params { :roleName (:name (:role @app-state)) :roleLevel (:level (:role @app-state)) :roleDescription (:description (:role @app-state))}})
   )
 )
 
@@ -284,8 +296,8 @@
 
 
 (defn handle-change [e owner]
-  ;(.log js/console () e)
-  (swap! app-state assoc-in [:form (keyword (.. e -target -id))] 
+  (.log js/console () e)
+  (swap! app-state assoc-in [:role (keyword (.. e -target -id))] 
     (.. e -target -value)
   ) 
 )
@@ -324,17 +336,18 @@
               
               (dom/div {:className "panel-heading"}
                 (dom/h5 "Name: " 
-                  (dom/input {:id "rolename" :type "text" :disabled (if (:isinsert @data) false true) :onChange (fn [e] (handleChange e)) :value (:name @data)} )
+                  (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:role @data))})
 
                 )
                 
                 (dom/h5 "Description: "
-                  (dom/input {:id "description" :type "text" :onChange (fn [e] (handleChange e)) :value (:description @data)})
+                  (dom/input {:id "description" :type "text" :onChange (fn [e] (handleChange e)) :value (:description (:role @data))})
                 )
-                ;; (dom/h5 "Role: "
-                ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
-                ;; )
-              )         
+
+                (dom/h5 "Level: "
+                  (dom/input {:id "level" :type "number" :onChange (fn [e] (handleChange e)) :value (:level (:role @data))})
+                )
+              )
             )
           )
         )
@@ -343,9 +356,15 @@
             (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createRole) (updateRole)) )} (if (:isinsert @app-state) "Insert" "Update"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteRole (:name @app-state)))} "Delete")
 
-            (b/button {:className "btn btn-info"  :onClick (fn [e] (-> js/document
-      .-location
-      (set! "#/roles")))  } "Cancel")
+            (b/button {:className "btn btn-info"
+              :onClick (fn [e]
+                (shelters/goRoles e)
+                (->
+                  js/document .-location
+                  (set! "#/roles")
+                )
+              )} "Cancel"
+            )
           )
         )
       )
@@ -356,11 +375,15 @@
 
 
 
-(sec/defroute roledetail-page "/roledetail/:role" {role :role}
-  (
-    (swap! app-state assoc-in [:name]  role ) 
-    (swap! app-state assoc-in [:isinsert]  false )
-    (setRole)
+(sec/defroute roledetail-page "/roledetail/:id" {id :id}
+  (let [
+    role (first (filter (fn [x] (if (= id (:id x)) true false)) (:roles @shelters/app-state)))
+
+    tr1 (swap! app-state assoc-in [:role] role)
+    ]
+
+    (swap! app-state assoc-in [:isinsert]  false)
+    ;(setRole)
     (om/root roledetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})
@@ -371,7 +394,7 @@
 
 (sec/defroute roledetail-new-page "/roledetail" {}
   (
-    (swap! app-state assoc-in [:name]  "" ) 
+    (swap! app-state assoc-in [:role] {:name "" :description "" :level 0}) 
     (swap! app-state assoc-in [:isinsert]  true )
  
     ;(swap! app-state assoc-in [:role ]  "role" ) 
@@ -381,6 +404,5 @@
     (om/root roledetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})
-
   )
 )
