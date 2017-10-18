@@ -71,50 +71,70 @@
   (render
     [_]
 
-    (dom/tbody
+    (dom/div
       (map (fn [item]
-        (dom/tr {:role "row" :className "odd"}
-          (dom/td
-            (dom/input { :type "checkbox" :className "device_checkbox" :value (:id item)})
+        (dom/div {:className "row tablerow"}
+          (dom/div {:className "row" :style {:text-align "center"}}
+            (dom/label (:name item))
           )
-          (dom/td
-            (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
-              (dom/i {:className "fa fa-hdd-o"})
-              (:name item)
-            )
-          )
-
-          (dom/td
-            (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-            (case (:status item) 3 "Inactive" "Active")
-          )
-
-
-          (dom/td
-            (:address item)
-          )
-
-          (dom/td
-            (:address item)
-          )
-
-          (dom/td
-            (dom/i {:className (case (:status item) 3 "fa fa-bullhorn" "fa fa-battery-three-quarters") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-            ;(case (:status item) 3 "Inactive" "Active")
-          )
-
-
-          (dom/td
+          (dom/div {:className "col-xs-5"}
             
-            ;(case (:status item) 3 "Inactive" "Active")
           )
+          (dom/div {:className "col-xs-2"}
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "0px" :height "30px" :font-size "xx-large" :color "red"}})
+                )
+              )
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/img {:src "images/speed01.png" :style {:height "30px"}})
+                )
+              )
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/img {:src "images/speed02.png" :style {:height "30px"}})
+                )
+              )
+            )
 
-          (dom/td
-            (:address item)
-          )
+            (dom/div {:className "row"}          
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "brown"}})
+                )
+              )
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "blue"}})
+                )
+              )
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                )
+              )
+            )
 
-          (dom/td
-            (:address item)
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "aqua"}})
+                )
+              )
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                )
+              )
+              (dom/div {:className "col-xs-4"}
+                (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                  (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                )
+              )
+            )
+            
           )
         )
         )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (:name x) (:search @data)) true false)) (:devices @data )))
@@ -153,94 +173,11 @@
               (set! "#/devdetail")))} "Add New")
               )
               (dom/div
-                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
-                  (dom/i {:className "fa fa-info-circle"}) "Help"
-                )
-                (dom/a {:href "/download/gg" :className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
-                  (dom/i {:className "fa fa-file-excel-o"}) "Export to CSV"
-                )
-                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"} :onClick (fn [e] (printDevices) )}
-                  (dom/i {:className "fa fa-print"}) "Print"
-                )
-
-                (dom/h4 {:className "pull-left" :style {:margin-top "0px"}}
-                  (dom/i {:className "fa fa-table"}) "EQ - Devices table"
-                  (dom/span "(1375)")
-                )
+ 
               )
             )
-            (dom/div {:className "table-responsive"}
-              (dom/div {:className "floatThead-wrapper" :style {:position "relative" :clear "both"}}
-                (dom/label
-                  (dom/input {:id "search" :type "search" :className "form-control" :placeholder "Search" :onChange (fn [e] (handleChange e ))})
-                )
 
-
-                (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
-                  (dom/thead
-                    (dom/tr {:className "info" :role "row"}
-                      (dom/th {:className "sorting_asc" :style {:width "15px" :valign "middle" }}
-                        (dom/i {:className "fa fa-square-o"})
-                      )
-                      (dom/th {:className "sorting" :style {:width "100px"}}
-                        (dom/i {:className "fa fa-bullseye"})
-                        (dom/b "Device")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
-                        ;(dom/i {:className "fa fa-bullseye"})
-                        (dom/b "Status")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
-                        (dom/i {:className "fa fa-map-marker"})
-                        (dom/b "Location")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        (dom/b "Alert")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
-                        ;(dom/i {:className "fa fa-bullhorn"})
-                        (dom/b "Bars")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
-                        ;(dom/i {:className "fa fa-bullhorn"})
-                        (dom/b "Practice")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
-                        ;(dom/i {:className "fa fa-bullhorn"})
-                        (dom/b "Contact 1")
-                      )
-
-                      (dom/th {:className "sorting" :style {:width "127px" :text-align "center"}}
-                        ;(dom/i {:className "fa fa-bullhorn"})
-                        (dom/b "Contact 2")
-                      )
-                    )
-                  )
-
-                  (dom/colgroup
-                    (dom/col {:style {:width "30px"}})
-                    (dom/col {:style {:width "91px"}})
-                    (dom/col {:style {:width "68px"}})
-                    (dom/col {:style {:width "342px"}})
-                    (dom/col {:style {:width "184px"}})
-                    (dom/col {:style {:width "70px"}})
-                    (dom/col {:style {:width "70px"}})
-                    (dom/col {:style {:width "127px"}})
-                    (dom/col {:style {:width "127px"}})
-                  )
-                  (om/build showdevices-view  data {})
-                  (
-                  )
-                )
-              )
-            )
+            (om/build showdevices-view  data {})
           )
         )
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))

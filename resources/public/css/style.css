@@ -2,6 +2,14 @@
   height: 100%;
 }
 
+div.tablerow:nth-child(2n+0){
+  background: #DDDDDD;
+}
+
+div.tablerow:nth-child(2n+1){
+  background: #FFFFFF;
+}
+
 html, body {
   height: 100%;
   margin: 0;
