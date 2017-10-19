@@ -6,7 +6,7 @@
             [secretary.core :as sec :refer-macros [defroute]]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
-            [shelters.core :as shelterscore]
+            [shelters.core :as shelters]
             [shelters.settings :as settings]
             [shelters.map :as mappage]
             [shelters.users :as users]
@@ -116,7 +116,7 @@
 
 
 (defn OnGetGroups [response]
-  (swap! shelterscore/app-state assoc-in [:groups] (map map-group response) )
+  (swap! shelters/app-state assoc-in [:groups] (map map-group response) )
   ;(reqsecurities)
   (swap! app-state assoc-in [:state] 0)
   (put! ch 42)
@@ -130,7 +130,7 @@
        {:handler OnGetGroups
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelterscore/app-state))) }
+                  :token (str (:token  (:token @shelters/app-state))) }
        })
 )
 
@@ -157,7 +157,7 @@
 
 
 (defn OnGetUnits [response]
-  (swap! shelterscore/app-state assoc-in [:devices] (map map-unit response) )
+  (swap! shelters/app-state assoc-in [:devices] (map map-unit response) )
   ;(reqsecurities)
   (swap! app-state assoc-in [:state] 0)
   (reqgroups)
@@ -171,7 +171,7 @@
        {:handler OnGetUnits
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelterscore/app-state))) }
+                  :token (str (:token  (:token @shelters/app-state))) }
        })
 )
 
@@ -191,7 +191,7 @@
 
 
 (defn OnGetRoles [response]
-  (swap! shelterscore/app-state assoc-in [:roles] (map map-role response) )
+  (swap! shelters/app-state assoc-in [:roles] (map map-role response) )
   ;(reqsecurities)
   (requnits)
 )
@@ -204,7 +204,7 @@
        {:handler OnGetRoles
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelterscore/app-state))) }
+                  :token (str (:token  (:token @shelters/app-state))) }
        })
 )
 
@@ -214,7 +214,8 @@
   (let [
     username (get user "userName")
     userid (get user "userId")
-    role (get user "role")
+    role (first (filter (fn [x] (if (= (:id x) (get (get user "role") "roleId")) true false)) (:roles @shelters/app-state)))
+
     firstname (get (first (filter (fn [x] (if (= (get x "key") "firstName") true false)) (get user "details"))) "value")
     
     lastname (get (first (filter (fn [x] (if (= (get x "key") "lastName") true false)) (get user "details"))) "value")
@@ -228,8 +229,8 @@
 )
 
 (defn OnGetUsers [response]
-  (swap! shelterscore/app-state assoc-in [:users] (map map-user response) )
-  ;(swap! shelterscore/app-state assoc-in [:view] 1 )
+  (swap! shelters/app-state assoc-in [:users] (map map-user response) )
+  ;(swap! shelters/app-state assoc-in [:view] 1 )
   ;(aset js/window "location" "#/positions")
   (reqroles)
   
@@ -240,7 +241,7 @@
        {:handler OnGetUsers
         :error-handler error-handler
         :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelterscore/app-state)))}
+                  :token (str (:token  (:token @shelters/app-state)))}
        }
   )
 )
@@ -248,15 +249,15 @@
 
 
 (defn setUser [theUser]
-  (let [cnt (count (:users @shelterscore/app-state))]
-    (swap! shelterscore/app-state assoc-in [:users cnt] {:role (nth theUser 1)  :login (nth theUser 0) :password (nth theUser 2)})
+  (let [cnt (count (:users @shelters/app-state))]
+    (swap! shelters/app-state assoc-in [:users cnt] {:role (nth theUser 1)  :login (nth theUser 0) :password (nth theUser 2)})
   )
   
 
   ;;(.log js/console (nth theUser 0))
-  ;;(.log js/console (:login (:user @shelterscore/app-state) ))
-  (if (= (nth theUser 0) (:login (:user @shelterscore/app-state) ))   
-    (swap! shelterscore/app-state assoc-in [:user :role] (nth theUser 1) )
+  ;;(.log js/console (:login (:user @shelters/app-state) ))
+  (if (= (nth theUser 0) (:login (:user @shelters/app-state) ))   
+    (swap! shelters/app-state assoc-in [:user :role] (nth theUser 1) )
   )
   
 )
@@ -270,11 +271,11 @@
 
 
 (defn requser [token]
-  ;(.log js/console (str "In requser with token " (:token  (:token @shelterscore/app-state))))
+  ;(.log js/console (str "In requser with token " (:token  (:token @shelters/app-state))))
   (GET (str settings/apipath "api/user") {
     :handler OnGetUser
     :error-handler error-handler
-    :headers {:content-type "application/json" :Authorization (str "Bearer "  (:token  (:token @shelterscore/app-state))) }
+    :headers {:content-type "application/json" :Authorization (str "Bearer "  (:token  (:token @shelters/app-state))) }
   })
 )
 
@@ -287,9 +288,9 @@
     ]
     (swap! app-state assoc-in [:state] 0)
     ;(.log js/console (str (:token newdata)))
-    (swap! shelterscore/app-state assoc-in [:token] newdata )
-    (swap! shelterscore/app-state assoc-in [:view] 2 )
-    (swap! shelterscore/app-state assoc-in [:users] [] )
+    (swap! shelters/app-state assoc-in [:token] newdata )
+    (swap! shelters/app-state assoc-in [:view] 2 )
+    (swap! shelters/app-state assoc-in [:users] [] )
     (requsers)
     ;;(requser {:token newdata})
     ;;(put! ch 43)
@@ -310,10 +311,10 @@
 (defn dologin [username password]
   (swap! app-state assoc-in [:state] 1)
   ;; currently logged in user
-  (swap! shelterscore/app-state assoc-in [:user :login] username)
+  (swap! shelters/app-state assoc-in [:user :login] username)
 
   ;; currently selected user
-  (swap! shelterscore/app-state assoc-in [:selecteduser] username)
+  (swap! shelters/app-state assoc-in [:selecteduser] username)
 
 
   (POST (str settings/apipath "verifyUser")
@@ -400,8 +401,8 @@
 
 (defn setcontrols [value]
   (case value
-    42 (shelterscore/goMap 0)
-    ;43 (requser @shelterscore/app-state)
+    42 (shelters/goMap 0)
+    ;43 (requser @shelters/app-state)
   )
 )
 
@@ -425,7 +426,7 @@
 (defmulti website-view
   (
     fn [data _]
-      (:view (if (= data nil) @shelterscore/app-state @data ))
+      (:view (if (= data nil) @shelters/app-state @data ))
   )
 )
 
