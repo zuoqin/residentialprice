@@ -54,6 +54,12 @@
   )
 )
 
+(defn handleChange [e]
+  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+)
+
+
+
 (defn onVersionInfo []
   (let [     
       newdata { :info "Global Asset Management System пользовательский интерфейс обновлен 01.09.2017 09:28" }
@@ -849,6 +855,10 @@
                 )
               )
             )
+            (dom/li
+              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
+      (dom/input {:id "search" :type "text" :placeholder "Search by last first login" :style {:height "24px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e))}))
+            )
           )        
         )
       )
@@ -1011,12 +1021,6 @@
       )
     )
   )
-)
-
-
-
-(defn handleChange [e]
-  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 (defn handleCheck [e]
@@ -1197,7 +1201,11 @@
                 )
               )
             )
-          )        
+            (dom/li
+              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
+      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
+            )          
+          )  
         )
       )
     )
@@ -1352,6 +1360,10 @@
                   )
                 )
               )
+            )
+            (dom/li
+              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
+      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "24px" :margin-top "12px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
             )
           )        
         )

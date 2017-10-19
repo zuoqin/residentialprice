@@ -53,9 +53,9 @@
 
 
 (defn handleChange [e]
-  ;(.log js/console e  )  
+  ;(.log js/console (.. e -nativeEvent -target)  )  
   ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [:device (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+  (swap! app-state assoc-in [:device (keyword (.. e -nativeEvent -target -id))] (if (nil? (.. e -nativeEvent -target -step)) (.. e -nativeEvent -target -value) (js/parseFloat (.. e -nativeEvent -target -value))))
 )
 
 
@@ -72,16 +72,16 @@
 
 (defn OnDeleteUnitSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      newdevs (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
+      units (:devices @shelters/app-state)
+      newunits (remove (fn [unit] (if (= (:id unit) (:id (:device @app-state)) ) true false)) units)
     ]
     ;(swap! tripcore/app-state assoc-in [:token] newdata )
-    (swap! shelters/app-state assoc-in [:devs] newdevs)
-  )
-
+    (swap! shelters/app-state assoc-in [:devices] newunits)
     (-> js/document
       .-location
-      (set! "#/users"))
+      (set! "#/dashboard"))
+    (shelters/goDashboard "")
+  )
 )
 
 (defn OnUpdateUnitError [response]
@@ -107,13 +107,12 @@
 )
 
 
-(defn deleteUnit [login]
-  (DELETE (str settings/apipath  "api/user?login=" login) {
+(defn deleteUnit []
+  (DELETE (str settings/apipath  "deleteUnit?unitId=" (:id (:device @app-state))) {
     :handler OnDeleteUnitSuccess
     :error-handler OnDeleteUnitError
     :headers {
-      :content-type "application/json" 
-      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+      :token (str (:token (:token @shelters/app-state)))}
     :format :json})
 )
 
@@ -141,30 +140,49 @@
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
+(defn map-unit [unit]
+  (let [
+    controller (str (get unit "controllerId"))
+    name (if (nil? (get unit "name")) controller (get unit "name"))
+    port (get unit "port")
+    status (case (get unit "status") "Normal" 0 3)
+    lat (get unit "latitude")
+    lon (get unit "longitude")
+    groups (get unit "parentGroups")
+    unitid (str (get unit "unitId"))    
+    address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
+    phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id unitid :controller controller :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone}]}
+    ]
+    ;
+    result
+  )
+)
 
 (defn OnCreateUnitSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      adddev (into [] (conj users {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)} )) 
+      unit (map-unit response)
+      units (:devices @shelters/app-state)
+      addunit (conj units unit)
     ]
-    (swap! shelters/app-state assoc-in [:users] adddev)
+    (swap! shelters/app-state assoc-in [:devices] addunit)
 
     (-> js/document
       .-location
-      (set! "#/users"))
-
+      (set! "#/dashboard"))
+    (shelters/goDashboard "")
   )
 )
 
 (defn createUnit []
-  (POST (str settings/apipath  "api/user") {
+  (POST (str settings/apipath  "addUnit") {
     :handler OnCreateUnitSuccess
     :error-handler OnCreateUnitError
     :headers {
-      :content-type "application/json" 
-      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+      :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params { :login (:login @app-state) :password (:password @app-state) :role (:role @app-state) }})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:name (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
 )
 
 
@@ -385,18 +403,24 @@
 
         (dom/div {:className "col-xs-3"}
           (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}}
-             (dom/h5 "Controller Id: " 
+             (dom/h5 "Controller Id: "
                (dom/input {:id "controller" :type "text" :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))} )
              )          
 
             (dom/h5 {:style {:display:inline true}} "Status: "
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
             )
-            (dom/h5 {:style {:display:inline true}}
+            (dom/h5 {:style {:display:inline true}} "Name: "
                (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))} )
             )
-            (dom/h5 {:style {:display:inline true}} (str "Address: " (:address (:device @app-state)))
-               (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))} )
+            (dom/h5 {:style {:display:inline true}} (str "Address: ")
+               (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+            )
+            (dom/h5 {:style {:display:inline true}} "Latitude: "
+               (dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
+            )
+            (dom/h5 {:style {:display:inline true}} "Longitude: "
+               (dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
             )
             (dom/h4 {:style {:display:inline true}} "Sensors"
               (dom/table {:className "table table-responsive"}
@@ -424,7 +448,7 @@
             (dom/div
 
               (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
-              (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit (:name @app-state)))} "Delete")
+              (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
 
               (b/button {:className "btn btn-info" :onClick (fn [e] (shelters/goDashboard e))  } "Cancel")
             )
@@ -461,13 +485,11 @@
 
 (sec/defroute devdetail-new-page "/devdetail" {}
   (
-    (swap! app-state assoc-in [:device]  {} ) 
+    (swap! app-state assoc-in [:device]  {:id "" :lat 32.08088 :lon 34.78057 :port 666 :contacts [{:tel "121234"}]} ) 
     (swap! app-state assoc-in [:isinsert]  true )
     (swap! shelters/app-state assoc-in [:view] 7) 
     ;(swap! app-state assoc-in [:group ]  "group" ) 
     ;(swap! app-state assoc-in [:password] "" )
-
-
     (om/root devdetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})

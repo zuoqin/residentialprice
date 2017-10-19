@@ -8,7 +8,7 @@
 
 
             [om-bootstrap.button :as b]
-
+            [clojure.string :as str]
             [shelters.settings :as settings]
   )
   (:import goog.History)
@@ -73,7 +73,7 @@
             )
           )
         )   
-        )(sort (comp comp-users) (:users @shelters/app-state ))
+        )(sort (comp comp-users) (filter (fn [x] (if (or (str/includes? (str/lower-case (:firstname x)) (str/lower-case (:search @data))) (str/includes? (str/lower-case (:lastname x)) (str/lower-case (:search @data))) (str/includes? (str/lower-case (:login x)) (str/lower-case (:search @data)))) true false)) (:users @data)))
       )
     )
   )
@@ -96,10 +96,10 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       styleprimary {:style {:margin-top "70px"}}
       ]
-      (dom/div
+      (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view data {})
-        (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
-        )
+        (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))
+                  
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (
               (shelters/goUserDetail e)

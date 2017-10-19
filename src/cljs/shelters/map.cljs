@@ -382,7 +382,9 @@
     newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
     
     ]
-    (.setIcon marker (str iconBase (case status 3 "red_point.png" "green_point.png")))
+    (if (not (nil? marker)) 
+      (.setIcon marker (str iconBase (case status 3 "red_point.png" "green_point.png")))
+    )    
     (swap! shelters/app-state assoc-in [:devices] newunits )
   )
 )

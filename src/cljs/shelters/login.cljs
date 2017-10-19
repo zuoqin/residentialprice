@@ -148,7 +148,7 @@
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :city 3 :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    result {:id unitid :controller controller :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
     ]
     ;
     result
@@ -216,10 +216,11 @@
     userid (get user "userId")
     role (get user "role")
     firstname (get (first (filter (fn [x] (if (= (get x "key") "firstName") true false)) (get user "details"))) "value")
+    
     lastname (get (first (filter (fn [x] (if (= (get x "key") "lastName") true false)) (get user "details"))) "value")
 
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:login username :userid userid :role role :firstname firstname :lastname lastname}
+    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname)}
     ]
     ;
     result

@@ -32,7 +32,7 @@
 (defn handleChange [e]
   ;(.log js/console e  )  
   ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+  (swap! app-state assoc-in [:user (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 
@@ -49,13 +49,13 @@
 
 (defn OnDeleteUserSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      newusers (remove (fn [user] (if (= (:login user) (:login @app-state) ) true false  )) users)
+      users (:users @shelters/app-state)
+      newusers (remove (fn [user] (if (= (:userid user) (:userid (:user @app-state))) true false)) users)
     ]
     ;(swap! shelters/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:users] newusers)
   )
-
+    (shelters/goUsers "")
     (-> js/document
       .-location
       (set! "#/users"))
@@ -89,11 +89,12 @@
 
 
 (defn deleteUser [login]
-  (DELETE (str settings/apipath  "deleteUser") {
+  (DELETE (str settings/apipath  (str "deleteUser?userId=" (:userid (:user @app-state))) ) {
     :handler OnDeleteUserSuccess
     :error-handler OnDeleteUserError
     :headers {
       :content-type "application/json" 
+      :token (:token (:token @shelters/app-state))
     }
     :format :json})
 )
@@ -108,7 +109,7 @@
       :content-type "application/json"
     }
     :format :json
-    :params { :credentials {:userName (:login @app-state) :password (:password @app-state)} :token (:token (:token @shelters/app-state)) :role {:roleName (:role @app-state) :roleLevel 0 :roleDescription (:role @app-state)} :details [{:key (:login @app-state) :value (:login @app-state)}] }})
+    :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "key" :value "value"}] }})
 )
 
 
@@ -122,18 +123,31 @@
   (.log js/console (str response))
 )
 
+;; (defn map-user [user]
+;;   (let [
+;;     username (get user "userName")
+;;     userid (get user "userId")
+
+;;     ;tr1 (.log js/console (str  "username=" username ))
+;;     result {:login username :userid userid :role role :firstname firstname :lastname lastname}
+;;     ]
+;;     ;
+;;     result
+;;   )
+;; )
 
 (defn OnCreateUserSuccess [response]
   (let [
-      users (:users @shelters/app-state    )  
-      adduser (into [] (conj users {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)} )) 
+      tr1 (swap! app-state assoc-in [:user :userid] (get response "userId"))
+      users (:users @shelters/app-state)  
+      adduser (conj users (:user @app-state)) 
     ]
     (swap! shelters/app-state assoc-in [:users] adduser)
 
     (-> js/document
       .-location
       (set! "#/users"))
-
+    (shelters/goUsers "")
   )
 )
 
@@ -145,17 +159,20 @@
       :handler OnCreateUserSuccess
       :error-handler OnCreateUserError
       :headers {
-        :content-type "application/json" 
-        :Authorization (str "Bearer "  )}
+        :token (str (:token (:token @shelters/app-state)) )}
       :format :json
-      :params { :credentials {:userName (:login @app-state) :password (:password @app-state)} :token (:token (:token @shelters/app-state)) :role {:roleName (:role @app-state) :roleLevel 0 :roleDescription (:role @app-state)} :details [{:key (:login @app-state) :value (:login @app-state)}] }})
+      :params { :credentials {:userName (:login (:user @app-state)) :password (:password (:user @app-state))} :profile {:userId "" :userName (:login (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))}} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))}] }})
   )
 )
 
 
 (defn onDropDownChange [id value]
-  ;(.log js/console () e)
-  (swap! app-state assoc-in [:role] value) 
+  (let [
+    role (first (filter (fn [x] (if (= value (:id x)) true false)) (:roles @shelters/app-state)))
+    ]
+    (swap! app-state assoc-in [:user :role] role)
+  )
+  ;(.log js/console e)
 )
 
 
@@ -169,12 +186,13 @@
    )
    (jquery
      (fn []
-       (-> (jquery "#roles" )
-         (.selectpicker "val" (:role @app-state))
+       (-> (jquery "#roles" )        
+         (.selectpicker "val" (:id (:role (:user @app-state))))
          (.on "change"
            (fn [e]
              (
-               onDropDownChange (.. e -target -id) (.. e -target -value)
+               (onDropDownChange (.. e -target -id) (.. e -target -value))
+               (.log js/console e)
              )
            )
          )
@@ -280,18 +298,18 @@
 
 
 (defn handle-change [e owner]
-  ;(.log js/console () e)
-  (swap! app-state assoc-in [:form (keyword (.. e -target -id))] 
+  (.log js/console e)
+  (swap! app-state assoc-in [:user (keyword (.. e -target -id))] 
     (.. e -target -value)
-  ) 
+  )
 )
 
 
 (defn buildRolesList [data owner]
   (map
-    (fn [text]
-      (dom/option {:key (:name text) :value (:name text)
-                    :onChange #(handle-change % owner)} (:name text))
+    (fn [item]
+      (dom/option {:key (:id item) :value (:id item)
+                    :onChange #(handle-change % owner)} (:name item))
     )
     (:roles @shelters/app-state )
   )
@@ -313,54 +331,69 @@
     (let [style {:style {:margin "10px;" :padding-bottom "0px;"}}
       styleprimary {:style {:margin-top "70px"}}
       ]
-      (dom/div
+      (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view shelters/app-state {})
         (dom/div {:id "user-detail-container"}
-          (dom/span
-            (dom/div  (assoc styleprimary  :className "panel panel-default"  :id "divUserInfo")
-              
-              (dom/div {:className "panel-heading"}
-                (dom/h5 "ID: " (:userid (:user @app-state)))
-                
-                (dom/h5 "First Name: "
-                  (dom/input {:id "firstname" :type "text" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))})
-                )
+(dom/div {:className "panel panel-default" :id "divUserInfo"}              
+          (dom/div {:className "panel-heading"}
+            (dom/h5 "ID: " (:userid (:user @app-state)))
 
-                (dom/h5 "Last Name: "
-                  (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))})
-                )
-                ;; (dom/h5 "Role: "
-                ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
-                ;; )
-
-                (dom/div {:className "form-group"}
-                  (dom/p
-                    (dom/label {:className "control-label" :for "roles" }
-                      "Role: "
-                    )
-                  
-                  )
-                 
-                  (omdom/select #js {:id "roles"
-                                     :className "selectpicker"
-                                     :data-show-subtext "true"
-                                     :data-live-search "true"
-                                     :onChange #(handle-change % owner)
-                                     }                
-                    (buildRolesList data owner)
-                  )
-                  
-                )                
-              )              
+           (dom/h5 "Login: "
+              (dom/input {:id "login" :type "text" :onChange (fn [e] (handleChange e)) :value (:login (:user @app-state))})
             )
-          )
+
+            (dom/h5 "First Name: "
+              (dom/input {:id "firstname" :type "text" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))})
+            )
+
+            (dom/h5 "Last Name: "
+              (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))})
+            )
+
+            (if (:isinsert @app-state)
+              (dom/h5 "Password: "
+                (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value (:password (:user @app-state))})
+              )
+            )
+            ;; (dom/h5 "Role: "
+            ;;   (dom/input {:id "role" :type "text" :value (:role @app-state)})
+            ;; )
+
+            (dom/div {:className "form-group"}
+              (dom/p
+                (dom/label {:className "control-label" :for "roles" }
+                  "Role: "
+                )
+
+              )
+
+              (omdom/select #js {:id "roles"
+                                 :className "selectpicker"
+                                 :data-show-subtext "true"
+                                 :data-live-search "true"
+                                 :onChange #(handle-change % owner)
+                                 }                
+                (buildRolesList data owner)
+              )
+
+            )                
+          )              
+        )
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
             (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "Insert" "Update"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
 
-            (b/button {:className "btn btn-info" :onClick (fn [e] (shelters/goUsers e))} "Cancel")
+            (b/button {:className "btn btn-info" :onClick
+              (fn [e] (
+                (shelters/goUsers e)
+                (-> js/document
+                  .-location
+                  (set! "#/users")
+                )
+              )
+            )} "Cancel")
           )
         )
       )
@@ -390,7 +423,7 @@
 
 (sec/defroute userdetail-new-page "/userdetail" {}
   (
-    ;(swap! app-state assoc-in [:login]  "")
+    (swap! app-state assoc-in [:user] {:userid "" :password "" :login "" :firstname "" :lastname "" :role {:id "" :name "" :description ""}})
     (swap! app-state assoc-in [:isinsert]  true)
     (swap! shelters/app-state assoc-in [:view] 4)
     ;(swap! app-state assoc-in [:role ]  "user" ) 

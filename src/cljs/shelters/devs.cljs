@@ -67,77 +67,129 @@
   (set! (.-title js/document) (str "יחידה:" devid) )
 )
 
+(defcomponent speedo-view [data owner]
+  (render [_]
+    (dom/div {:style {:zoom 0.15 :width "640px" :height "480px" :margin-top "0px" :margin-right "0px" :margin-bottom "0px" :margin-left "50px" :overflow "hidden" :backgroundColor "#000" :position "relative"}}
+      (dom/div {:className "speedometr"}
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris-w"})
+        (dom/div {:className "ris ris-o1"})
+        (dom/div {:className "ris ris-o2"})
+        (dom/div {:className "ris ris-o3"})
+        (dom/div {:className "ris ris-o4"})
+        (dom/div {:className "ris ris-o5"})
+        (dom/div {:className "ris ris-o6"})
+        (dom/div {:className "ris ris-o7"})
+        (dom/div {:className "ris ris-o8"})
+        (dom/div {:className "ris ris-o9"})
+        (dom/div {:className "ris ris-o10"})
+
+
+        (dom/span {:className "speedo s-0"} "0")
+        (dom/span {:className "speedo s-20"} "20")
+        (dom/span {:className "speedo s-40"} "40")
+        (dom/span {:className "speedo s-60"} "60")
+        (dom/span {:className "speedo s-80"} "80")
+        (dom/span {:className "speedo s-100"} "100")
+        (dom/span {:className "speedo s-120"} "120")
+        (dom/span {:className "speedo s-140"} "140")
+        (dom/span {:className "speedo s-160"} "160")
+        (dom/span {:className "speedo s-180"} "180")
+        (dom/span {:className "speedo s-200"} "200")
+
+        (dom/div {:className "strelka"})
+      )
+      (dom/div {:className "black"})
+    )
+  )
+)
+
 (defcomponent showdevices-view [data owner]
   (render
     [_]
 
     (dom/div
       (map (fn [item]
-        (dom/div {:className "row tablerow"}
-          (dom/div {:className "row" :style {:text-align "center"}}
-            (dom/label (:name item))
-          )
-          (dom/div {:className "col-xs-5"}
-            
-          )
-          (dom/div {:className "col-xs-2"}
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "0px" :height "30px" :font-size "xx-large" :color "red"}})
-                )
-              )
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/img {:src "images/speed01.png" :style {:height "30px"}})
-                )
-              )
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/img {:src "images/speed02.png" :style {:height "30px"}})
-                )
-              )
+        (let [
+            ;tr1 (swap! arrow-state assoc :  (get response "Users")  )
+          ]
+          (dom/div {:className "row tablerow"}
+            (dom/div {:className "row" :style {:text-align "center"}}
+              (dom/label (:name item))
             )
+            (dom/div {:className "col-xs-4"}
 
-            (dom/div {:className "row"}          
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "brown"}})
-                )
-              )
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "blue"}})
-                )
-              )
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
-                )
-              )
             )
+            (dom/div {:className "col-xs-3"}
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "20px" :height "30px" :font-size "xx-large" :color "red"}})
+                  )
+                )
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (om/build speedo-view item {})
+                    ;(dom/img {:src "images/speed01.png" :style {:height "30px"}})
+                  )
+                )
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (om/build speedo-view item {})
+                  )
+                )
+              )
 
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "aqua"}})
+              (dom/div {:className "row"}          
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "brown"}})
+                  )
+                )
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "blue"}})
+                  )
+                )
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                  )
                 )
               )
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "yellow"}})
+
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "aqua"}})
+                  )
+                )
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                  )
+                )
+                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
+                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                    (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                  )
                 )
               )
-              (dom/div {:className "col-xs-4"}
-                (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                  (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
-                )
-              )
+
             )
-            
-          )
+          )        
         )
-        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (:name x) (:search @data)) true false)) (:devices @data )))
+
+        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (:name x)) (str/lower-case (:search @data))) true false)) (:devices @data)))
       )
     )
   )
@@ -164,13 +216,16 @@
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div {:className "container" :style {:margin-top "70px" :width "100%"}}
-          (dom/div {:className "col-md-12"}
+        (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
+          (dom/div {:className "col-md-12" :style {:margin-top "70px"}}
             (dom/div {:className "row"}
               (dom/div
-                (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
-              .-location
-              (set! "#/devdetail")))} "Add New")
+                (b/button {:className "btn btn-primary" :onClick (fn [e]
+                  (-> js/document
+                    .-location
+                    (set! "#/devdetail")
+                  ))} "Add New"
+                )
               )
               (dom/div
  
