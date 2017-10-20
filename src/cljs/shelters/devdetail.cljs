@@ -53,9 +53,9 @@
 
 
 (defn handleChange [e]
-  ;(.log js/console (.. e -nativeEvent -target)  )  
-  ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [:device (keyword (.. e -nativeEvent -target -id))] (if (nil? (.. e -nativeEvent -target -step)) (.. e -nativeEvent -target -value) (js/parseFloat (.. e -nativeEvent -target -value))))
+  (.log js/console (.. e -nativeEvent -target)  )  
+  (.log js/console (.. e -nativeEvent -target -step))
+  (swap! app-state assoc-in [:device (keyword (.. e -nativeEvent -target -id))] (if (= "" (.. e -nativeEvent -target -step)) (.. e -nativeEvent -target -value) (js/parseFloat (.. e -nativeEvent -target -value))))
 )
 
 
@@ -382,11 +382,9 @@
   (render
     [_]
     (let [style {:style {:margin "10px;" :padding-bottom "0px;"}}
-      styleprimary {:style {:margin-top "70px"}}
       ]
-      (dom/div
+      (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view shelters/app-state {})
-        (dom/div {:style {:margin-top "70px"}})
         (dom/a {:onClick (fn[e] (.back (.-history js/window))) :className "btn btn-default btn-sm pull-right" :style {:margin-top "15px" :margin-left "5px"}} "Back"
           (dom/i {:className "fa fa-arrow-circle-right" :aria-hidden "true"})
         )

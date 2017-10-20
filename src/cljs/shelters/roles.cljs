@@ -93,11 +93,11 @@
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       styleprimary {:style {:margin-top "70px"}}
-      ]
-      (dom/div
+      ]      
+      (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view data {})
-        (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
-        )
+        (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))
+                  
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
           .-location

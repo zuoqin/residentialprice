@@ -86,7 +86,7 @@
   )
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      styleprimary {:style {:margin-top "70px"}}
+      styleprimary {:style {:padding-top "70px"}}
       ]
       (dom/div
         (om/build shelters/website-view data {})

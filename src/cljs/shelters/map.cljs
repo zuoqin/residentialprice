@@ -380,12 +380,14 @@
     marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
 
     newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
+
+    tr1 (if (not (nil? marker)) (swap! shelters/app-state assoc-in [:devices] newunits))
     
     ]
-    (if (not (nil? marker)) 
+    (if (nil? marker)
+      (.log js/console (str "did not find a unit for unitid=" unitid " in notification"))
       (.setIcon marker (str iconBase (case status 3 "red_point.png" "green_point.png")))
-    )    
-    (swap! shelters/app-state assoc-in [:devices] newunits )
+    )
   )
 )
 

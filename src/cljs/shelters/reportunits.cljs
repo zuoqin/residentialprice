@@ -82,7 +82,7 @@
                                    :label "Cost in MM"
                                    :backgroundColor "#F08080"}]}}
     ]
-    (set! (.-defaultFontSize (.-global (.-defaults js/Chart)))  36)
+    (set! (.-defaultFontSize (.-global (.-defaults js/Chart))) 72)
     (set! (.-title js/document) "דו״ח זמינות יחידות")
     (js/Chart. context (clj->js chart-data))
   )

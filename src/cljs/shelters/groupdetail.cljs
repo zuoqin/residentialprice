@@ -62,15 +62,17 @@
 (defn OnDeleteGroupSuccess [response]
   (let [
       groups (:groups @shelters/app-state)
-      newgroups (remove (fn [group] (if (= (:group group) (:group @app-state) ) true false  )) groups)
+      newgroups (remove (fn [group] (if (= (:id group) (:id (:group @app-state))) true false  )) groups)
     ]
     ;(swap! sbercore/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:groups] newgroups)
   )
 
-    (-> js/document
-      .-location
-      (set! "#/groups"))
+  (-> js/document
+    .-location
+    (set! "#/groups"))
+
+  (shelters/goGroups "")
 )
 
 (defn OnUpdateGroupError [response]
@@ -99,12 +101,11 @@
 
 
 (defn deleteGroup [group]
-  (DELETE (str settings/apipath  "api/user?login=" group) {
+  (DELETE (str settings/apipath  "deleteGroup?groupId=" (:id (:group @app-state))) {
     :handler OnDeleteGroupSuccess
     :error-handler OnDeleteGroupError
     :headers {
-      :content-type "application/json" 
-      :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+      :token (str (:token (:token @shelters/app-state)))}
     :format :json})
 )
 
@@ -138,15 +139,15 @@
 
 (defn OnCreateGroupSuccess [response]
   (let [
-      groups (:groups @shelters/app-state    )  
-      addgroup (into [] (conj groups {:group (:group @app-state) :description (:description @app-state)})) 
+      tr1 (swap! app-state assoc-in [:group :id] (get response "groupId"))
+      groups (:groups @shelters/app-state)
+      addgroup (conj groups (:group @app-state)) 
     ]
     (swap! shelters/app-state assoc-in [:groups] addgroup)
-
     (-> js/document
       .-location
       (set! "#/groups"))
-
+    (shelters/goGroups "")
   )
 )
 
@@ -158,10 +159,9 @@
       :handler OnCreateGroupSuccess
       :error-handler OnCreateGroupError
       :headers {
-        :content-type "application/json" 
-        :Authorization (str "Bearer "  (:token (:token @shelters/app-state)))}
+        :token (str "" (:token (:token @shelters/app-state)))}
       :format :json
-      :params { :groupName (:name @app-state) :groupLevel 0 :groupDescription (:description @app-state) }})
+      :params { :groupName (:name (:group @app-state)) :groupId "" :parentGroups (:parents (:group @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key" :value "value"}] }})
   )
 )
 
@@ -344,7 +344,7 @@
   (render
     [_]
     (let [style {:style {:margin "10px;" :padding-bottom "0px;"}}
-      styleprimary {:style {:margin-top "70px"}}
+      styleprimary {:style {:padding-top "70px"}}
       ;tr1 (.log js/console (str "name= " @data))
       ]
       (dom/div

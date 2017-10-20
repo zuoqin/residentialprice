@@ -325,14 +325,13 @@
   (render
     [_]
     (let [style {:style {:margin "10px;" :padding-bottom "0px;"}}
-      styleprimary {:style {:margin-top "70px"}}
       ;tr1 (.log js/console (str "name= " @data))
       ]
-      (dom/div
+      (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view shelters/app-state {})
         (dom/div {:id "user-detail-container"}
           (dom/span
-            (dom/div  (assoc styleprimary  :className "panel panel-default"  :id "divUserInfo")
+            (dom/div {:className "panel panel-default"  :id "divUserInfo"}
               
               (dom/div {:className "panel-heading"}
                 (dom/h5 "Name: " 
