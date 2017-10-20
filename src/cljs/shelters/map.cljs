@@ -374,7 +374,7 @@
 
 (defn processMessage [notification]
   (let [
-    unitid (get notification "UnitId")
+    unitid (get notification "unitId")
     status (get notification "Status")
     ;tr1 (.log js/console (str "unitid in Notification: " unitid))
     marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
@@ -391,11 +391,11 @@
   )
 )
 
-(defn processNotification [notifications]
+(defn processNotification [notification]
   (let [
-      tr1 (js/console.log "Hooray! Message:" (pr-str notifications))
+      tr1 (js/console.log "Hooray! Message:" (pr-str notification))
     ]
-    (doall (map processMessage notifications))
+    (processMessage notification)
   )
 )
 
