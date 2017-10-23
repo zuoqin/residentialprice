@@ -171,11 +171,6 @@
             )
             (dom/div {:className "table-responsive" :style {:padding-top "10px"}}
               (dom/div {:className "floatThead-wrapper" :style {:position "relative" :clear "both"}}
-                (dom/label
-                  (dom/input {:id "search" :type "search" :className "form-control" :placeholder "Search" :onChange (fn [e] (handleChange e ))})
-                )
-
-
                 (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
                   (dom/thead
                     (dom/tr {:className "info" :role "row"}
