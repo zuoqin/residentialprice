@@ -77,10 +77,8 @@
     ]
     ;(swap! tripcore/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:devices] newunits)
-    (-> js/document
-      .-location
-      (set! "#/dashboard"))
-    (shelters/goDashboard "")
+    ;(shelters/goDashboard "")
+    (js/window.history.back)
   )
 )
 
@@ -102,7 +100,8 @@
       addunit (conj delunit (:device @app-state)) 
     ]
     (swap! shelters/app-state assoc-in [:devices] addunit)
-    (shelters/goDashboard nil)
+    ;(shelters/goDashboard nil)
+    (js/window.history.back)
   )
 )
 
@@ -167,11 +166,8 @@
       addunit (conj units unit)
     ]
     (swap! shelters/app-state assoc-in [:devices] addunit)
-
-    (-> js/document
-      .-location
-      (set! "#/dashboard"))
-    (shelters/goDashboard "")
+    ;(shelters/goDashboard "")
+    (js/window.history.back)
   )
 )
 
@@ -448,10 +444,12 @@
               (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
               (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
 
-              (b/button {:className "btn btn-info" :onClick (fn [e] (shelters/goDashboard e))  } "Cancel")
+              (b/button {:className "btn btn-info" :onClick (fn [e]
+                ;(shelters/goDashboard e)
+                (js/window.history.back)
+                )  } "Cancel"
+              )
             )
-
-            
           )
         )
 

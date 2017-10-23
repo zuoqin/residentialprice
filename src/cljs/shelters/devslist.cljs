@@ -117,7 +117,7 @@
             (:address item)
           )
         )
-        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (:name x) (:search @data)) true false)) (:devices @data )))
+        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) true false)) (:devices @data )))
       )
     )
   )
@@ -140,11 +140,11 @@
   )
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      styleprimary {:style {:margin-top "70px"}}
+      ;styleprimary {:style {:margin-top "70px"}}
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div {:className "container" :style {:margin-top "70px" :width "100%"}}
+        (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
           (dom/div {:className "col-md-12"}
             (dom/div {:className "row"}
               (dom/div
@@ -169,7 +169,7 @@
                 )
               )
             )
-            (dom/div {:className "table-responsive"}
+            (dom/div {:className "table-responsive" :style {:padding-top "10px"}}
               (dom/div {:className "floatThead-wrapper" :style {:position "relative" :clear "both"}}
                 (dom/label
                   (dom/input {:id "search" :type "search" :className "form-control" :placeholder "Search" :onChange (fn [e] (handleChange e ))})
@@ -243,8 +243,8 @@
             )
           )
         )
-        (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
-        )
+        (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))
+        
           ; (dom/div {:className "panel-heading"}
           ;   (dom/div {:className "row"}
           ;     ; (dom/div {:className "col-md-10"}
@@ -264,7 +264,7 @@
 
 
 
-(sec/defroute dashboard-page "/dashboard" []
+(sec/defroute dashboard-page "/devslist" []
   (om/root dashboard-view
            shelters/app-state
            {:target (. js/document (getElementById "app"))}))

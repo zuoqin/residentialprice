@@ -157,6 +157,12 @@
   (swap! app-state assoc-in [:view] 8)
 )
 
+(defn goDevslist [e]
+  (aset js/window "location" "/#/devslist")
+  (set! (.-title js/document) "רשימה יחידות")
+  (swap! app-state assoc-in [:view] 8)
+)
+
 (defn goUsers [data]
   (swap! app-state assoc-in [:view] 3)
   (aset js/window "location" "#/users")
@@ -743,6 +749,14 @@
               )
             )
 
+
+            (dom/li
+              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+                (dom/i {:className "fa fa-building"})
+                "רשימה יחידות"
+              )
+            )
+
             (dom/li
               (dom/a {:href "/#/users"}
                 (dom/i {:className "fa fa-key"})
@@ -901,6 +915,14 @@
               (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
+              )
+            )
+
+
+            (dom/li
+              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+                (dom/i {:className "fa fa-building"})
+                "רשימה יחידות"
               )
             )
 
@@ -1090,6 +1112,13 @@
             )
 
             (dom/li
+              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+                (dom/i {:className "fa fa-building"})
+                "רשימה יחידות"
+              )
+            )
+
+            (dom/li
               (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
                 (dom/i {:className "fa fa-key"})
                 "משתמשים והרשאות"
@@ -1246,6 +1275,14 @@
               (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
+              )
+            )
+
+
+            (dom/li
+              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+                (dom/i {:className "fa fa-building"})
+                "רשימה יחידות"
               )
             )
 
@@ -1406,6 +1443,14 @@
               (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
+              )
+            )
+
+
+            (dom/li
+              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+                (dom/i {:className "fa fa-building"})
+                "רשימה יחידות"
               )
             )
 
@@ -1676,6 +1721,14 @@
               (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
+              )
+            )
+
+
+            (dom/li
+              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+                (dom/i {:className "fa fa-building"})
+                "רשימה יחידות"
               )
             )
 

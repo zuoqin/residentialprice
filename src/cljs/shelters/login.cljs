@@ -12,6 +12,7 @@
             [shelters.users :as users]
             [shelters.roles :as roles]
             [shelters.devs :as devs]
+            [shelters.devslist :as devslist]
             [shelters.devdetail :as devdetail]
 
             [shelters.groups :as groups]
