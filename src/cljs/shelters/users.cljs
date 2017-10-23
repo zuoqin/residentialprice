@@ -16,7 +16,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:users [] :trips [] }))
+(defonce app-state (atom  {:sort-list 1}))
 
 
 (defn OnGetUsers [response]
@@ -43,9 +43,43 @@
 
 (defn comp-users
   [user1 user2]
-  (if (> (compare (:login user1) (:login user2)) 0)
-      false
-      true
+  (case (:sort-list @app-state)
+    1 (if (> (compare (:login user1) (:login user2)) 0)
+        false
+        true
+      )
+
+    2 (if (> (compare (:login user1) (:login user2)) 0)
+        true
+        false
+      )
+
+
+    3 (if (> (compare (:firstname user1) (:firstname user2)) 0)
+        true
+        false
+      )
+
+    4 (if (> (compare (:firstname user1) (:firstname user2)) 0)
+        false
+        true
+      )
+
+    5 (if (> (compare (:lastname user1) (:lastname user2)) 0)
+        true
+        false
+      )
+
+    6 (if (> (compare (:lastname user1) (:lastname user2)) 0)
+        false
+        true
+      )
+
+
+    (if (> (compare (:login user1) (:login user2)) 0)
+        false
+        true
+    )
   )
 )
 
@@ -55,19 +89,19 @@
     [_]
     (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
-        (dom/div {:className "row"}
-          (dom/div {:className "col-xs-4"}
+        (dom/div {:className "row" :style {:border-top "1px solid"}}
+          (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
             (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
               (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:login item)}} nil)
             )
           )
-          (dom/div {:className "col-xs-4"}
+          (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
             (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
               (:firstname item)
             )
           )
 
-          (dom/div {:className "col-xs-4"}
+          (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
             (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
               (:lastname item)
             )
@@ -98,24 +132,35 @@
       ]
       (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view data {})
-        (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))
-                  
+        (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))        
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (
               (shelters/goUserDetail e)
               (-> js/document .-location (set! "#/userdetail"))
-))} "Add New")
+))} "הוסף משתמש חדש")
           )
-          ; (dom/div {:className "panel-heading"}
-          ;   (dom/div {:className "row"}
-          ;     ; (dom/div {:className "col-md-10"}
-          ;     ;   (dom/span {:style {:padding-left "5px"}} "我的消息")
-          ;     ; )
-          ;     ; (dom/div {:className "col-md-2"}
-          ;     ;   (dom/span {:className "badge" :style {:float "right" }} (str (:msgcount data))  )
-          ;     ; )
-          ;   )
-          ; )
+          (dom/div {:className "panel-heading" :style {:padding "0px"}}
+            (dom/div {:className "row"}
+
+              (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
+  (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1))
+  (shelters/doswaps)
+                ))} "קוד משתמש") (case (:sort-list @app-state) 1 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 2 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span)))
+
+
+              (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
+  (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3))
+  (shelters/doswaps)
+                ))} "שם פרטי") (case (:sort-list @app-state) 3 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 4 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span)))
+
+
+              (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
+  (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5))
+  (shelters/doswaps)
+                ))} "שם משפחה") (case (:sort-list @app-state) 5 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 6 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span)))
+
+            )
+          )
           (om/build showusers-view  data {})
         )
       )

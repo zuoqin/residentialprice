@@ -159,6 +159,8 @@
 
 (defn goUsers [data]
   (swap! app-state assoc-in [:view] 3)
+  (aset js/window "location" "#/users")
+  (set! (.-title js/document) "משתמשים והרשאות")
 )
 
 (defn goRoles [data]
