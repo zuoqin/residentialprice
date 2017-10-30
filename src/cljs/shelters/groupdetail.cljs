@@ -39,6 +39,15 @@
   )
 )
 
+(defn comp-users
+  [user1 user2]
+  ;(.log js/console group1)
+  ;(.log js/console group2)
+  (if (> (compare (:login user1) (:login user2)) 0)
+      false
+      true
+  )
+)
 
 
 (defn handleChange [e]
@@ -121,7 +130,7 @@
       :headers {
         :token (:token (:token @shelters/app-state))}
       :format :json
-      :params {:groupName (:name (:group @app-state)) :groupId (:id (:group @app-state)) :parentGroups (:parents (:group @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key1" :value "44"} {:key "key2" :value "444"}]}})
+      :params {:groupName (:name (:group @app-state)) :groupId (:id (:group @app-state)) :parentGroups (:parents (:group @app-state)) :owners (if (nil? (:owners (:group @app-state))) [] (:owners (:group @app-state))) :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key1" :value "44"} {:key "key2" :value "444"}]}})
   )
 )
 
@@ -161,7 +170,7 @@
       :headers {
         :token (str "" (:token (:token @shelters/app-state)))}
       :format :json
-      :params { :groupName (:name (:group @app-state)) :groupId "" :parentGroups (:parents (:group @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key" :value "value"}] }})
+      :params { :groupName (:name (:group @app-state)) :groupId "" :parentGroups (:parents (:group @app-state)) :owners (if (nil? (:owners (:group @app-state))) [] (:owners (:group @app-state))) :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key" :value "value"}] }})
   )
 )
 
@@ -300,6 +309,7 @@
   ) 
 )
 
+
 (defn handle-chkbsend-change [e]
   (let [
       id (str/join (drop 9 (.. e -currentTarget -id)))
@@ -311,6 +321,19 @@
     (swap! app-state assoc-in [:group :parents] newgroups)
   )
 )
+
+(defn handle-chkuser-change [e]
+  (let [
+      id (str/join (drop 9 (.. e -currentTarget -id)))
+      users (:owners (:group @app-state))
+      newusers (if (= true (.. e -currentTarget -checked)) (conj users id) (remove (fn [x] (if (= x id) true false)) users))
+    ]
+    (.stopPropagation e)
+    (.stopImmediatePropagation (.. e -nativeEvent) )
+    (swap! app-state assoc-in [:group :owners] newusers)
+  )
+)
+
 
 (defcomponent parentgroups-view [data owner]
   (render
@@ -329,6 +352,27 @@
         )
       )
       (sort (comp comp-groups) (filter (fn [x] (if (= (:id x) (:id (:group @app-state))) false true)) (:groups @shelters/app-state))))
+    )
+  )
+)
+
+(defcomponent owners-view [data owner]
+  (render
+    [_]
+    (dom/div
+      (map (fn [item]
+        (let [            
+            isowner (if (and (nil? (:owners (:group @app-state)))) false (if (> (.indexOf (:owners (:group @app-state)) (:userid item)) -1) true false))
+          ]
+          (dom/form
+            (dom/label
+              (:login item)
+              (dom/input {:id (str "chckbuser" (:userid item)) :type "checkbox" :checked isowner :onChange (fn [e] (handle-chkuser-change e ))})
+            )
+          )
+        )
+      )
+      (sort (comp comp-users) (filter (fn [x] (if (= (:userid x) (:userid (:token @shelters/app-state))) true true)) (:users @shelters/app-state))))
     )
   )
 )
@@ -356,9 +400,22 @@
               (dom/div {:className "panel-heading"}
                 (dom/h5 "Name: " 
                   (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
-                )                
+                )
+              )
+
+
+              (dom/div {:className "panel-heading"}
+                (dom/h5 "Parent Groups:" )
                 (om/build parentgroups-view data {})
               )
+
+
+              (dom/div {:className "panel-heading"}
+                (dom/h5 "Owners:" )
+                (om/build owners-view data {})
+              )
+
+
             )
           )
         )

@@ -75,15 +75,14 @@
 (defn OnUpdateUserSuccess [response]
   (let [
       users (:users @shelters/app-state)  
-      deluser (remove (fn [user] (if (= (:login user) (:login @app-state)) true false  )) users)
-      adduser (into [] (conj deluser {:login (:login @app-state) :password (:password @app-state) :role (:role @app-state)}  )) 
+      deluser (remove (fn [user] (if (= (:userid user) (:userid (:user @app-state))) true false  )) users)
+      adduser (into [] (conj deluser {:login (:login (:user @app-state)) :role (:role (:user @app-state)) :userid (:userid (:user @app-state)) :firstname (:firstname (:user @app-state)) :lastname (:lastname (:user @app-state))}  )) 
     ]
     (swap! shelters/app-state assoc-in [:users] adduser)
 
     (-> js/document
       .-location
       (set! "#/users"))
-
   )
 )
 
@@ -93,7 +92,6 @@
     :handler OnDeleteUserSuccess
     :error-handler OnDeleteUserError
     :headers {
-      :content-type "application/json" 
       :token (:token (:token @shelters/app-state))
     }
     :format :json})
@@ -106,10 +104,10 @@
     :handler OnUpdateUserSuccess
     :error-handler OnUpdateUserError
     :headers {
-      :content-type "application/json"
+      :token (str (:token (:token @shelters/app-state)))
     }
     :format :json
-    :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "key" :value "value"}] }})
+    :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))}] }})
 )
 
 

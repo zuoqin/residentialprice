@@ -106,9 +106,9 @@
     id (str (get group "groupId"))
     name (get group "groupName")
     parents (get group "parentGroups")
-
+    owners (get group "owners")
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id id :name name :parents parents}
+    result {:id id :name name :parents parents :owners owners}
     ]
     ;
     result
@@ -168,7 +168,7 @@
 
 
 (defn requnits []
-  (GET (str settings/apipath "getUnits")
+  (GET (str settings/apipath "getUnits?userId=" (:userid  (:token @shelters/app-state)))
        {:handler OnGetUnits
         :error-handler error-handler
         :headers {:content-type "application/json"
@@ -213,11 +213,18 @@
 
 (defn map-user [user]
   (let [
+
+
+    ;tr1 (.log js/console "In map user")
     username (get user "userName")
     userid (get user "userId")
     role (first (filter (fn [x] (if (= (:id x) (get (get user "role") "roleId")) true false)) (:roles @shelters/app-state)))
 
-    firstname (get (first (filter (fn [x] (if (= (get x "key") "firstName") true false)) (get user "details"))) "value")
+    firstname (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "firstName") true false)
+      ) ) (get user "details"))) "value")
     
     lastname (get (first (filter (fn [x] (if (= (get x "key") "lastName") true false)) (get user "details"))) "value")
 
