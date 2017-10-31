@@ -67,6 +67,7 @@
   (set! (.-title js/document) (str "יחידה:" devid) )
 )
 
+
 (defcomponent speedo-view [data owner]
   (render [_]
     (dom/div {:style {:zoom 0.15 :width "640px" :height "480px" :margin-top "0px" :margin-right "0px" :margin-bottom "0px" :margin-left "50px" :overflow "hidden" :backgroundColor "#000" :position "relative"}}
@@ -118,78 +119,81 @@
     [_]
 
     (dom/div
-      (map (fn [item]
+      (map (fn [rowitems]
         (let [
             ;tr1 (swap! arrow-state assoc :  (get response "Users")  )
+            
           ]
           (dom/div {:className "row tablerow"}
-            (dom/div {:className "row" :style {:text-align "center"}}
-              (dom/label (:name item))
-            )
-            (dom/div {:className "col-xs-4"}
+            (map (fn [item]
+              (let []
+                (dom/div {:className "col-xs-3" :style {:border-bottom "solid" :border-right "solid"}}
+                  (dom/div {:className "row" :style {:font-weight "bold" :text-align "center"}}
+                    (:name item)
+                  )
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "20px" :height "52px" :font-size "xx-large" :color "red"}})
+                      )
+                    )
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (om/build speedo-view item {})
+                        ;(dom/img {:src "images/speed01.png" :style {:height "30px"}})
+                      )
+                    )
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (om/build speedo-view item {})
+                      )
+                    )
+                  )
 
-            )
-            (dom/div {:className "col-xs-3"}
-              (dom/div {:className "row"}
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "20px" :height "30px" :font-size "xx-large" :color "red"}})
+                  (dom/div {:className "row"}          
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "brown"}})
+                      )
+                    )
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "blue"}})
+                      )
+                    )
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                      )
+                    )
                   )
-                )
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (om/build speedo-view item {})
-                    ;(dom/img {:src "images/speed01.png" :style {:height "30px"}})
+
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "aqua"}})
+                      )
+                    )
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                      )
+                    )
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center"}}
+                      (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                        (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                      )
+                    )
                   )
-                )
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (om/build speedo-view item {})
-                  )
-                )
+
+                )                
+                
               )
-
-              (dom/div {:className "row"}          
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "brown"}})
-                  )
-                )
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "blue"}})
-                  )
-                )
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
-                  )
-                )
-              )
-
-              (dom/div {:className "row"}
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "aqua"}})
-                  )
-                )
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                  )
-                )
-                (dom/div {:className "col-xs-4" :style {:text-align "center"}}
-                  (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                    (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
-                  )
-                )
-              )
-
-            )
-          )        
+            ) rowitems)
+          )
         )
 
-        )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (:name x)) (str/lower-case (:search @data))) true false)) (:devices @data)))
+        ) (partition-all 4 (sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (:name x)) (str/lower-case (:search @data))) true false)) (:devices @data))))
       )
     )
   )

@@ -107,8 +107,29 @@ h1 {
 }
 
 
-@media screen and (min-width: 300px) {
-  h4 {font-size: 8px;}
+@media screen and (min-width: 1008px) {
+
+  .tree{ padding-top: 0px; }
+  .maprow { padding-top: 70px; }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1007px) {
+  h4 {font-size: 14px;}
+  .col-md-1 {font-size: 14px;}
+  .col-md-2 {font-size: 14px;}  
+  .colbtn {font-size: 14px;}
+  .col-xs-2 {font-size: 14px; padding-left: 0px; padding-right: 0px;}  
+  .col-xs-3 {font-size: 14px; padding-left: 0px; padding-right: 0px;}  
+  .plprogress {font-size: 12px;}
+  .plprdiv {padding-top: 10px; padding-right: 0px; padding-left: 0xpx}
+
+  .tree{ padding-top: 100px; }
+  .maprow { padding-top: 120px; }
+  .panel-primary {padding-top: 100px;}
+  #map { padding-top: 100px;}
+}
+
+@media screen and (min-width: 300px) and (max-width: 767px) {  
   .col-xs-1 {font-size: 8px; padding-left: 0px; padding-right: 0px;} 
   
   .list-group-item {padding: 8px 0px;}
@@ -118,19 +139,10 @@ h1 {
   .colbtn {font-size: 10px; padding: 8px 0px;}
   .plprogress {font-size: 8px;}
   .plprdiv {padding-top: 4px; padding-right: 0px; padding-left: 0xpx}
-}
 
-@media screen and (min-width: 800px) {
-  h4 {font-size: 14px;}
-  .col-md-1 {font-size: 14px;}
-  .col-md-2 {font-size: 14px;}  
-  .colbtn {font-size: 14px;}
-  .col-xs-2 {font-size: 14px; padding-left: 0px; padding-right: 0px;}  
-  .col-xs-3 {font-size: 14px; padding-left: 0px; padding-right: 0px;}  
-  .plprogress {font-size: 12px;}
-  .plprdiv {padding-top: 10px; padding-right: 0px; padding-left: 0xpx}
+  .tree { visibility: hidden; height: 0%}
+  #map { padding-top: 1px;}
 }
-
 
 
 @-webkit-keyframes ld {

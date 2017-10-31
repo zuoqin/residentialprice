@@ -168,7 +168,8 @@
 
 
 (defn requnits []
-  (GET (str settings/apipath "getUnits?userId=" (:userid  (:token @shelters/app-state)))
+  (GET (str settings/apipath "getUnits" ;"?userId="(:userid  (:token @shelters/app-state))
+       )
        {:handler OnGetUnits
         :error-handler error-handler
         :headers {:content-type "application/json"

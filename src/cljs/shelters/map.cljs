@@ -43,7 +43,7 @@
 
 (defn buildUnits [id]
   (let [
-    devices (if (> (count (:devices @shelters/app-state)) 0) (filter (fn [x] (if (> (.indexOf (:groups x) id) -1) true false)) (:devices @shelters/app-state)) []) 
+    devices (if (> (count (:devices @shelters/app-state)) 0) (filter (fn [x] (if (and (not (nil? (:groups x))) (> (.indexOf (:groups x) id) -1))  true false)) (:devices @shelters/app-state)) []) 
     nodes (into [] (map map-dev-node devices))
     ;tr1 (.log js/console nodes)
     ]
@@ -316,10 +316,10 @@
   (did-mount [_]
     (let [
       map-canvas (. js/document (getElementById "map"))
-      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @shelters/app-state)) :lng (:lon (:selectedcenter @shelters/app-state))} "zoom" 12})
+      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @data)) :lng (:lon (:selectedcenter @data))} "zoom" 12})
       map (js/google.maps.Map. map-canvas map-options)
       tr1 (swap! app-state assoc-in [:map] map  )
-      ]   
+      ]
     )
   )
 
@@ -327,16 +327,13 @@
     (onMount data)
   )
   (render [_]
-    (let [
-      stylerow {:style {:margin-left "0px" :margin-right "0px"}}
-      styleprimary {:style {:margin-top "70px" :margin-left "0px" :margin-right "0px"}}
-      ]
+    (let []
       (dom/div
         (om/build shelters/website-view data {})
         
-        (dom/div {:className "row" :style {:height "100%"}}
-          (dom/div  {:className "col-md-2" :id "tree" :style {:height "100%" :margin-top "70px"}})
-          (dom/div  {:className "col-md-10" :id "map" :style {:height "100%" :margin-top "70px"}})
+        (dom/div {:className "row maprow" :style {:height "100%"}}
+          (dom/div  {:className "col-2 col-sm-2 tree" :id "tree"})
+          (dom/div  {:className "col-10 col-sm-10" :id "map" :style {:margin-top "0px"}})
           ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
         )
       ) 
@@ -416,3 +413,4 @@
 )
 
 (initsocket)
+

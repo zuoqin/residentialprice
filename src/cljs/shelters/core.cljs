@@ -22,7 +22,7 @@
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :cities [{:id 1 :name "Tel Aviv" :lat 32.08088 :lon 34.78057} {:id 2 :name "Ness Ziona" :lat 31.92933 :lon 34.79868} {:id 3 :name "Jerusalem" :lat 31.7683 :lon 35.2137}] :devices [] :users []}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :notifications [{:id 1 :text "This device works incorrect"} {:id 2 :text "That device working properly"}] :devices [] :users []}))
 
 
 
@@ -183,7 +183,31 @@
   (.open js/window (str settings/apipath "tradeidea/" (:token (:token @app-state))))
 )
 
+(defcomponent notifications-navbar [data owner]
+  (render [_]
+    (dom/ul {:className "dropdown-menu dropdown-alerts"}
+      (map (fn [item]
+        (let []
+          (dom/li
+            (dom/a {:href "#"}
+              (dom/div
+                (dom/i {:className "fa fa-comment fa-fw"})
+                (:text item)
+                (dom/span {:className "pull-right text-muted small"}
+                  "4 minutes ago"
+                )
+              )
+            )
+          )
+        ))
 
+      (:notifications @app-state))
+
+    )
+  )
+)
+
+ 
 (defcomponent logout-view [_ _]
   (render
    [_]
@@ -1237,6 +1261,16 @@
       (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
             )          
           )  
+
+          (dom/ul {:className "nav navbar-top-links navbar-right"}
+            (dom/li {:className "dropdown"}
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false"}
+                (dom/i {:className "fa fa-bell fa-fw"})
+                (str (count (:notifications @data)))
+              )
+              (om/build notifications-navbar data {})
+            )
+          )
         )
       )
     )
