@@ -224,10 +224,90 @@
   )
 )
 
+(defn setcheckboxtoggle []
+  (let []
+    (doall
+      (map (fn [item]
+        (let []
+          (jquery
+            (fn []
+               (-> (jquery (str "#chckgroup" (:id item)))
+                 (.bootstrapToggle (clj->js {:on "הוסיף" :off "לא נוסף"}))
+               )
+            )
+          )
+
+          (jquery
+            (fn []
+              (-> (jquery (str "#chckgroup" (:id item)))
+                (.on "change"
+                  (fn [e]
+                    (let [
+                        id (str/join (drop 9 (.. e -currentTarget -id)))
+                        groups (:parents (:group @app-state))
+                        newgroups (if (= true (.. e -currentTarget -checked)) (conj groups id) (remove (fn [x] (if (= x id) true false)) groups))
+
+                        ;tr1 (.log js/console "gg")
+                      ]
+                      (.stopPropagation e)
+                      ;(.stopImmediatePropagation (.. e -nativeEvent) )
+                      (swap! app-state assoc-in [:group :parents] newgroups)
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+        )
+        (:groups @shelters/app-state)
+      )
+    )
+
+    (doall
+      (map (fn [item]
+        (let []
+          (jquery
+            (fn []
+               (-> (jquery (str "#chckbuser" (:userid item)))
+                 (.bootstrapToggle (clj->js {:on "הוסיף" :off "לא נוסף"}))
+               )
+            )
+          )
+
+          (jquery
+            (fn []
+              (-> (jquery (str "#chckbuser" (:userid item)))
+                (.on "change"
+                  (fn [e]
+                    (let [
+                        id (str/join (drop 9 (.. e -currentTarget -id)))
+                        users (:owners (:group @app-state))
+                        newusers (if (= true (.. e -currentTarget -checked)) (conj users id) (remove (fn [x] (if (= x id) true false)) users))
+
+                        ;tr1 (.log js/console "gg")
+                      ]
+                      (.stopPropagation e)
+                      ;(.stopImmediatePropagation (.. e -nativeEvent) )
+                      (swap! app-state assoc-in [:group :owners] newusers)
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+        )
+        (:users @shelters/app-state)
+      )
+    )
+  )
+)
 
 (defn setcontrols [value]
   (case value
     46 (setGroup)
+    47 (setcheckboxtoggle)
   )
 )
 
@@ -299,6 +379,7 @@
   )
   (getGroupDetail)
   (put! ch 46)
+  (put! ch 47)
 )
 
 
@@ -315,6 +396,8 @@
       id (str/join (drop 9 (.. e -currentTarget -id)))
       groups (:parents (:group @app-state))
       newgroups (if (= true (.. e -currentTarget -checked)) (conj groups id) (remove (fn [x] (if (= x id) true false)) groups))
+
+      tr1 (.log js/console "gg")
     ]
     (.stopPropagation e)
     (.stopImmediatePropagation (.. e -nativeEvent) )
@@ -338,15 +421,15 @@
 (defcomponent parentgroups-view [data owner]
   (render
     [_]
-    (dom/div
+    (dom/div {:className "checkbox"}
       (map (fn [item]
         (let [            
             isparent (if (and (nil? (:parents (:group @app-state)))) false (if (> (.indexOf (:parents (:group @app-state)) (:id item)) -1) true false))
           ]
-          (dom/form
-            (dom/label
-              (:name item)
-              (dom/input {:id (str "chckgroup" (:id item)) :type "checkbox" :checked isparent :onChange (fn [e] (handle-chkbsend-change e ))})
+          (dom/form {:style {:padding-top "5px"}}
+            (dom/label {:className "checkbox-inline"}
+              (dom/input {:id (str "chckgroup" (:id item)) :type "checkbox" :checked isparent :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34" :onChange (fn [e] (handle-chkbsend-change e ))})
+              (str "    " (:name item) "    ") 
             )
           )
         )
@@ -364,10 +447,10 @@
         (let [            
             isowner (if (and (nil? (:owners (:group @app-state)))) false (if (> (.indexOf (:owners (:group @app-state)) (:userid item)) -1) true false))
           ]
-          (dom/form
-            (dom/label
+          (dom/form {:style {:padding-top "5px"}}
+            (dom/label {:className "checkbox-inline"}              
+              (dom/input {:id (str "chckbuser" (:userid item)) :type "checkbox" :checked isowner :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34" :onChange (fn [e] (handle-chkuser-change e ))})
               (:login item)
-              (dom/input {:id (str "chckbuser" (:userid item)) :type "checkbox" :checked isowner :onChange (fn [e] (handle-chkuser-change e ))})
             )
           )
         )
@@ -402,7 +485,12 @@
                   (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
                 )
               )
-
+              ;; (dom/div {:className "checkbox"}
+              ;;   (dom/label
+              ;;     (dom/input {:id "toggle-one" :type "checkbox" :data-toggle "toggle"})
+              ;;     "Option one is enabled"
+              ;;   )
+              ;; )
 
               (dom/div {:className "panel-heading"}
                 (dom/h5 "Parent Groups:" )
