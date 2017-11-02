@@ -1259,7 +1259,7 @@
             (dom/li
               (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
       (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
-            )          
+            )
           )  
 
           (dom/ul {:className "nav navbar-top-links navbar-right"}

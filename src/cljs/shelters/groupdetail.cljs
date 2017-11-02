@@ -26,7 +26,8 @@
 (enable-console-print!)
 
 (def ch (chan (dropping-buffer 2)))
-(defonce app-state (atom  {:group {} :isinsert false :view 1 :current "Group Detail"} ))
+
+(defonce app-state (atom  {:group {} :search "" :isinsert false :view 1 :current "Group Detail"} ))
 
 
 (defn comp-groups
@@ -56,6 +57,13 @@
   (swap! app-state assoc-in [:group (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
+(defn handleSrcChange [e]
+  ;(.log js/console e  )  
+  ;(.log js/console "The change ....")
+  (swap! app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+
+  (put! ch 47)
+)
 
 (defn OnDeleteGroupError [response]
   (let [     
@@ -442,20 +450,31 @@
 (defcomponent owners-view [data owner]
   (render
     [_]
-    (dom/div
+    (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
-        (let [            
-            isowner (if (and (nil? (:owners (:group @app-state)))) false (if (> (.indexOf (:owners (:group @app-state)) (:userid item)) -1) true false))
+        (let [
+          isowner (if (and (nil? (:owners (:group @app-state)))) false (if (> (.indexOf (:owners (:group @app-state)) (:userid item)) -1) true false))
           ]
-          (dom/form {:style {:padding-top "5px"}}
-            (dom/label {:className "checkbox-inline"}              
-              (dom/input {:id (str "chckbuser" (:userid item)) :type "checkbox" :checked isowner :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34" :onChange (fn [e] (handle-chkuser-change e ))})
-              (:login item)
+          (dom/div {:className "row" :style {:border-top "1px solid"}}
+            (dom/div {:className "col-xs-3"}
+              (dom/label {:className "checkbox-inline"}              
+                (dom/input {:id (str "chckbuser" (:userid item)) :type "checkbox" :checked isowner :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34" :onChange (fn [e] (handle-chkuser-change e ))})
+              )
+            )
+            (dom/div {:className "col-xs-3" :style { :border-left "1px solid" :height "34px"}}
+              (dom/h4 {:className "list-group-item-heading"} (:login item))
+            )
+            (dom/div {:className "col-xs-3" :style { :border-left "1px solid" :height "34px"}}
+              (:firstname item)
+            )
+
+            (dom/div {:className "col-xs-3" :style { :border-left "1px solid" :height "34px"}}
+              (:lastname item)
             )
           )
         )
+        )(sort (comp comp-users) (filter (fn [x] (if (or (str/includes? (str/lower-case (:firstname x)) (str/lower-case (:search @data))) (str/includes? (str/lower-case (:lastname x)) (str/lower-case (:search @data))) (str/includes? (str/lower-case (:login x)) (str/lower-case (:search @data)))) true false)) (:users @shelters/app-state)))
       )
-      (sort (comp comp-users) (filter (fn [x] (if (= (:userid x) (:userid (:token @shelters/app-state))) true true)) (:users @shelters/app-state))))
     )
   )
 )
@@ -497,13 +516,19 @@
                 (om/build parentgroups-view data {})
               )
 
+              
 
               (dom/div {:className "panel-heading"}
-                (dom/h5 "Owners:" )
-                (om/build owners-view data {})
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-xs-3"}
+                    (dom/h5 "Owners:" )
+                  )
+                  (dom/div {:className "col-xs-3"}
+                    (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value (:search @data) :onChange (fn [e] (handleSrcChange e))})
+                  )                  
+                )
               )
-
-
+              (om/build owners-view data {})
             )
           )
         )
