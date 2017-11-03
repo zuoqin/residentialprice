@@ -210,6 +210,8 @@
        )
      )
    )
+
+
 )
 
 
@@ -368,7 +370,32 @@
 
 (defcomponent devdetail-page-view [data owner]
   (did-mount [_]
-    (onMount data)
+    (let [
+      map-canvas (. js/document (getElementById "map"))
+      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @shelters/app-state)) :lng (:lon (:selectedcenter @shelters/app-state))} "zoom" 12})
+      map (js/google.maps.Map. map-canvas map-options)
+      tr1 (swap! app-state assoc-in [:map] map)
+      tr1 (.set map "disableDoubleClickZoom" true)
+      ]
+      (onMount data)
+
+      (jquery
+        (fn []
+          (-> map
+            (.addListener "dblclick"
+              (fn [e]
+                (.log js/console (str "LatLng=" (.. e -latLng)))
+
+                (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
+                (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
+                (.stopPropagation (.. js/window -event))
+                (.stopImmediatePropagation (.. js/window -event))
+              )
+            )
+          )
+        )
+      )
+    )
   )
   (did-update [this prev-props prev-state]
     (.log js/console "Update happened") 
@@ -405,16 +432,23 @@
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
             )
             (dom/h5 {:style {:display:inline true}} "Name: "
-               (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))} )
+               (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))})
             )
             (dom/h5 {:style {:display:inline true}} (str "Address: ")
                (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
             )
             (dom/h5 {:style {:display:inline true}} "Latitude: "
-               (dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
+               (:lat (:device @data))
+               ;(dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
             )
             (dom/h5 {:style {:display:inline true}} "Longitude: "
-               (dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
+               (:lon (:device @data))
+               ;(dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
+            )
+
+            (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px"}}
+              (dom/div  {:className "col-12 col-sm-12" :id "map" :style {:margin-top "0px" :height "100%"}})
+              ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
             )
             (dom/h4 {:style {:display:inline true}} "Sensors"
               (dom/table {:className "table table-responsive"}
