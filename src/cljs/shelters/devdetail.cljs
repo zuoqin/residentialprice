@@ -122,7 +122,6 @@
     :handler OnUpdateUnitSuccess
     :error-handler OnUpdateUnitError
     :headers {
-      ;:content-type "application/json" 
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
     :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
@@ -305,6 +304,7 @@
   (swap! app-state assoc-in [:current] 
     "Unit Detail"
   )
+  (set! (.-title js/document) "Unit Detail")
   (getUnitDetail)
   (setcontrols 46)
 )
@@ -408,35 +408,59 @@
       ]
       (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view shelters/app-state {})
-        (dom/a {:onClick (fn[e] (.back (.-history js/window))) :className "btn btn-default btn-sm pull-right" :style {:margin-top "15px" :margin-left "5px"}} "Back"
-          (dom/i {:className "fa fa-arrow-circle-right" :aria-hidden "true"})
-        )
-        (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "15px"} :onClick (fn[e] (.print js/window))}
-          (dom/i {:className "fa fa-print" :aria-hidden "true"})
-        )
+
         (if (:isinsert @data)
 
-          (dom/h3
+          (dom/h3 {:style {:text-align "center"}}
             (dom/i {:className "fa fa-cube"})
-            (str "Device Info - " (:id (:device @app-state)) )
+            (if (:isinsert @data)
+              (str "Insert Device")
+              (str "Device Info - " (:id (:device @app-state)) )
+            )
           )
         )
+        (dom/div {:className "col-xs-4"})
+        (dom/div {:className "col-xs-4"}
 
-        (dom/div {:className "col-xs-3"}
-          (dom/div {:style {:border "2px" :min-height "300px" :padding "15px" :border-radius "10px"}}
-             (dom/h5 "Controller Id: "
-               (dom/input {:id "controller" :type "text" :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))} )
-             )          
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3"} (dom/h5 "Controller Id:"))
+              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "controller" :type "text" :readOnly (if (:isinsert @data) false true) :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))}
+                )
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
 
             (dom/h5 {:style {:display:inline true}} "Status: "
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
             )
-            (dom/h5 {:style {:display:inline true}} "Name: "
-               (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))})
+
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3"} (dom/h5 "Name:"))
+              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
             )
-            (dom/h5 {:style {:display:inline true}} (str "Address: ")
-               (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+
+
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3"} (dom/h5 (str "Address: ")))
+              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
             )
+
             (dom/h5 {:style {:display:inline true}} "Latitude: "
                (:lat (:device @data))
                ;(dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
@@ -484,7 +508,7 @@
                 )  } "Cancel"
               )
             )
-          )
+
         )
 
         (dom/div {:className "col-xs-9"}
@@ -501,10 +525,9 @@
 (sec/defroute devdetail-page "/devdetail/:devid" [devid]
   (let[
       dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))
-      tr1 (swap! app-state assoc-in [:device] dev )
       ;tr2 (.log js/console "hjkhkh")
     ]
-    
+    (swap! app-state assoc-in [:device] dev )
     (om/root devdetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})

@@ -229,8 +229,14 @@
     
     lastname (get (first (filter (fn [x] (if (= (get x "key") "lastName") true false)) (get user "details"))) "value")
 
+    email (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "email") true false)
+      ) ) (get user "details"))) "value")
+
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname)}
+    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email)}
     ]
     ;
     result

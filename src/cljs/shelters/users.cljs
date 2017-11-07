@@ -97,13 +97,13 @@
           )
           (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
             (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
-              (:firstname item)
+              (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:firstname item)}} nil)
             )
           )
 
           (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
             (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
-              (:lastname item)
+              (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:lastname item)}} nil)
             )
           )
         )   
