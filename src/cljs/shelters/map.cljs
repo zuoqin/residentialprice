@@ -10,7 +10,7 @@
             [om-bootstrap.button :as b]
 
 	    [chord.client :refer [ws-ch]]
-            [cljs.core.async :refer [put! dropping-buffer chan take! <! >!]]
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout]]
 
             [cljs-time.format :as tf]
             [cljs-time.coerce :as tc]
@@ -226,11 +226,51 @@
   )
 )
 
+(defn addplace [place]
+  (let [
+    ;tr1 (.log js/console place)
+    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" (str iconBase "green_point.png") "title" (.. place -name)})
+
+    marker (js/google.maps.Marker. marker-options)
+    ]
+    (.panTo (:map @app-state) (.. place -geometry -location))
+  )
+)
+
+(defn addsearchbox []
+  (let [
+    ;;Create the search box and link it to the UI element.
+    input (. js/document (getElementById "pac-input"))
+    searchbox (js/google.maps.places.SearchBox. input)
+    ;tr1 (.log js/console input)
+    ]
+    (.push (aget (.-controls (:map @app-state)) 1) input)
+
+    (jquery
+      (fn []
+        (-> searchbox
+          (.addListener "places_changed"
+            (fn []              
+              ;(.log js/console (.getPlaces searchbox))
+              (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+
 (defn addMarkers []
   (let[
        tr1 (swap! app-state assoc-in [:markers] [])
     ]
     (doall (map addMarker (:devices @shelters/app-state)))
+    (go
+         (<! (timeout 100))
+         (addsearchbox)
+       )
   )
 )
 
@@ -318,6 +358,8 @@
       map-canvas (. js/document (getElementById "map"))
       map-options (clj->js {"center" {:lat (:lat (:selectedcenter @data)) :lng (:lon (:selectedcenter @data))} "zoom" 12})
       map (js/google.maps.Map. map-canvas map-options)
+
+      
       tr1 (swap! app-state assoc-in [:map] map  )
       ]
     )
@@ -333,6 +375,7 @@
         
         (dom/div {:className "row maprow" :style {:height "100%"}}
           (dom/div  {:className "col-2 col-sm-2 tree" :id "tree"})
+          (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
           (dom/div  {:className "col-10 col-sm-10" :id "map" :style {:margin-top "0px"}})
           ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
         )

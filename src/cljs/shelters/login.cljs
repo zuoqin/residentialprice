@@ -17,6 +17,8 @@
 
             [shelters.groups :as groups]
             [shelters.groupdetail :as groupdetail]
+            [shelters.contacts :as contacts]
+            [shelters.contactdetail :as contactdetail]
             [shelters.userdetail :as userdetail]
 
             [shelters.reportunits :as reportunits]
@@ -149,7 +151,7 @@
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone :name "Alexey"} {:tel "7879787" :name "Oleg"}]}
+    result {:id unitid :controller controller :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:id "1" :phone "+79175134855" :name "Alexey" :email "zorchenkov@gmail.com"} {:id "2" :phone "+9721112255" :name "yulia" :email "yulia@gmail.com"}]}
     ]
     ;
     result

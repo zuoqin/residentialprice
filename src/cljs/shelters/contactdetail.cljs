@@ -1,4 +1,4 @@
-(ns shelters.userdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.contactdetail  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -27,18 +27,18 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(defonce app-state (atom  {:user {} :isinsert false :view 1 :current "User Detail"}))
+(defonce app-state (atom  {:contact {} :isinsert false :view 1 :current "Contact Detail"}))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
   ;(.log js/console "The change ....")
-  (swap! app-state assoc-in [:user (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
+  (swap! app-state assoc-in [:contact (keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
 
-(defn OnDeleteUserError [response]
+(defn OnDeleteContactError [response]
   (let [     
-      newdata {:userid (get response (keyword "tripid") ) }
+      newdata {:id (get response (keyword "tripid") ) }
     ]
 
   )
@@ -47,18 +47,18 @@
 )
 
 
-(defn OnDeleteUserSuccess [response]
+(defn OnDeleteContactSuccess [response]
   (let [
-      users (:users @shelters/app-state)
-      newusers (remove (fn [user] (if (= (:userid user) (:userid (:user @app-state))) true false)) users)
+      contacts (:contacts @shelters/app-state)
+      newcontacts (remove (fn [contact] (if (= (:id contact) (:id (:contact @app-state))) true false)) contacts)
     ]
     ;(swap! shelters/app-state assoc-in [:token] newdata )
-    (swap! shelters/app-state assoc-in [:users] newusers)
+    (swap! shelters/app-state assoc-in [:contacts] newcontacts)
     (js/window.history.back)
   )
 )
 
-(defn OnUpdateUserError [response]
+(defn OnUpdateContactError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
@@ -69,22 +69,22 @@
 )
 
 
-(defn OnUpdateUserSuccess [response]
+(defn OnUpdateContactSuccess [response]
   (let [
-      users (:users @shelters/app-state)  
-      deluser (remove (fn [user] (if (= (:userid user) (:userid (:user @app-state))) true false  )) users)
-      adduser (into [] (conj deluser {:login (:login (:user @app-state)) :role (:role (:user @app-state)) :userid (:userid (:user @app-state)) :firstname (:firstname (:user @app-state)) :lastname (:lastname (:user @app-state)) :email (:email (:user @app-state))}  )) 
+      contacts (:contacts @shelters/app-state)  
+      delcontact (remove (fn [contact] (if (= (:id contact) (:id (:contact @app-state))) true false  )) contacts)
+      addcontact (conj delcontact {:name (:name (:contact @app-state)) :email (:email (:contact @app-state)) :id (:id (:contact @app-state))}) 
     ]
-    (swap! shelters/app-state assoc-in [:users] adduser)
+    (swap! shelters/app-state assoc-in [:contacts] addcontact)
     (js/window.history.back)
   )
 )
 
 
-(defn deleteUser [login]
+(defn deleteContact [login]
   (DELETE (str settings/apipath  (str "deleteUser?userId=" (:userid (:user @app-state))) ) {
-    :handler OnDeleteUserSuccess
-    :error-handler OnDeleteUserError
+    :handler OnDeleteContactSuccess
+    :error-handler OnDeleteContactError
     :headers {
       :token (:token (:token @shelters/app-state))
     }
@@ -93,10 +93,10 @@
 
 
 
-(defn updateUser []
-  (PUT (str settings/apipath  "updateUser") {
-    :handler OnUpdateUserSuccess
-    :error-handler OnUpdateUserError
+(defn updateContact []
+  (PUT (str settings/apipath  "updateContact") {
+    :handler OnUpdateContactSuccess
+    :error-handler OnUpdateContactError
     :headers {
       :token (str (:token (:token @shelters/app-state)))
     }
@@ -105,7 +105,7 @@
 )
 
 
-(defn OnCreateUserError [response]
+(defn OnCreateContactError [response]
   (let [     
       newdata {:tripid (get response (keyword "tripid") ) }
     ]
@@ -115,78 +115,30 @@
   (.log js/console (str response))
 )
 
-;; (defn map-user [user]
-;;   (let [
-;;     username (get user "userName")
-;;     userid (get user "userId")
 
-;;     ;tr1 (.log js/console (str  "username=" username ))
-;;     result {:login username :userid userid :role role :firstname firstname :lastname lastname}
-;;     ]
-;;     ;
-;;     result
-;;   )
-;; )
-
-(defn OnCreateUserSuccess [response]
+(defn OnCreateContactSuccess [response]
   (let [
-      tr1 (swap! app-state assoc-in [:user :userid] (get response "userId"))
-      users (:users @shelters/app-state)  
-      adduser (conj users (:user @app-state)) 
+      tr1 (swap! app-state assoc-in [:contact :id] (get response "contactId"))
+      contacts (:contacts @shelters/app-state)  
+      addcontact (conj contacts (:contact @app-state)) 
     ]
-    (swap! shelters/app-state assoc-in [:users] adduser)
+    (swap! shelters/app-state assoc-in [:contacts] addcontact)
     (js/window.history.back)
   )
 )
 
-(defn createUser []
+(defn createContact []
   (let [
-    tr1 (.log js/console (str "In createUser"))
+    ;tr1 (.log js/console (str "In createUser"))
     ]
-    (POST (str settings/apipath  "addUser") {
-      :handler OnCreateUserSuccess
-      :error-handler OnCreateUserError
+    (POST (str settings/apipath  "addContact") {
+      :handler OnCreateContactSuccess
+      :error-handler OnCreateContactError
       :headers {
         :token (str (:token (:token @shelters/app-state)) )}
       :format :json
       :params { :credentials {:userName (:login (:user @app-state)) :password (:password (:user @app-state))} :profile {:userId "" :userName (:login (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))}]}  }})
   )
-)
-
-
-(defn onDropDownChange [id value]
-  (let [
-    role (first (filter (fn [x] (if (= value (:id x)) true false)) (:roles @shelters/app-state)))
-    ]
-    (swap! app-state assoc-in [:user :role] role)
-  )
-  ;(.log js/console e)
-)
-
-
-(defn setRolesDropDown []
-  (jquery
-     (fn []
-       (-> (jquery "#roles" )
-         (.selectpicker {})
-       )
-     )
-   )
-   (jquery
-     (fn []
-       (-> (jquery "#roles" )        
-         (.selectpicker "val" (:id (:role (:user @app-state))))
-         (.on "change"
-           (fn [e]
-             (
-               (onDropDownChange (.. e -target -id) (.. e -target -value))
-               (.log js/console e)
-             )
-           )
-         )
-       )
-     )
-   )
 )
 
 
@@ -198,7 +150,7 @@
 
 (defn setcontrols [value]
   (case value
-    46 (setRolesDropDown)
+    46 (.log js/console (str value))
   )
 )
 
@@ -231,14 +183,14 @@
   )
 )
 
-(defn setUser []
+(defn setContact []
   (let [
-        users (:users @shelters/app-state)
-        user (first (filter (fn [user] (if (= (:login @app-state) (:login user)  )  true false)) (:users @shelters/app-state )))
+        contacts (:contacts @shelters/app-state)
+        contact (first (filter (fn [contact] (if (= (:id @app-state) (:id contact)) true false)) (:contacts @shelters/app-state )))
         ]
-    (swap! app-state assoc-in [:login ]  (:login user) ) 
-    (swap! app-state assoc-in [:role ]  (:role user) ) 
-    (swap! app-state assoc-in [:password] (:password user) )
+    (swap! app-state assoc-in [:name]  (:name contact) ) 
+    (swap! app-state assoc-in [:phone]  (:phone contact) ) 
+    (swap! app-state assoc-in [:email] (:email contact) )
   )
 )
 
@@ -257,14 +209,14 @@
 )
 
 
-(defn getUserDetail []
+(defn getContactDetail []
   ;(.log js/console (str "token: " " " (:token  (first (:token @t5pcore/app-state)))       ))
   (if
     (and 
       (not= (:login @app-state) nil)
       (not= (:login @app-state) "")
     )
-    (setUser)
+    (setContact)
   
   )
 )
@@ -277,17 +229,15 @@
 
 
 (defn onMount [data]
-  (swap! app-state assoc-in [:current] 
-    "User Detail"
-  )
-  (getUserDetail)
+  (swap! app-state assoc-in [:current] "Contact Detail")
+  (getContactDetail)
   (setcontrols 46)
 )
 
 
 (defn handle-change [e owner]
   (.log js/console e)
-  (swap! app-state assoc-in [:user (keyword (.. e -target -id))] 
+  (swap! app-state assoc-in [:contact (keyword (.. e -target -id))] 
     (.. e -target -value)
   )
 )
@@ -305,7 +255,7 @@
 
 
 
-(defcomponent userdetail-page-view [data owner]
+(defcomponent contactdetail-page-view [data owner]
   (did-mount [_]
     (onMount data)
   )
@@ -321,18 +271,18 @@
       ]
       (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view shelters/app-state {})
-        (dom/div {:id "user-detail-container" :style {:text-align "center"}}
-(dom/div {:className "panel panel-default" :id "divUserInfo"}              
+        (dom/div {:id "contact-detail-container" :style {:text-align "center"}}
+(dom/div {:className "panel panel-default" :id "divContactInfo"}              
           (dom/div {:className "panel-heading"}
             (if (not (:isinsert @app-state))
-              (dom/h5 "ID: " (:userid (:user @app-state)))
+              (dom/h5 "ID: " (:id (:contact @app-state)))
             )
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1"} (dom/h5 "Login: "))
               (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}
-                (dom/input {:id "login" :type "text" :onChange (fn [e] (handleChange e)) :value (:login (:user @app-state))}                  
+                (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:contact @app-state))}                  
                 )
               )
               (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
@@ -344,7 +294,7 @@
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1"} (dom/h5 "First Name: "))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "firstname" :type "text" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))}))
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "phone" :type "text" :onChange (fn [e] (handleChange e)) :value (:phone (:contact @app-state))}))
 
               (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
                 (dom/span {:className "asterisk"} "*")
@@ -355,55 +305,19 @@
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1"} (dom/h5 "Last Name: "))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))}))
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "email" :type "text" :onChange (fn [e] (handleChange e)) :value (:email (:contact @app-state))}))
 
               (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
-
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "email:"))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "email" :type "text" :onChange (fn [e] (handleChange e)) :value (:email (:user @app-state))}))
-
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
-                (dom/span {:className "asterisk"} "*")
-              )
-            )
-
-            (if (:isinsert @app-state)
-              (dom/div {:className "row"}
-                (dom/div {:className "col-xs-5"})
-                (dom/div {:className "col-xs-1"} (dom/h5 "Password: "))
-                (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value (:password (:user @app-state))}))
-                (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
-                  (dom/span {:className "asterisk"} "*")
-                )
-              )
-            )
-
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "Role:"))
-              (dom/div {:className "col-xs-1"}
-                (omdom/select #js {:id "roles"
-                                   :className "selectpicker"
-                                   :data-show-subtext "true"
-                                   :data-live-search "true"
-                                   :onChange #(handle-change % owner)
-                                   }
-                  (buildRolesList data owner)
-                )
-              )
-            )
-          )
+          )              
         )
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :disabled? (or (< (count (:login (:user @data))) 1) (< (count (:firstname (:user @data))) 1) (< (count (:lastname (:user @data))) 1) (< (count (:email (:user @data))) 1) (if (:isinsert @data) (< (count (:password (:user @data))) 1) false) (< (count (:id (:role (:user @data)))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "Insert" "Update"))
-            (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
+            (b/button {:className "btn btn-default" :disabled? (or (< (count (:name (:contact @data))) 1) (< (count (:phone (:contact @data))) 1) (< (count (:phone (:contact @data))) 1)) :onClick (fn [e] (if (:isinsert @app-state) (createContact) (updateContact)) )} (if (:isinsert @app-state) "Insert" "Update"))
+            (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteContact (:id @app-state)))} "Delete")
 
             (b/button {:className "btn btn-info" :onClick
               (fn [e] (
@@ -420,16 +334,16 @@
 
 
 
-(sec/defroute userdetail-page "/userdetail/:userid" {userid :userid}
+(sec/defroute contactdetail-page "/contactdetail/:id" {id :id}
   (let [
-    user (first (filter (fn [x] (if (= userid (:userid x)) true false)) (:users @shelters/app-state)))
+    contact (first (filter (fn [x] (if (= id (:id x)) true false)) (:contacts @shelters/app-state)))
 
-    tr1 (swap! app-state assoc-in [:user] user)
+    tr1 (swap! app-state assoc-in [:contact] contact)
     ]
     ;(swap! app-state assoc-in [:userid]  userid) 
     (swap! app-state assoc-in [:isinsert]  false )
     (swap! shelters/app-state assoc-in [:view] 4)
-    (om/root userdetail-page-view
+    (om/root contactdetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})
 
@@ -437,19 +351,19 @@
 )
 
 
-(sec/defroute userdetail-new-page "/userdetail" {}
+(sec/defroute contactdetail-new-page "/contactdetail" {}
   (
     let [
-       emptyuser {:userid "" :password "" :login "" :firstname "" :lastname "" :email "" :role {:id "" :name "" :description ""}}
+       emptycontact {:id "" :name "" :phone "" :email ""}
     ]
-    (swap! app-state assoc-in [:user] emptyuser)
+    (swap! app-state assoc-in [:contact] emptycontact)
     (swap! app-state assoc-in [:isinsert]  true)
     (swap! shelters/app-state assoc-in [:view] 4)
     ;(swap! app-state assoc-in [:role ]  "user" ) 
     ;(swap! app-state assoc-in [:password] "" )
 
 
-    (om/root userdetail-page-view
+    (om/root contactdetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})
 

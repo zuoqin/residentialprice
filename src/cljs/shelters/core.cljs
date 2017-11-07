@@ -22,7 +22,7 @@
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :notifications [{:id 1 :type "error" :text "This device works incorrect"} {:id 2 :type "common" :text "That device working properly"}] :devices [] :users []}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}] :notifications [{:id 1 :type "error" :text "This device works incorrect"} {:id 2 :type "common" :text "That device working properly"}] :devices [] :users []}))
 
 
 
@@ -127,6 +127,12 @@
   ;(aset js/window "location" "#/userdetail")
   (swap! app-state assoc-in [:view] 4)
 )
+
+(defn goContactDetail [e]
+  ;(aset js/window "location" "#/userdetail")
+  (swap! app-state assoc-in [:view] 4)
+)
+
 
 (defn goRoleDetail [e]
   ;(aset js/window "location" "#/portfolios/0")
@@ -809,7 +815,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
+                      (dom/a {:href "/#/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
                         "מאגר יחידות"
                       )
@@ -820,7 +826,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/a {:href "/#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -989,7 +995,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/a {:href "/#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -1359,7 +1365,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/a {:href "/#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -1527,7 +1533,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/a {:href "/#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -1805,7 +1811,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/contacts" :className "menu_item"}
+                      (dom/a {:href "/#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )

@@ -12,7 +12,7 @@
             [om-bootstrap.button :as b]
             [om-bootstrap.panel :as p]
             [om.dom :as omdom :include-macros true]
-            [cljs.core.async :refer [put! dropping-buffer chan take! <!]]
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! timeout]]
             [om-bootstrap.input :as i]
             [cljs-time.core :as tm]
             [cljs-time.format :as tf]
@@ -27,6 +27,8 @@
 
 (def ch (chan (dropping-buffer 2)))
 
+(def iconBase "/images/")
+
 (defonce app-state (atom  {:device {} :isinsert false :view 1 :current "Device Detail"} ))
 
 (defn comp-groups
@@ -38,6 +40,10 @@
       true
   )
 )
+
+(defn drop-nth [n coll]
+   (keep-indexed #(if (not= %1 n) %2) coll))
+
 
 (defn handle-chkbsend-change [e]
   (let [
@@ -182,35 +188,92 @@
 
 
 (defn onDropDownChange [id value]
-  ;(.log js/console () e)
-  (swap! app-state assoc-in [:role] value) 
+  (let [
+    newid (js/parseInt (subs id 7))
+
+
+    addcontact (first (filter (fn [x] (if (= (:id x) value) true false)) (:contacts @shelters/app-state)))
+
+    ;tr1 (.log js/console (str "id=" id " newid=" newid " value=" value " add=" addcontact))
+    newcontacts (conj (take newid (:contacts (:device @app-state))) addcontact)
+
+    newcontacts (flatten (if (> (count (:contacts (:device @app-state))) (+ newid 1)) (reverse (conj newcontacts (drop (+ newid 1) (:contacts (:device @app-state))))) (reverse newcontacts)))
+    ]
+    (swap! app-state assoc-in [:device :contacts] newcontacts)
+  )
+  ;(.log js/console (str "id=" id " value=" value))  
 )
 
 
-(defn setRolesDropDown []
-  (jquery
-     (fn []
-       (-> (jquery "#roles" )
-         (.selectpicker {})
-       )
-     )
-   )
-   (jquery
-     (fn []
-       (-> (jquery "#roles" )
-         (.selectpicker "val" (:role @app-state))
-         (.on "change"
-           (fn [e]
-             (
-               onDropDownChange (.. e -target -id) (.. e -target -value)
-             )
-           )
-         )
-       )
-     )
-   )
+(defn setContactsDropDown []
+  (doall
+    (map (fn [item num]
+      (let []
+        (jquery
+          (fn []
+            (-> (jquery (str "#contact" num))
+              (.selectpicker {})
+            )
+          )
+        )
+        (jquery
+          (fn []
+            (-> (jquery (str "#contact" num))
+              (.selectpicker "val" (:id (first (filter (fn [x] (if (= (:id x) (:id item)) true false)) (:contacts @shelters/app-state)))))
+              (.on "change"
+                (fn [e]
+                  (
+                    onDropDownChange (.. e -target -id) (.. e -target -value)
+                  )
+                )
+              )
+            )
+          )
+        )
+      ))
+      (:contacts @shelters/app-state) (range)
+    )
+  ) 
+)
+
+(defn addplace [place]
+  (let [
+    ;tr1 (.log js/console place)
+    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" (str iconBase "red_point.png") "title" (.. place -name)})
+
+    marker (js/google.maps.Marker. marker-options)
+    ]
+    (.panTo (:map @app-state) (.. place -geometry -location))
+
+    (swap! app-state assoc-in [:device :lat] (.lat (.. place -geometry -location)))
+    (swap! app-state assoc-in [:device :lon] (.lng (.. place -geometry -location)))
+    (swap! app-state assoc-in [:device :address] (.. place -formatted_address))
+  )
+)
 
 
+(defn addsearchbox []
+  (let [
+    ;;Create the search box and link it to the UI element.
+    input (. js/document (getElementById "pac-input"))
+    searchbox (js/google.maps.places.SearchBox. input)
+    ;tr1 (.log js/console input)
+    ]
+    (.push (aget (.-controls (:map @app-state)) 1) input)
+
+    (jquery
+      (fn []
+        (-> searchbox
+          (.addListener "places_changed"
+            (fn []              
+              ;(.log js/console (.getPlaces searchbox))
+              (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
+            )
+          )
+        )
+      )
+    )
+  )
 )
 
 
@@ -222,7 +285,11 @@
 
 (defn setcontrols [value]
   (case value
-    46 (setRolesDropDown)
+    46 (setContactsDropDown)
+    43 (go
+         (<! (timeout 100))
+         (addsearchbox)
+       )
   )
 )
 
@@ -307,24 +374,25 @@
   (set! (.-title js/document) "Unit Detail")
   (getUnitDetail)
   (setcontrols 46)
+  (put! ch 43)
 )
 
 
 (defn handle-change [e owner]
-  ;(.log js/console () e)
+  (.log js/console e)
   (swap! app-state assoc-in [:form (keyword (.. e -target -id))] 
     (.. e -target -value)
-  ) 
+  )
 )
 
 
-(defn buildRolesList [data owner]
+(defn buildContactList [data owner]
   (map
     (fn [text]
-      (dom/option {:key (:name text) :value (:name text)
+      (dom/option {:key (:id text) :value (:id text)
                     :onChange #(handle-change % owner)} (:name text))
     )
-    (:roles @app-state )
+    (:contacts @shelters/app-state )
   )
 )
 
@@ -354,16 +422,29 @@
   (render
     [_]
     (dom/div
-      (map (fn [item]
+      (map (fn [item num]
         (dom/div
-          (dom/b
-            (dom/i {:className "fa fa-user"} (:name item))
+          (dom/div {:className "row"}
+            (dom/div {:className "col-xs-5"})
+            (dom/div {:className "col-xs-2"} (dom/h5 (str "Contact " (+ num 1) ":")))
+            (dom/div {:className "col-xs-2"}
+              (omdom/select #js {:id (str "contact" num)
+                                 :className "selectpicker"
+                                 :data-show-subtext "true"
+                                 :data-live-search "true"
+                                 :onChange #(handle-change % owner)
+                                 }
+                (buildContactList data owner)
+              )
+            )
           )
-          (dom/p (:tel item))
-
+          ;; (dom/b
+          ;;   (dom/i {:className "fa fa-user"} (:name item))
+          ;; )
+          ;; (dom/p (:tel item))
         )
       )
-      (:contacts (:device @app-state)))
+      (:contacts (:device @app-state)) (range))
     )
   )
 )
@@ -384,7 +465,7 @@
           (-> map
             (.addListener "dblclick"
               (fn [e]
-                (.log js/console (str "LatLng=" (.. e -latLng)))
+                ;(.log js/console (str "LatLng=" (.. e -latLng)))
 
                 (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
                 (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
@@ -469,6 +550,7 @@
                (:lon (:device @data))
                ;(dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
             )
+            (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
 
             (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px"}}
               (dom/div  {:className "col-12 col-sm-12" :id "map" :style {:margin-top "0px" :height "100%"}})

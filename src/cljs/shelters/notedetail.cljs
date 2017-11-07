@@ -119,8 +119,8 @@
 
 (defn deleteNote [note]
   (DELETE (str settings/apipath  "deleteGroup?groupId=" (:id (:group @app-state))) {
-    :handler OnDeleteGroupSuccess
-    :error-handler OnDeleteGroupError
+    :handler OnDeleteNoteSuccess
+    :error-handler OnDeleteNoteError
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json})
@@ -399,7 +399,7 @@
           )
         )
       )
-      (sort (comp comp-groups) (filter (fn [x] (if (= (:id x) (:id (:group @app-state))) false true)) (:groups @shelters/app-state))))
+      (sort (comp comp-notifications) (filter (fn [x] (if (= (:id x) (:id (:group @app-state))) false true)) (:groups @shelters/app-state))))
     )
   )
 )
@@ -437,7 +437,7 @@
 )
 
 
-(defcomponent groupdetail-page-view [data owner]
+(defcomponent notedetail-page-view [data owner]
   (did-mount [_]
     (onMount data)
   )
@@ -472,7 +472,7 @@
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :onClick (fn [e] (updateGroup))} "Update")
+            (b/button {:className "btn btn-default" :onClick (fn [e] (updateNote))} "Update")
             (b/button {:className "btn btn-info" :onClick (fn [e] (-> js/document
               .-location
              (set! "#/groups")))  } "Cancel")
@@ -486,7 +486,7 @@
 
 
 
-(sec/defroute groupdetail-page "/notedetail/:noteid" {noteid :noteid}  
+(sec/defroute notedetail-page "/notedetail/:noteid" {noteid :noteid}  
   (let [
     thenote (first (filter (fn [x] (if (= (:id x) noteid) true false)) (:notifications @shelters/app-state)))
     ]
