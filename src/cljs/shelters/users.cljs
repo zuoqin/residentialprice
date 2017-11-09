@@ -132,7 +132,8 @@
       ]
       (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view data {})
-        (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))        
+        (dom/div {:className "panel panel-primary"}
+          (dom/h1 {:style {:text-align "center"}} (:current @data))
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (
               (shelters/goUserDetail e)

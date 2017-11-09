@@ -237,8 +237,23 @@
         (if (= (get x "key") "email") true false)
       ) ) (get user "details"))) "value")
 
-    ;tr1 (.log js/console (str  "username=" username ))
-    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email)}
+
+    addedby (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "addedby") true false)
+      ) ) (get user "details"))) "value")
+
+    islocked (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "islocked") true false)
+      ) ) (get user "details"))) "value")
+
+    islocked (if (or (nil? islocked) (= islocked 0)) false true)
+
+    tr1 (.log js/console (str  "islocked=" islocked))
+    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email) :addedby (if (nil? addedby) "" addedby) :islocked islocked}
     ]
     ;
     result
@@ -338,7 +353,7 @@
     {:handler OnLogin
      :error-handler onLoginError
      :format :json
-     :params {:userName "beeper" :password "123456"} 
+     :params {:userName username :password password} 
     }
   )
 )
@@ -348,15 +363,15 @@
 
 (defn checklogin [owner e]
   (let [
-    theUserName (-> (om/get-node owner "txtUserName") .-value)
-    thePassword (-> (om/get-node owner "txtPassword") .-value)
+    theusername (-> (om/get-node owner "txtUserName") .-value)
+    thepassword (-> (om/get-node owner "txtPassword") .-value)
     ]
     (.preventDefault (.. e -nativeEvent))
     (.stopPropagation (.. e -nativeEvent))
     (.stopImmediatePropagation (.. e -nativeEvent))
     ;(aset js/window "location" "http://localhost:3449/#/something")
-    ;(.log js/console owner )
-    (dologin (str theUserName) (str thePassword)) 
+    (.log js/console (str "user=" theusername " password=" thepassword))
+    (dologin (str theusername) (str thepassword)) 
   )
 )
 

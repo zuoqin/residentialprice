@@ -231,7 +231,8 @@
     ;tr1 (.log js/console place)
     marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" (str iconBase "green_point.png") "title" (.. place -name)})
 
-    marker (js/google.maps.Marker. marker-options)
+    ;If need to add marker on the map:
+    ;marker (js/google.maps.Marker. marker-options)
     ]
     (.panTo (:map @app-state) (.. place -geometry -location))
   )
@@ -270,7 +271,7 @@
     (go
          (<! (timeout 100))
          (addsearchbox)
-       )
+    )
   )
 )
 

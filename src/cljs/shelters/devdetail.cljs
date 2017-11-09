@@ -29,7 +29,7 @@
 
 (def iconBase "/images/")
 
-(defonce app-state (atom  {:device {} :isinsert false :view 1 :current "Device Detail"} ))
+(defonce app-state (atom  {:device {} :marker nil :isinsert false :view 1 :current "Device Detail"} ))
 
 (defn comp-groups
   [group1 group2]
@@ -245,6 +245,8 @@
     ]
     (.panTo (:map @app-state) (.. place -geometry -location))
 
+    (if (not (nil? (:marker @app-state))) (.setMap (:marker @app-state) nil))
+    (swap! app-state assoc-in [:marker] marker)
     (swap! app-state assoc-in [:device :lat] (.lat (.. place -geometry -location)))
     (swap! app-state assoc-in [:device :lon] (.lng (.. place -geometry -location)))
     (swap! app-state assoc-in [:device :address] (.. place -formatted_address))

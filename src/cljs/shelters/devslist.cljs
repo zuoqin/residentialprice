@@ -146,6 +146,7 @@
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
           (dom/div {:className "col-md-12"}
+            
             (dom/div {:className "row"}
               (dom/div
                 (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
