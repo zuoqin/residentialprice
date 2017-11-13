@@ -256,13 +256,18 @@
 
 (defn addsearchbox []
   (let [
+
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))) "map" (:map @app-state) "icon" (str iconBase "red_point.png") "title" (:name (:device @app-state))})
+
+    marker (js/google.maps.Marker. marker-options)
+
     ;;Create the search box and link it to the UI element.
     input (. js/document (getElementById "pac-input"))
     searchbox (js/google.maps.places.SearchBox. input)
     ;tr1 (.log js/console input)
     ]
     (.push (aget (.-controls (:map @app-state)) 1) input)
-
+    (if (not (nil? (:marker @app-state))) (.setMap (:marker @app-state) (:map @app-state)))
     (jquery
       (fn []
         (-> searchbox
@@ -275,6 +280,7 @@
         )
       )
     )
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))))
   )
 )
 
@@ -491,31 +497,31 @@
       ]
       (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view shelters/app-state {})
-
-        (if (:isinsert @data)
-
-          (dom/h3 {:style {:text-align "center"}}
-            (dom/i {:className "fa fa-cube"})
-            (if (:isinsert @data)
-              (str "Insert Device")
-              (str "Device Info - " (:id (:device @app-state)) )
-            )
+        
+        (dom/h3 {:style {:text-align "center"}}
+          (dom/i {:className "fa fa-cube"})
+          (if (:isinsert @data)
+            (str "Insert Device")
+            (str "Device Info - " (:controller (:device @app-state)) )
           )
         )
+        
         (dom/div {:className "col-xs-4"})
         (dom/div {:className "col-xs-4"}
 
-
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 "Controller Id:"))
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "controller" :type "text" :readOnly (if (:isinsert @data) false true) :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))}
+            (if (:isinsert @data)
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-3"} (dom/h5 "Controller Id:"))
+                (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                  (dom/input {:id "controller" :type "text" :readOnly (if (:isinsert @data) false true) :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))}
+                  )
+                )
+                (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                  (dom/span {:className "asterisk"} "*")
                 )
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
-                (dom/span {:className "asterisk"} "*")
-              )
             )
+
 
             (dom/h5 {:style {:display:inline true}} "Status: "
               (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
@@ -536,8 +542,8 @@
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-3"} (dom/h5 (str "Address: ")))
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "address" :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+              (dom/div {:className "col-xs-9" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "address" :style {:width "100%"} :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
               )
               (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
                 (dom/span {:className "asterisk"} "*")
@@ -558,23 +564,6 @@
               (dom/div  {:className "col-12 col-sm-12" :id "map" :style {:margin-top "0px" :height "100%"}})
               ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
             )
-            (dom/h4 {:style {:display:inline true}} "Sensors"
-              (dom/table {:className "table table-responsive"}
-                (dom/tbody
-                  (dom/tr
-	                (dom/td
-	                  (dom/i {:className "fa fa-battery-three-quarters" :id "io1_" :style {:color "#ff0000"}})
-	                )
-	                (dom/td
-	                  "Battery power"
-	                )
-                  )
-                  (dom/tr {:className "hidden"}
-                  )
-                )
-              )
-
-            )
             (dom/h4
               (dom/i {:className "fa fa-phone"} "Contacts:")
             )
@@ -583,7 +572,7 @@
 
             (dom/div
 
-              (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
+              (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
               (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
 
               (b/button {:className "btn btn-info" :onClick (fn [e]
@@ -608,10 +597,11 @@
 
 (sec/defroute devdetail-page "/devdetail/:devid" [devid]
   (let[
-      dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))
+      dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))       
       ;tr2 (.log js/console "hjkhkh")
     ]
     (swap! app-state assoc-in [:device] dev )
+    (swap! app-state assoc-in [:isinsert] false)
     (om/root devdetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})
@@ -621,8 +611,8 @@
 
 
 (sec/defroute devdetail-new-page "/devdetail" {}
-  (
-    (swap! app-state assoc-in [:device]  {:id "" :lat 32.08088 :lon 34.78057 :port 666 :contacts [{:tel "121234"}]} ) 
+  ( let []
+    (swap! app-state assoc-in [:device]  {:id "" :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :port 666 :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)]} ) 
     (swap! app-state assoc-in [:isinsert]  true )
     (swap! shelters/app-state assoc-in [:view] 7) 
     ;(swap! app-state assoc-in [:group ]  "group" ) 

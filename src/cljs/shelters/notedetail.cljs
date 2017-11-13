@@ -458,7 +458,7 @@
               
               (dom/div {:className "panel-heading"}
                 (dom/h5 "Name: " 
-                  (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
+                  (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:text (:note @app-state))} )
                 )
               )
               ;; (dom/div {:className "checkbox"}
@@ -486,9 +486,9 @@
 
 
 
-(sec/defroute notedetail-page "/notedetail/:noteid" {noteid :noteid}  
+(sec/defroute notedetail-page "/notedetail/:noteid" {noteid :noteid}
   (let [
-    thenote (first (filter (fn [x] (if (= (:id x) noteid) true false)) (:notifications @shelters/app-state)))
+    thenote (first (filter (fn [x] (if (= (:id x) (js/parseInt noteid)) true false)) (:notifications @shelters/app-state)))
     ]
     (swap! app-state assoc-in [:note] thenote)
     ;(setNote)

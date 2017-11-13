@@ -132,15 +132,17 @@
       ]
       (dom/div {:style {:padding-top "70px"}}
         (om/build shelters/website-view data {})
+
         (dom/div {:className "panel panel-primary"}
           (dom/h1 {:style {:text-align "center"}} (:current @data))
+
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (
               (shelters/goUserDetail e)
               (-> js/document .-location (set! "#/userdetail"))
-))} "הוסף משתמש חדש")
+  ))} "הוסף משתמש חדש")
           )
-          (dom/div {:className "panel-heading" :style {:padding "0px"}}
+          (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
             (dom/div {:className "row"}
 
               (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (

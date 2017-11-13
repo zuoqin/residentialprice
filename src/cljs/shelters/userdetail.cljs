@@ -84,7 +84,7 @@
   (let [
       users (:users @shelters/app-state)  
       deluser (remove (fn [user] (if (= (:userid user) (:userid (:user @app-state))) true false  )) users)
-      adduser (into [] (conj deluser {:login (:login (:user @app-state)) :role (:role (:user @app-state)) :userid (:userid (:user @app-state)) :firstname (:firstname (:user @app-state)) :lastname (:lastname (:user @app-state)) :email (:email (:user @app-state)) :addedby (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state))) :islocked (:islocked (:user @app-state))}))
+      adduser (into [] (conj deluser {:login (:login (:user @app-state)) :role (:role (:user @app-state)) :userid (:userid (:user @app-state)) :firstname (:firstname (:user @app-state)) :lastname (:lastname (:user @app-state)) :email (:email (:user @app-state)) :addedby (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state))) :islocked (:islocked (:user @app-state)) :iscommand (:iscommand (:user @app-state))}))
     ]
     (swap! shelters/app-state assoc-in [:users] adduser)
     (js/window.history.back)
@@ -124,7 +124,7 @@
         :token (str (:token (:token @shelters/app-state)))
       }
       :format :json
-      :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)}] }})
+      :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)} {:key "iscommand" :value (if (:iscommand (:user @app-state)) 1 0)}] }})
   )
 )
 
@@ -187,7 +187,7 @@
       :headers {
         :token (str (:token (:token @shelters/app-state)) )}
       :format :json
-      :params { :credentials {:userName (:login (:user @app-state)) :password (:password (:user @app-state))} :profile {:userId "" :userName (:login (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)}]}  }})
+      :params { :credentials {:userName (:login (:user @app-state)) :password (:password (:user @app-state))} :profile {:userId "" :userName (:login (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)} {:key "iscommand" :value (if (:iscommand (:user @app-state)) 1 0)}]}  }})
   )
 )
 
@@ -257,6 +257,35 @@
                 (.stopPropagation e)
                 ;(.stopImmediatePropagation (.. e -nativeEvent) )
                 (swap! app-state assoc-in [:user :islocked] islocked)
+              )
+            )
+          )
+        )
+      )
+    )
+
+
+    (jquery
+      (fn []
+         (-> (jquery (str "#chckbcommand"))
+           (.bootstrapToggle (clj->js {:on "יכול לשלוח פקודה" :off "לא יכול לשלוח פקודה"}))
+         )
+      )
+    )
+
+    (jquery
+      (fn []
+        (-> (jquery (str "#chckbcommand"))
+          (.on "change"
+            (fn [e]
+              (let [
+                  iscommand (.. e -currentTarget -checked)
+
+                  ;tr1 (.log js/console "gg")
+                ]
+                (.stopPropagation e)
+                ;(.stopImmediatePropagation (.. e -nativeEvent) )
+                (swap! app-state assoc-in [:user :iscommand] iscommand)
               )
             )
           )
@@ -478,9 +507,15 @@
             )
 
 
-            (dom/form {:style {:padding-top "5px"}}
+            (dom/div {:className "row" :style {:padding-top "5px"}}
               (dom/label {:className "checkbox-inline"}
                 (dom/input {:id (str "chckblock") :type "checkbox" :checked (:islocked (:user @data)) :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34"})
+              )
+            )
+
+            (dom/div {:className "row" :style {:padding-top "5px"}}
+              (dom/label {:className "checkbox-inline"}
+                (dom/input {:id (str "chckbcommand") :type "checkbox" :checked (:iscommand (:user @data)) :data-toggle "toggle" :data-size "large" :data-width "200" :data-height "34"})
               )
             )
 
@@ -509,7 +544,7 @@
               (dom/div
                 (dom/div {:className "row"}
                   (dom/div {:className "col-xs-5"})
-                  (dom/div {:className "col-xs-1"} (dom/h5 "Password: "))
+                  (dom/div {:className "col-xs-2"} (dom/h5 "New Password: "))
                   (dom/div {:className "col-xs-2" :style {:margin-top "4px"}} (dom/input {:id "password" :type "password" :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value password}))
                   (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
                     (dom/span {:className "asterisk"} "*")
@@ -518,7 +553,7 @@
 
                 (dom/div {:className "row"}
                   (dom/div {:className "col-xs-5"})
-                  (dom/div {:className "col-xs-1"} (dom/h5 "New Password: "))
+                  (dom/div {:className "col-xs-2"} (dom/h5 "New Password again: "))
                   (dom/div {:className "col-xs-2" :style {:margin-top "4px"}}
                     (dom/input {:id "newpassword" :type "password"
                       :style {:width "100%"}
@@ -565,7 +600,7 @@
 (sec/defroute userdetail-new-page "/userdetail" {}
   (
     let [
-       emptyuser {:userid "" :password "" :login "" :firstname "" :lastname "" :email "" :role {:id "" :name "" :description "" :addedby (:userid (:token @shelters/app-state)) :islocked false}}
+       emptyuser {:userid "" :password "" :login "" :firstname "" :lastname "" :email "" :role {:id "" :name "" :description "" :addedby (:userid (:token @shelters/app-state)) :islocked false :iscommand false}}
     ]
     (swap! app-state assoc-in [:user] emptyuser)
     (swap! app-state assoc-in [:isinsert]  true)

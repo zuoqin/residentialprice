@@ -92,6 +92,7 @@
         (om/build shelters/website-view data {})
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
         )
+          (dom/h1 {:style {:text-align "center"}} (:current @data))
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
           .-location
@@ -107,6 +108,14 @@
           ;     ; )
           ;   )
           ; )
+          (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :border-left "1px solid"}}
+                (dom/h5 "Name")
+              )
+            )
+
+          )
           (om/build showgroups-view  data {})
         )
       )

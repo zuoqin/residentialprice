@@ -22,7 +22,7 @@
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}] :notifications [{:id 1 :type "error" :text "This device works incorrect"} {:id 2 :type "common" :text "That device working properly"}] :devices [] :users []}))
+(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}] :alerts [{:id 1001 :type "error" :text "In device theer is an error"} {:id 1002 :type "common" :text "In That device no error"}] :notifications [{:id 101 :type "error" :text "This device works incorrect"} {:id 102 :type "common" :text "That device working properly"}] :devices [] :users []}))
 
 
 
@@ -209,6 +209,29 @@
 
       (:notifications @app-state))
 
+    )
+  )
+)
+
+(defcomponent alerts-navbar [data owner]
+  (render [_]
+    (dom/ul {:className "dropdown-menu dropdown-alerts"}
+      (map (fn [item]
+        (let []
+          (dom/li
+            (dom/a {:href (str "/#/notedetail/" (:id item)) }
+              (dom/div
+                (dom/i {:className "fa fa-comment fa-fw"})
+                (:text item)
+                (dom/span {:className "pull-right text-muted small"}
+                  "4 minutes ago"
+                )
+              )
+            )
+          )
+        ))
+
+      (:alerts @app-state))
     )
   )
 )
@@ -1106,10 +1129,12 @@
 
 
 
-(defcomponent map-navigation-view [data owner]
+(defcomponent map-navigation-view [data owner]  
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
+
+      role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
       (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
         (dom/div {:className "navbar-header"}
@@ -1148,64 +1173,70 @@
               )
             )
 
-            (dom/li
-              (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
-                (dom/i {:className "fa fa-key"})
-                "משתמשים והרשאות"
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "ניהול מערכת"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                        (dom/i {:className "fa fa-users"})
-                        "ניהול קבוצות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
-                        (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item" :onClick (fn [e] (goRoles e))}
-                        (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/polygons" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "ניהול Polygons"
-                      )
-                    )
-                  )
+            (if (not= role "1629d218-9949-431c-b8ab-e4bc374faed3")
+              (dom/li
+                (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
+                  (dom/i {:className "fa fa-key"})
+                  "משתמשים והרשאות"
                 )
               )
+            ) 
+
+            (if (not= role "1629d218-9949-431c-b8ab-e4bc374faed3")
+              (dom/li {:className "dropdown"}
+                (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+                  (dom/span {:className "caret"})
+                  (dom/i {:className "fa fa-archive"})
+                  "ניהול מערכת"
+                )
+                (dom/ul {:id "login-dp2" :className "dropdown-menu"}
+                  (dom/li
+                    (dom/div {:className "row"}
+                      (dom/div {:className "col-md-12"}
+                        (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                          (dom/i {:className "fa fa-users"})
+                          "ניהול קבוצות"
+                        )
+                      )
+                    )
+                  )
+
+                  (dom/li
+                    (dom/div {:className "row"}
+                      (dom/div {:className "col-md-12"}
+                        (dom/a {:href "/devices" :className "menu_item"}
+                          (dom/i {:className "fa fa-hdd-o"})
+                          " מאגר יחידות"
+                        )
+                      )
+                    )
+                  )
+
+                  (dom/li
+                    (dom/div {:className "row"}
+                      (dom/div {:className "col-md-12"}
+                        (dom/a {:href "/#/roles" :className "menu_item" :onClick (fn [e] (goRoles e))}
+                          (dom/i {:className "fa fa-phone"})
+                          "אנשי קשר"
+                        )
+                      )
+                    )
+                  )
+
+                  (dom/li
+                    (dom/div {:className "row"}
+                      (dom/div {:className "col-md-12"}
+                        (dom/a {:href "/polygons" :className "menu_item"}
+                          (dom/i {:className "fa fa-globe"})
+                          "ניהול Polygons"
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+
+
             )
 
 
@@ -1275,6 +1306,14 @@
                 (str (count (:notifications @data)))
               )
               (om/build notifications-navbar data {})
+            )
+
+            (dom/li {:className "dropdown"}
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false"}
+                (dom/i {:className "fa fa-exclamation-circle fa-fw"})
+                (str (count (:alerts @data)))
+              )
+              (om/build alerts-navbar data {})
             )
           )
         )

@@ -129,7 +129,7 @@
               (let []
                 (dom/div {:className "col-xs-3" :style {:border-bottom "solid" :border-right "solid"}}
                   (dom/div {:className "row" :style {:font-weight "bold" :text-align "center"}}
-                    (:name item)
+                    (if (or (nil? (:name item)) (< (count (:name item)) 1)) "empty" (:name item)) 
                   )
                   (dom/div {:className "row"}
                     (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
@@ -150,43 +150,64 @@
                     )
                   )
 
-                  (dom/div {:className "row"}          
+                  (dom/div {:className "row"}
                     (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                        (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "brown"}})
+                        (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "brown"}})
                       )
                     )
                     (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                        (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "blue"}})
+                        (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "blue"}})
                       )
                     )
                     (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                        (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                        (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "green"}})
                       )
                     )
                   )
 
                   (dom/div {:className "row"}
-                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center"}}
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center" :border-bottom "dotted"}}
                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                        (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "aqua"}})
+                        (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "aqua"}})
                       )
                     )
-                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center"}}
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                        (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                        (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "yellow"}})
                       )
                     )
-                    (dom/div {:className "col-xs-4" :style {:border-right "dotted"  :text-align "center"}}
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center"}}
                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                        (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "30px" :font-size "xx-large" :color "green"}})
+                        (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "green"}})
                       )
                     )
                   )
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center" :height "75px"}}
+                      (b/button {:className "btn btn-primary" :style {:margin-top "17px"} :onClick (fn [e] (
+                                                                                          (shelters/goUserDetail e)
+                                                                                          (-> js/document .-location (set! "#/userdetail"))
+                                                                                          ))} "First command")
+                    )
 
-                )                
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center" :height "75px"}}
+                      (b/button {:className "btn btn-primary" :style {:margin-top "17px"} :onClick (fn [e] (
+              (shelters/goUserDetail e)
+              (-> js/document .-location (set! "#/userdetail"))
+  ))} "Command num2")
+                    )
+
+                    (dom/div {:className "col-xs-4" :style {:border-right "dotted" :border-bottom "dotted" :text-align "center" :height "75px"}}
+                      (b/button {:className "btn btn-primary" :style {:margin-top "17px"} :onClick (fn [e] (
+              (shelters/goUserDetail e)
+              (-> js/document .-location (set! "#/userdetail"))
+  ))} "Third command")
+                    )
+                  )
+                )
                 
               )
             ) rowitems)

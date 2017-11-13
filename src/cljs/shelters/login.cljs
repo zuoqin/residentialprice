@@ -22,7 +22,7 @@
             [shelters.userdetail :as userdetail]
 
             [shelters.reportunits :as reportunits]
-
+            [shelters.notedetail :as notedetail]
             [shelters.roledetail :as roledetail]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
@@ -252,8 +252,16 @@
 
     islocked (if (or (nil? islocked) (= islocked 0)) false true)
 
-    tr1 (.log js/console (str  "islocked=" islocked))
-    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email) :addedby (if (nil? addedby) "" addedby) :islocked islocked}
+    iscommand (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "iscommand") true false)
+      ) ) (get user "details"))) "value")
+
+    iscommand (if (or (nil? iscommand) (= iscommand 0)) false true)
+
+    ;tr1 (.log js/console (str  "islocked=" islocked))
+    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email) :addedby (if (nil? addedby) "" addedby) :islocked islocked :iscommand iscommand}
     ]
     ;
     result
