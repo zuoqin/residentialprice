@@ -19,3 +19,4 @@
 ;(def apipath "https://virtserver.swaggerhub.com/Inocodes/Shelters/1.0.0/")
 (def demouser "beeper")
 (def demopassword "123456")
+(def dispatcherrole "1629d218-9949-431c-b8ab-e4bc374faed3")

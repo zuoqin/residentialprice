@@ -473,9 +473,7 @@
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
             (b/button {:className "btn btn-default" :onClick (fn [e] (updateNote))} "Update")
-            (b/button {:className "btn btn-info" :onClick (fn [e] (-> js/document
-              .-location
-             (set! "#/groups")))  } "Cancel")
+            (b/button {:className "btn btn-info" :onClick (fn [e] (js/window.history.back))} "Cancel")
           )
         )
       )
@@ -489,6 +487,10 @@
 (sec/defroute notedetail-page "/notedetail/:noteid" {noteid :noteid}
   (let [
     thenote (first (filter (fn [x] (if (= (:id x) (js/parseInt noteid)) true false)) (:notifications @shelters/app-state)))
+
+    thenote (if (nil? thenote) (first (filter (fn [x] (if (= (:id x) (js/parseInt noteid)) true false)) (:alerts @shelters/app-state))) thenote)
+
+    tr1 (.log js/console (str "note=" thenote) )
     ]
     (swap! app-state assoc-in [:note] thenote)
     ;(setNote)

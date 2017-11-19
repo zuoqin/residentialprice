@@ -22,7 +22,7 @@
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:state 0 :search "" :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}] :alerts [{:id 1001 :type "error" :text "In device theer is an error"} {:id 1002 :type "common" :text "In That device no error"}] :notifications [{:id 101 :type "error" :text "This device works incorrect"} {:id 102 :type "common" :text "That device working properly"}] :devices [] :users []}))
+(defonce app-state (atom {:state 0 :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}] :alerts [{:id 1001 :type "error" :text "In device theer is an error"} {:id 1002 :type "common" :text "In That device no error"}] :notifications [{:id 101 :type "error" :text "This device works incorrect"} {:id 102 :type "common" :text "That device working properly"}] :devices [] :users []}))
 
 
 
@@ -213,6 +213,38 @@
   )
 )
 
+(defcomponent notifications-table [data owner]
+  (render [_]
+    (dom/div {:className "list-group" :style {:display "block"}}
+      (map (fn [item]
+        (let []
+          (dom/div {:className "row" :style {:border-top "1px solid"}}
+            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+              (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
+            )
+            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+                (:id item)
+              )
+            )
+            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+                (:text item)
+                (dom/span {:className "pull-right text-muted small"}
+                  "4 minutes ago"
+                )
+              )
+            )
+          )
+        ))
+
+      (:notifications @app-state))
+
+    )
+  )
+)
+
+
 (defcomponent alerts-navbar [data owner]
   (render [_]
     (dom/ul {:className "dropdown-menu dropdown-alerts"}
@@ -222,6 +254,36 @@
             (dom/a {:href (str "/#/notedetail/" (:id item)) }
               (dom/div
                 (dom/i {:className "fa fa-comment fa-fw"})
+                (:text item)
+                (dom/span {:className "pull-right text-muted small"}
+                  "4 minutes ago"
+                )
+              )
+            )
+          )
+        ))
+
+      (:alerts @app-state))
+    )
+  )
+)
+
+(defcomponent alerts-table [data owner]
+  (render [_]
+    (dom/div {:className "list-group" :style {:display "block"}}
+      (map (fn [item]
+        (let []
+          (dom/div {:className "row" :style {:border-top "1px solid"}}
+            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+              (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
+            )
+            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+                (:id item)
+              )
+            )
+            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
                 (:text item)
                 (dom/span {:className "pull-right text-muted small"}
                   "4 minutes ago"
@@ -771,7 +833,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top navbar-inverse" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top navbar-inverse" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -781,7 +843,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand"}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -941,7 +1003,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -951,7 +1013,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand"}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1136,7 +1198,7 @@
 
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1146,7 +1208,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand"}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1173,7 +1235,7 @@
               )
             )
 
-            (if (not= role "1629d218-9949-431c-b8ab-e4bc374faed3")
+            (if (not= role settings/dispatcherrole)
               (dom/li
                 (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
                   (dom/i {:className "fa fa-key"})
@@ -1182,7 +1244,7 @@
               )
             ) 
 
-            (if (not= role "1629d218-9949-431c-b8ab-e4bc374faed3")
+            (if (not= role settings/dispatcherrole)
               (dom/li {:className "dropdown"}
                 (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                   (dom/span {:className "caret"})
@@ -1299,21 +1361,27 @@
             )
           )  
 
-          (dom/ul {:className "nav navbar-top-links navbar-right"}
+          (dom/ul {:className "nav navbar-top-links navbar-right" :style {:background-color "grey"}}
             (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false"}
-                (dom/i {:className "fa fa-bell fa-fw"})
-                (str (count (:notifications @data)))
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+                (dom/i {:className "fa fa-bell fa-fw" :style {:color "red"}})
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px"} :onClick (fn [e]
+                  (let []
+(swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
+(swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
               )
-              (om/build notifications-navbar data {})
+              ;(om/build notifications-navbar data {})
             )
 
             (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false"}
-                (dom/i {:className "fa fa-exclamation-circle fa-fw"})
-                (str (count (:alerts @data)))
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+                (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red"}})
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px"} :onClick (fn [e] (let []
+                                                                                     (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
+                                                                                     (swap! app-state assoc :isnotification false)
+                                                                                     ) )} (str (count (:alerts @data))))
               )
-              (om/build alerts-navbar data {})
+              ;(om/build alerts-navbar data {})
             )
           )
         )
@@ -1327,7 +1395,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1337,7 +1405,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand"}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1495,7 +1563,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1505,7 +1573,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand"}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1773,7 +1841,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1783,7 +1851,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand"}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "75px" :height "35px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
