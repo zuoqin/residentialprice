@@ -842,7 +842,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;(dom/span {:id "pageTitle"} "Beeper")
           )          
@@ -1012,7 +1012,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
@@ -1198,7 +1198,7 @@
 
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "140px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1207,7 +1207,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
@@ -1357,8 +1357,10 @@
             )
             (dom/li
               (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
+      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
             )
+            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
+            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
           )  
 
           (dom/ul {:className "nav navbar-top-links navbar-right" :style {:background-color "grey"}}
@@ -1404,7 +1406,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
@@ -1572,7 +1574,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
@@ -1736,7 +1738,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/span {:id "pageTitle"} (:text (:current @data)) )
           )
         )
@@ -1850,7 +1852,7 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand"}
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
             (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          

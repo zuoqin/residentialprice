@@ -373,29 +373,41 @@
     (let []
       (dom/div
         (om/build shelters/website-view data {})
+
+
+        (dom/div {:className "row maprow" :style {:height (case (or (:isalert @data) (:isnotification @data)) true "80%" "100%")}}
+          (dom/div  {:className "col-3 col-sm-3 tree" :id "tree"})
+          (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
+          (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
+        )
+
+
         (if (:isalert @data)
-          (dom/div {:className "row" :style {:padding-top "70px" :height (str (+ 55 (* 35 (count (:alerts @data)))) "px")}}
-              (dom/div {:className "panel panel-primary"}
-  (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                (dom/div {:className "row"}
+          (dom/div {:className "row" :style {:padding-top "10px" :height (str (+ 55 (* 35 (count (:alerts @data)))) "px")}}
+            (dom/div  {:className "col-3 col-sm-3 tree"})
+            (dom/div {:className "col-9 col-sm-9"}
+              (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
+                (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin "0px"}}
+                  (dom/div {:className "row"}
 
-                  (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
 
-                  (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "id")
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "id")
 
 
-                  (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
+
+                  )
 
                 )
               )
+              (om/build shelters/alerts-table data {})
             )
-
-            (om/build shelters/alerts-table data {})
           )
         )
 
         (if (:isnotification @data)
-          (dom/div {:className "row" :style {:height (str (+ 55 (* 35 (count (:notifications @data)))) "px") :padding-top "70px"}}
+          (dom/div {:className "row" :style {:height (str (+ 55 (* 35 (count (:notifications @data)))) "px") :padding-top "10px"}}
             (dom/div {:className "panel panel-primary"}
               (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
                 (dom/div {:className "row"}
@@ -410,12 +422,6 @@
             )
             (om/build shelters/notifications-table data {})
           )          
-        )
-
-        (dom/div {:className "row maprow" :style {:height (case (or (:isalert @data) (:isnotification @data)) true "80%" "100%")}}
-          (dom/div  {:className "col-3 col-sm-3 tree" :id "tree"})
-          (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
-          (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
         )
       ) 
     )
