@@ -90,14 +90,14 @@
     ;tr1 (.log js/console (str "id in calcGroupLatLon=" id))
     units (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:unitid x)) true false)) (:devices @shelters/app-state)))) (getChildUnits id [])) 
  
-    minlat (apply min (map (fn [x] (:lat x)) units))
-    maxlat (apply max (map (fn [x] (:lat x)) units))
+    minlat (if (= (count units) 0) (:lat (:selectedcenter @shelters/app-state)) (apply min (map (fn [x] (:lat x)) units))) 
+    maxlat (if (= (count units) 0) (:lat (:selectedcenter @shelters/app-state)) (apply max (map (fn [x] (:lat x)) units)))
 
     ;tr1 (.log js/console (str "first unit=" (first units)))
     lat (/ (+ minlat maxlat) 2)
 
-    minlon (apply min (map (fn [x] (:lon x)) units))
-    maxlon (apply max (map (fn [x] (:lon x)) units))
+    minlon (if (= (count units) 0) (:lon (:selectedcenter @shelters/app-state)) (apply min (map (fn [x] (:lon x)) units)))
+    maxlon (if (= (count units) 0) (:lon (:selectedcenter @shelters/app-state)) (apply max (map (fn [x] (:lon x)) units)))
 
 
     lon (/ (+ minlon maxlon) 2)
@@ -386,13 +386,13 @@
           (dom/div {:className "row" :style {:padding-top "10px" :height (str (+ 55 (* 35 (count (:alerts @data)))) "px")}}
             (dom/div  {:className "col-3 col-sm-3 tree"})
             (dom/div {:className "col-9 col-sm-9"}
-              (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin "0px"}}
+              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
                   (dom/div {:className "row"}
 
                     (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
 
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "id")
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "device")
 
 
                     (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
@@ -408,19 +408,22 @@
 
         (if (:isnotification @data)
           (dom/div {:className "row" :style {:height (str (+ 55 (* 35 (count (:notifications @data)))) "px") :padding-top "10px"}}
-            (dom/div {:className "panel panel-primary"}
-              (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
+            (dom/div  {:className "col-3 col-sm-3 tree"})
+            (dom/div {:className "col-9 col-sm-9"}
+              (dom/div {:className "panel panel-primary"}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
 
-                  (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "id")
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "id")
 
 
-                  (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
+                  )
                 )
               )
+              (om/build shelters/notifications-table data {})
             )
-            (om/build shelters/notifications-table data {})
           )          
         )
       ) 
@@ -432,9 +435,13 @@
 
 
 (sec/defroute map-page "/map" []
-   (om/root map-view
-            shelters/app-state
-            {:target (. js/document (getElementById "app"))}))
+  (let []
+    (swap! shelters/app-state assoc-in [:view] 2)
+    (om/root map-view
+          shelters/app-state
+          {:target (. js/document (getElementById "app"))})
+  )
+)
 
 
 

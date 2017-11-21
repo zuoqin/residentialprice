@@ -1,4 +1,4 @@
-(ns shelters.devdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.unitdetail  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -236,55 +236,6 @@
   ) 
 )
 
-(defn addplace [place]
-  (let [
-    ;tr1 (.log js/console place)
-    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" (str iconBase "red_point.png") "title" (.. place -name)})
-
-    marker (js/google.maps.Marker. marker-options)
-    ]
-    (.panTo (:map @app-state) (.. place -geometry -location))
-
-    (if (not (nil? (:marker @app-state))) (.setMap (:marker @app-state) nil))
-    (swap! app-state assoc-in [:marker] marker)
-    (swap! app-state assoc-in [:device :lat] (.lat (.. place -geometry -location)))
-    (swap! app-state assoc-in [:device :lon] (.lng (.. place -geometry -location)))
-    (swap! app-state assoc-in [:device :address] (.. place -formatted_address))
-  )
-)
-
-
-(defn addsearchbox []
-  (let [
-
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))) "map" (:map @app-state) "icon" (str iconBase "red_point.png") "title" (:name (:device @app-state))})
-
-    marker (js/google.maps.Marker. marker-options)
-
-    ;;Create the search box and link it to the UI element.
-    input (. js/document (getElementById "pac-input"))
-    searchbox (js/google.maps.places.SearchBox. input)
-    ;tr1 (.log js/console input)
-    ]
-    (.push (aget (.-controls (:map @app-state)) 1) input)
-    (if (not (nil? (:marker @app-state))) (.setMap (:marker @app-state) (:map @app-state)))
-    (jquery
-      (fn []
-        (-> searchbox
-          (.addListener "places_changed"
-            (fn []              
-              ;(.log js/console (.getPlaces searchbox))
-              (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
-            )
-          )
-        )
-      )
-    )
-    (.panTo (:map @app-state) (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))))
-  )
-)
-
-
 (defn setNewUnitValue [key val]
   (swap! app-state assoc-in [(keyword key)] val)
 )
@@ -294,10 +245,10 @@
 (defn setcontrols [value]
   (case value
     46 (setContactsDropDown)
-    43 (go
-         (<! (timeout 100))
-         (addsearchbox)
-       )
+    ;; 43 (go
+    ;;      (<! (timeout 100))
+    ;;      (addsearchbox)
+    ;;    )
   )
 )
 
@@ -404,27 +355,6 @@
   )
 )
 
-(defcomponent parentgroups-view [data owner]
-  (render
-    [_]
-    (dom/div
-      (map (fn [item]
-        (let [            
-            isparent (if (and (nil? (:groups (:device @app-state)))) false (if (> (.indexOf (:groups (:device @app-state)) (:id item)) -1) true false))
-          ]
-          (dom/form
-            (dom/label
-              (:name item)
-              (dom/input {:id (str "chckgroup" (:id item)) :type "checkbox" :checked isparent :onChange (fn [e] (handle-chkbsend-change e ))})
-            )
-          )
-        )
-      )
-      (sort (comp comp-groups) (:groups @shelters/app-state)))
-    )
-  )
-
-)
 
 (defcomponent showcontacts-view [data owner]
   (render
@@ -457,33 +387,64 @@
   )
 )
 
-(defcomponent devdetail-page-view [data owner]
-  (did-mount [_]
-    (let [
-      map-canvas (. js/document (getElementById "map"))
-      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @shelters/app-state)) :lng (:lon (:selectedcenter @shelters/app-state))} "zoom" 12})
-      map (js/google.maps.Map. map-canvas map-options)
-      tr1 (swap! app-state assoc-in [:map] map)
-      tr1 (.set map "disableDoubleClickZoom" true)
-      ]
-      (onMount data)
+(defcomponent exercise-table [data owner]
+  (render [_]
+    (dom/div {:className "list-group" :style {:display "block"}}
+      (map (fn [item]
+        (let []
+          (dom/div {:className "row" :style {}}
+            (dom/div {:className "col-xs-4" :style {}}
+              "4 minutes ago"
+            )
+            (dom/div {:className "col-xs-4" :style {}}
+              (:id item)
+            )
+            (dom/div {:className "col-xs-4" :style {}}
+              (:text item)
+            )
+          )
+        ))
+      (:alerts @shelters/app-state))
+    )
+  )
+)
 
-      (jquery
-        (fn []
-          (-> map
-            (.addListener "dblclick"
-              (fn [e]
-                ;(.log js/console (str "LatLng=" (.. e -latLng)))
 
-                (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
-                (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
-                (.stopPropagation (.. js/window -event))
-                (.stopImmediatePropagation (.. js/window -event))
+(defcomponent alerts-table [data owner]
+  (render [_]
+    (dom/div {:className "list-group" :style {:display "block"}}
+      (map (fn [item]
+        (let []
+          (dom/div {:className "row" :style {}}
+            (dom/div {:className "col-xs-4" :style {}}
+              (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
+            )
+            (dom/div {:className "col-xs-4" :style {}}
+              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
+                (:id item)
+              )
+            )
+            (dom/div {:className "col-xs-4" :style {}}
+              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
+                (:text item)
+                (dom/span {:className "pull-right text-muted small"}
+                  "  4 minutes ago"
+                )
               )
             )
           )
-        )
-      )
+        ))
+
+      [])
+    )
+  )
+)
+
+(defcomponent devdetail-page-view [data owner]
+  (did-mount [_]
+    (let [
+      ]
+      (onMount data)
     )
   )
   (did-update [this prev-props prev-state]
@@ -500,92 +461,87 @@
         
         (dom/h3 {:style {:text-align "center"}}
           (dom/i {:className "fa fa-cube"})
-          (if (:isinsert @data)
-            (str "Insert Device")
-            (str "Device Info - " (:controller (:device @app-state)) )
+          (str "Device Info - " (:controller (:device @app-state)) )
+        )
+        (dom/div {:className "row"}
+          (dom/div {:className "col-xs-3"}
+            (dom/div {:className "row"}
+              (dom/h5 "Controller Id: " (:controller (:device @data)))
+
+              (dom/h5 {:style {:display:inline true}} "Status: " (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
+              )
+
+              (dom/h5 "Name: " (:name (:device @data)))
+
+              (dom/h5 "Address: " (:address (:device @data)))
+            )
+
+            (dom/div {:className "row"}
+              (dom/h5 "Controller Id: " (:controller (:device @data)))
+
+              (dom/h5 {:style {:display:inline true}} "Status: " (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
+              )
+
+              (dom/h5 "Name: " (:name (:device @data)))
+
+              (dom/h5 "Address: " (:address (:device @data)))
+            )
+          )
+
+          (dom/div {:className "col-xs-8"}
+            (dom/div {:className "row"}
+              (dom/div {:style {:text-align "center"}} (dom/h2 (str "Alerts History")))
+              (dom/div {:className "col-xs-6 panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
+                  "Exercises"
+                )
+                (om/build exercise-table data {})
+              )
+
+              (dom/div {:className "col-xs-6 panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
+                  "Real world"
+                )
+                (om/build alerts-table data {})
+              )
+            )
+
+
+            (dom/div {:className "row"}
+              (dom/div {:style {:text-align "center"}} (dom/h2 (str "Notifications History")))
+              (dom/div {:className "col-xs-6 panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
+                  "Exercises"
+                )
+                (om/build exercise-table data {})
+              )
+
+              (dom/div {:className "col-xs-6 panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
+                  "Real world"
+                )
+                (om/build alerts-table data {})
+              )
+            )
+
+          )
+
+          (dom/div {:className "col-xs-1"}
+          )
+
+        )
+
+
+        (dom/div {:className "row"}
+          (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
+          (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
+
+          (b/button {:className "btn btn-info" :onClick (fn [e]
+            ;(shelters/goDashboard e)
+            (js/window.history.back)
+            )  } "Cancel"
           )
         )
-        
-        (dom/div {:className "col-xs-4"})
-        (dom/div {:className "col-xs-4"}
-
-            (if (:isinsert @data)
-              (dom/div {:className "row"}
-                (dom/div {:className "col-xs-3"} (dom/h5 "Controller Id:"))
-                (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                  (dom/input {:id "controller" :type "text" :readOnly (if (:isinsert @data) false true) :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))}
-                  )
-                )
-                (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
-                  (dom/span {:className "asterisk"} "*")
-                )
-              )
-            )
-
-
-            (dom/h5 {:style {:display:inline true}} "Status: "
-              (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
-            )
-
-
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 "Name:"))
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))})
-              )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
-                (dom/span {:className "asterisk"} "*")
-              )
-            )
-
-
-
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 (str "Address: ")))
-              (dom/div {:className "col-xs-9" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "address" :style {:width "100%"} :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
-              )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
-                (dom/span {:className "asterisk"} "*")
-              )
-            )
-
-            (dom/h5 {:style {:display:inline true}} "Latitude: "
-               (:lat (:device @data))
-               ;(dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
-            )
-            (dom/h5 {:style {:display:inline true}} "Longitude: "
-               (:lon (:device @data))
-               ;(dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
-            )
-            (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
-
-            (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px"}}
-              (dom/div  {:className "col-12 col-sm-12" :id "map" :style {:margin-top "0px" :height "100%"}})
-              ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
-            )
-            (dom/h4
-              (dom/i {:className "fa fa-phone"} "Contacts:")
-            )
-            (om/build showcontacts-view data {})
-            (om/build parentgroups-view data {})
-
-            (dom/div
-
-              (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
-              (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
-
-              (b/button {:className "btn btn-info" :onClick (fn [e]
-                ;(shelters/goDashboard e)
-                (js/window.history.back)
-                )  } "Cancel"
-              )
-            )
-
-        )
-
-        (dom/div {:className "col-xs-9"}
-	)
       )
     )
   )
@@ -595,7 +551,7 @@
 
 
 
-(sec/defroute devdetail-page "/devdetail/:devid" [devid]
+(sec/defroute unitdetail-page "/unitdetail/:devid" [devid]
   (let[
       dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))       
       ;tr2 (.log js/console "hjkhkh")
@@ -603,21 +559,6 @@
     (swap! app-state assoc-in [:device] dev )
     (swap! app-state assoc-in [:isinsert] false)
     (swap! shelters/app-state assoc-in [:view] 7)
-    (om/root devdetail-page-view
-             app-state
-             {:target (. js/document (getElementById "app"))})
-
-  )
-)
-
-
-(sec/defroute devdetail-new-page "/devdetail" {}
-  ( let []
-    (swap! app-state assoc-in [:device]  {:id "" :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :port 666 :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)]} ) 
-    (swap! app-state assoc-in [:isinsert]  true )
-    (swap! shelters/app-state assoc-in [:view] 7) 
-    ;(swap! app-state assoc-in [:group ]  "group" ) 
-    ;(swap! app-state assoc-in [:password] "" )
     (om/root devdetail-page-view
              app-state
              {:target (. js/document (getElementById "app"))})

@@ -14,7 +14,7 @@
             [shelters.devs :as devs]
             [shelters.devslist :as devslist]
             [shelters.devdetail :as devdetail]
-
+            [shelters.unitdetail :as unitdetail]
             [shelters.groups :as groups]
             [shelters.groupdetail :as groupdetail]
             [shelters.contacts :as contacts]
@@ -103,6 +103,41 @@
 )
 
 
+(defn map-command [command]
+  (let [
+    id (str (get command "commandId"))
+    name (get command "commandName")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id id :name name}
+    ]
+    ;
+    result
+  )
+)
+
+
+
+(defn OnGetCommands [response]
+  (swap! shelters/app-state assoc-in [:commands] (map map-command response) )
+  ;(reqsecurities)
+  (swap! app-state assoc-in [:state] 0)
+  (put! ch 42)
+)
+
+
+(defn reqcommands []
+  (GET (str settings/apipath "getCommands")
+    {:handler OnGetCommands
+     :error-handler error-handler
+     :headers {
+       :content-type "application/json"
+       :token (str (:token  (:token @shelters/app-state)))
+       }
+    }
+  )
+)
+
+
 (defn map-group [group]
   (let [
     id (str (get group "groupId"))
@@ -118,11 +153,12 @@
 )
 
 
+
 (defn OnGetGroups [response]
   (swap! shelters/app-state assoc-in [:groups] (map map-group response) )
   ;(reqsecurities)
   (swap! app-state assoc-in [:state] 0)
-  (put! ch 42)
+  (reqcommands)
 )
 
 

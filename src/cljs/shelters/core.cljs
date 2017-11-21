@@ -223,12 +223,12 @@
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
             )
             (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
                 (:id item)
               )
             )
             (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
                 (:text item)
                 (dom/span {:className "pull-right text-muted small"}
                   "4 minutes ago"
@@ -237,9 +237,7 @@
             )
           )
         ))
-
       (:notifications @app-state))
-
     )
   )
 )
@@ -251,12 +249,12 @@
       (map (fn [item]
         (let []
           (dom/li
-            (dom/a {:href (str "/#/notedetail/" (:id item)) }
+            (dom/a {:href (str "/#/unitdetail/" (:id item)) }
               (dom/div
                 (dom/i {:className "fa fa-comment fa-fw"})
                 (:text item)
                 (dom/span {:className "pull-right text-muted small"}
-                  "4 minutes ago"
+                  "  4 minutes ago"
                 )
               )
             )
@@ -278,15 +276,15 @@
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
             )
             (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
                 (:id item)
               )
             )
             (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/notedetail/" (:id item)) }                
+              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
                 (:text item)
                 (dom/span {:className "pull-right text-muted small"}
-                  "4 minutes ago"
+                  "  4 minutes ago"
                 )
               )
             )
@@ -1195,7 +1193,7 @@
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
-
+      ;tr1 (.log js/console (str "in map navigation"))
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
       (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "140px"}}
@@ -1361,7 +1359,7 @@
             )
             (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
             (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
-          )  
+          )
 
           (dom/ul {:className "nav navbar-top-links navbar-right" :style {:background-color "grey"}}
             (dom/li {:className "dropdown"}
