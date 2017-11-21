@@ -24,7 +24,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:map nil :markers []}))
+(defonce app-state (atom  {:map nil :markers [] :selectedunits []}))
 
 (def jquery (js* "$"))
 
@@ -126,6 +126,7 @@
 )
 
 (defn buildTreeGroups []
+  (swap! app-state assoc-in [:selectedunits] [])
   (do (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
 )
 
@@ -311,12 +312,35 @@
                ;table (-> (jquery "#dataTables-example") (.DataTable) )
                ;res (.data (.row table (.. e -currentTarget)) )
                res (js->clj data)
-               
+               unitid (get res "unitid")
              ]
-             (.log js/console res)
+             (.log js/console (str "unitid=" unitid))
              ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
-             (if (nil? (get res "unitid")) (setcenterbycity (get res "groupid")) (setcenterbydevice (get res "unitid")))
+             (if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
+             (if (= (.indexOf (:selectedunits @app-state) unitid) -1) 
+               (swap! app-state assoc-in [:selectedunits] (conj (:selectedunits @app-state) unitid))
+             )
              ;(gotoSelection (first res)) 
+            )
+          )
+        )
+
+
+        (.on "nodeUnselected"
+          (fn [event data] (
+             let [
+               ;table (-> (jquery "#dataTables-example") (.DataTable) )
+               ;res (.data (.row table (.. e -currentTarget)) )
+               res (js->clj data)
+               unitid (get res "unitid")
+             ]
+             (.log js/console (str "unitid=" unitid))
+             ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
+             ;(if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
+             (if (> (.indexOf (:selectedunits @app-state) unitid) -1) 
+               (swap! app-state assoc-in [:selectedunits] (remove (fn [x] (if (= unitid x) true false)) (:selectedunits @app-state)))
+             )
+             ;(gotoSelection (first res))
             )
           )
         )
@@ -349,7 +373,23 @@
 
 (initqueue)
 
+(defn OnDoCommand [response] 
+  (.log js/console (str response ))
+  ;;(.log js/console (str  (get (first response)  "Title") ))
+)
 
+
+(defn sendcommand1 []
+  (POST (str settings/apipath "doCommand" ;"?userId="(:userid  (:token @shelters/app-state))
+       )
+       {:handler OnDoCommand
+        :error-handler error-handler
+        :format :json
+        :headers {:token (str (:token  (:token @shelters/app-state)))}
+        :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (:selectedunits @app-state)}
+    }
+  )
+)
 
 
 (defcomponent map-view [data owner]
@@ -376,7 +416,11 @@
 
 
         (dom/div {:className "row maprow" :style {:height (case (or (:isalert @data) (:isnotification @data)) true "80%" "100%")}}
-          (dom/div  {:className "col-3 col-sm-3 tree" :id "tree"})
+          (dom/div  {:className "col-3 col-sm-3"}
+            (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} "Command")
+            (dom/div  {:className "tree" :id "tree"})
+          )
+          
           (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
           (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
         )

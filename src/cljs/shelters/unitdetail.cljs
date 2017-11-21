@@ -533,9 +533,6 @@
 
 
         (dom/div {:className "row"}
-          (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
-          (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
-
           (b/button {:className "btn btn-info" :onClick (fn [e]
             ;(shelters/goDashboard e)
             (js/window.history.back)
