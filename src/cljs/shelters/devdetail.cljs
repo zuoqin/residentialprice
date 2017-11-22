@@ -67,11 +67,10 @@
 
 (defn OnDeleteUnitError [response]
   (let [     
-      newdata {:tripid (get response (keyword "tripid") ) }
+      
     ]
 
   )
-  ;; TO-DO: Delete Trip from Core
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
@@ -81,7 +80,6 @@
       units (:devices @shelters/app-state)
       newunits (remove (fn [unit] (if (= (:id unit) (:id (:device @app-state)) ) true false)) units)
     ]
-    ;(swap! tripcore/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:devices] newunits)
     ;(shelters/goDashboard "")
     (js/window.history.back)
@@ -90,11 +88,9 @@
 
 (defn OnUpdateUnitError [response]
   (let [     
-      newdata {:tripid (get response (keyword "tripid") ) }
     ]
 
   )
-  ;; TO-DO: Delete Trip from Core
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
@@ -130,13 +126,12 @@
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
 )
 
 
 (defn OnCreateUnitError [response]
   (let [     
-      newdata {:tripid (get response (keyword "tripid") ) }
     ]
 
   )
@@ -149,6 +144,9 @@
     controller (str (get unit "controllerId"))
     name (if (nil? (get unit "name")) controller (get unit "name"))
     port (get unit "port")
+    port (if (nil? port) 5050 port)
+    ip (get unit "ip")
+    if (if (nil? ip) "1.1.1.1" ip)
     status (case (get unit "status") "Normal" 0 3)
     lat (get unit "latitude")
     lon (get unit "longitude")
@@ -157,7 +155,7 @@
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone}]}
+    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :contacts [{:tel phone}]}
     ]
     ;
     result
@@ -183,7 +181,7 @@
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
 )
 
 
@@ -542,8 +540,28 @@
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-3"} (dom/h5 (str "Address: ")))
-              (dom/div {:className "col-xs-9" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "address" :style {:width "100%"} :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3"} (dom/h5 (str "IP address: ")))
+              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "ip" :style {:width "100%"} :type "text" :onChange (fn [e] (handleChange e)) :value (:ip (:device @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3"} (dom/h5 (str "Port number: ")))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "port" :style {:width "100%"} :type "number" :step "1" :onChange (fn [e] (handleChange e)) :value (:port (:device @data))})
               )
               (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
                 (dom/span {:className "asterisk"} "*")
@@ -572,7 +590,7 @@
 
             (dom/div
 
-              (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
+              (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
               (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
 
               (b/button {:className "btn btn-info" :onClick (fn [e]
@@ -613,7 +631,7 @@
 
 (sec/defroute devdetail-new-page "/devdetail" {}
   ( let []
-    (swap! app-state assoc-in [:device]  {:id "" :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :port 666 :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)]} ) 
+    (swap! app-state assoc-in [:device]  {:id "" :ip "1.1.1.1" :port 5050 :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)]} ) 
     (swap! app-state assoc-in [:isinsert]  true )
     (swap! shelters/app-state assoc-in [:view] 7) 
     ;(swap! app-state assoc-in [:group ]  "group" ) 
