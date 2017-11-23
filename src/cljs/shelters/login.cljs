@@ -103,6 +103,43 @@
 )
 
 
+(defn map-indication [indication]
+  (let [
+    id (str (get indication "indicationId"))
+    name (get indication "name")
+    okicon (get indication "normalIconPath")
+    failicon (get indication "failureIconPath")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id id :name name :okicon okicon :failicon failicon}
+    ]
+    ;
+    result
+  )
+)
+
+
+
+(defn OnGetIndications [response]
+  (swap! shelters/app-state assoc-in [:indications] (map map-indication response) )
+  ;(reqsecurities)
+  (swap! app-state assoc-in [:state] 0)
+  (put! ch 42)
+)
+
+
+(defn reqindications []
+  (GET (str settings/apipath "getUnitIndications")
+    {:handler OnGetIndications
+     :error-handler error-handler
+     :headers {
+       :content-type "application/json"
+       :token (str (:token  (:token @shelters/app-state)))
+       }
+    }
+  )
+)
+
+
 (defn map-command [command]
   (let [
     id (str (get command "commandId"))
@@ -120,8 +157,8 @@
 (defn OnGetCommands [response]
   (swap! shelters/app-state assoc-in [:commands] (map map-command response) )
   ;(reqsecurities)
-  (swap! app-state assoc-in [:state] 0)
-  (put! ch 42)
+  ;(swap! app-state assoc-in [:state] 0)
+  (reqindications)
 )
 
 
@@ -173,6 +210,9 @@
        })
 )
 
+(defn map-unitindication [indication]
+  {:id (get indication "indicationId") :isok (get indication "isOk") :value (get indication "value")}
+)
 
 (defn map-unit [unit]
   (let [
@@ -189,9 +229,11 @@
     groups (get unit "parentGroups")
     unitid (str (get unit "unitId"))    
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
-    phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
+    phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value")
+
+    indications (map map-unitindication (get unit "indications"))
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :contacts [{:id "1" :phone "+79175134855" :name "Alexey" :email "zorchenkov@gmail.com"} {:id "2" :phone "+9721112255" :name "yulia" :email "yulia@gmail.com"}]}
+    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :indications (if (nil? indications) [] indications) :contacts [{:id "1" :phone "+79175134855" :name "Alexey" :email "zorchenkov@gmail.com"} {:id "2" :phone "+9721112255" :name "yulia" :email "yulia@gmail.com"}]}
     ]
     ;
     result

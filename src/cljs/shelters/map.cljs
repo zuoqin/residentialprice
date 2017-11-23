@@ -417,7 +417,7 @@
 
         (dom/div {:className "row maprow" :style {:height (case (or (:isalert @data) (:isnotification @data)) true "80%" "100%")}}
           (dom/div  {:className "col-3 col-sm-3"}
-            (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} "Command")
+            (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} (:name (first (:commands @data))))
             (dom/div  {:className "tree" :id "tree"})
           )
           

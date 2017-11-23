@@ -133,60 +133,6 @@
     :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
 )
 
-
-(defn OnCreateUnitError [response]
-  (let [     
-      newdata {:tripid (get response (keyword "tripid") ) }
-    ]
-
-  )
-  ;; TO-DO: Delete Trip from Core
-  ;;(.log js/console (str  (get (first response)  "Title") ))
-)
-
-(defn map-unit [unit]
-  (let [
-    controller (str (get unit "controllerId"))
-    name (if (nil? (get unit "name")) controller (get unit "name"))
-    port (get unit "port")
-    status (case (get unit "status") "Normal" 0 3)
-    lat (get unit "latitude")
-    lon (get unit "longitude")
-    groups (get unit "parentGroups")
-    unitid (str (get unit "unitId"))    
-    address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
-    phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
-    ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :name name :status status :address address :lat lat :lon lon :port port :groups groups :contacts [{:tel phone}]}
-    ]
-    ;
-    result
-  )
-)
-
-(defn OnCreateUnitSuccess [response]
-  (let [
-      unit (map-unit response)
-      units (:devices @shelters/app-state)
-      addunit (conj units unit)
-    ]
-    (swap! shelters/app-state assoc-in [:devices] addunit)
-    ;(shelters/goDashboard "")
-    (js/window.history.back)
-  )
-)
-
-(defn createUnit []
-  (POST (str settings/apipath  "addUnit") {
-    :handler OnCreateUnitSuccess
-    :error-handler OnCreateUnitError
-    :headers {
-      :token (str (:token (:token @shelters/app-state)))}
-    :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip "1.2.3.4" :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
-)
-
-
 (defn onDropDownChange [id value]
   (let [
     newid (js/parseInt (subs id 7))
@@ -344,6 +290,28 @@
   )
 )
 
+(defcomponent sensors-list [data owner]
+  (render [_]
+    (dom/div {:className "list-group" :style {:display "block"}}
+      (map (fn [item]
+        (let [
+            name (:name (first (filter (fn [x] (if (= (str (:id item)) (:id x)) true false)) (:indications @shelters/app-state))))
+            name (if (nil? name) "Unknown" name)
+          ]
+          (dom/div {:className "col-xs-10" :style {}}
+            (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :border-top "1px solid"}}
+              (dom/div name)
+            )
+            (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :border-top "1px solid"}}
+              (dom/div (if (:isok item) "OK" "Failure"))
+            )
+          )
+        ))
+      (:indications (:device @app-state)))
+    )
+  )
+)
+
 
 (defn buildContactList [data owner]
   (map
@@ -464,6 +432,7 @@
           (str "Device Info - " (:controller (:device @app-state)) )
         )
         (dom/div {:className "row"}
+          (dom/div {:className "col-xs-1"})
           (dom/div {:className "col-xs-3"}
             (dom/div {:className "row"}
               (dom/h5 "Controller Id: " (:controller (:device @data)))
@@ -486,9 +455,11 @@
 
               (dom/h5 "Address: " (:address (:device @data)))
             )
+
+            (om/build sensors-list data {})
           )
 
-          (dom/div {:className "col-xs-8"}
+          (dom/div {:className "col-xs-7"}
             (dom/div {:className "row"}
               (dom/div {:style {:text-align "center"}} (dom/h2 (str "Alerts History")))
               (dom/div {:className "col-xs-6 panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
@@ -532,11 +503,15 @@
         )
 
 
-        (dom/div {:className "row"}
-          (b/button {:className "btn btn-info" :onClick (fn [e]
-            ;(shelters/goDashboard e)
-            (js/window.history.back)
-            )  } "Cancel"
+        (dom/div {:className "row" :style {:padding-top "20px"}}
+          (dom/div {:className "col-xs-1"}
+          )
+          (dom/div {:className "col-xs-1"}
+            (b/button {:className "btn btn-info" :onClick (fn [e]
+              ;(shelters/goDashboard e)
+              (js/window.history.back)
+              )  } "Cancel"
+            )
           )
         )
       )

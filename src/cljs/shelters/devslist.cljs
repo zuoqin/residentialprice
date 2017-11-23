@@ -16,7 +16,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:users [] }))
+(defonce app-state (atom  {:selectedunits []}))
 
 (defn printDevices []
   (.print js/window)
@@ -61,6 +61,28 @@
   )
 )
 
+(defn handle-chkbsend-change [e]
+  (let [
+        id (str/join (drop 8 (.. e -currentTarget -id)))
+        
+        devices (:selectedunits @app-state)
+
+
+        ;tr2 (.log js/console (.. e -currentTarget) )
+
+        ;tr1 (.log js/console (str "amount1=" amount1 " client=" client))
+        
+        deldevs (remove (fn [dev] (if (= dev id) true false  )) devices)
+
+        adddev (if (.. e -currentTarget -checked) (into [] (conj deldevs id)) deldevs) 
+    ]
+    (.stopPropagation e)
+    (.stopImmediatePropagation (.. e -nativeEvent) )
+    (swap! app-state assoc-in [:selectedunits] adddev)
+  )
+)
+
+
 (defn goDevice [devid]
   ;;(aset js/window "location" (str "#/devdetail/" devid) )
   (swap! shelters/app-state assoc-in [:view] 7)
@@ -75,10 +97,10 @@
       (map (fn [item]
         (dom/tr {:role "row" :className "odd"}
           (dom/td
-            (dom/input { :type "checkbox" :className "device_checkbox" :value (:id item)})
+            (dom/input { :id (str "checksel" (:id item)) :type "checkbox" :className "device_checkbox" :onChange (fn [e] (handle-chkbsend-change e))})
           )
           (dom/td
-            (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
+            (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
               (dom/i {:className "fa fa-hdd-o"})
               (:name item)
             )
@@ -132,7 +154,22 @@
   )
 )
 
+(defn OnDoCommand [response] 
+  (.log js/console (str response ))
+  ;;(.log js/console (str  (get (first response)  "Title") ))
+)
 
+(defn sendcommand1 []
+  (POST (str settings/apipath "doCommand" ;"?userId="(:userid  (:token @shelters/app-state))
+       )
+       {:handler OnDoCommand
+        :error-handler error-handler
+        :format :json
+        :headers {:token (str (:token  (:token @shelters/app-state)))}
+        :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (into [] (:selectedunits @app-state)) }
+    }
+  )
+)
 
 (defcomponent dashboard-view [data owner]
   (will-mount [_]
@@ -140,36 +177,43 @@
   )
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      ;styleprimary {:style {:margin-top "70px"}}
+      ;tr1 (.log js/console (:name (first (:commands @data))))
       ]
       (dom/div
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
           (dom/div {:className "col-md-12"}
             
-            (dom/div {:className "row"}
-              (dom/div
-                (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document
-              .-location
-              (set! "#/devdetail")))} "Add New")
-              )
-              (dom/div
-                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
-                  (dom/i {:className "fa fa-info-circle"}) "Help"
-                )
-                (dom/a {:href "/download/gg" :className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"}}
-                  (dom/i {:className "fa fa-file-excel-o"}) "Export to CSV"
-                )
-                (dom/button {:className "btn btn-default btn-sm pull-right" :style {:margin-top "-6px" :margin-right "5px"} :onClick (fn [e] (printDevices) )}
-                  (dom/i {:className "fa fa-print"}) "Print"
+            (dom/div {:className "row" :style {:padding-top "70px"}}
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-1"}
+                  (b/button {:className "btn btn-primary" :onClick (fn [e]
+                    (-> js/document .-location (set! "#/devdetail")))} "Add New"
+                  )
                 )
 
-                (dom/h4 {:className "pull-left" :style {:margin-top "0px"}}
-                  (dom/i {:className "fa fa-table"}) "EQ - Devices table"
-                  (dom/span "(1375)")
+                (dom/div {:className "col-xs-1"}
+                  (b/button {:className "btn btn-primary"
+                    ;:disabled? (= (count (:selectedunits @app-state)) 0)
+                    :onClick (fn [e] (sendcommand1))} (:name (first (:commands @data)))
+                  )
                 )
               )
             )
+
+            ;; (dom/div {:className "row":style {:padding-top "10px"}}
+            ;;   (dom/div
+            ;;     (b/button {:className "btn btn-primary" :onClick (fn [e]
+            ;;       (-> js/document
+            ;;         .-location
+            ;;         (set! "#/devdetail")
+            ;;       ))} "Add New"
+            ;;     )
+            ;;   )
+            ;;   (dom/div
+ 
+            ;;   )
+            ;; )
             (dom/div {:className "table-responsive" :style {:padding-top "10px"}}
               (dom/div {:className "floatThead-wrapper" :style {:position "relative" :clear "both"}}
                 (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}

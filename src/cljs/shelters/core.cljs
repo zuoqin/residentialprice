@@ -290,7 +290,6 @@
             )
           )
         ))
-
       (:alerts @app-state))
     )
   )
@@ -299,13 +298,9 @@
  
 (defcomponent logout-view [_ _]
   (render
-   [_]
-   (let [style {:style {:margin "10px"}}]
-     (dom/div style
-       (dom/a (assoc style :href "#/login") 
-              "Login"
-              )
-      )
+    [_]
+    (let [style {:style {:margin "10px"}}]
+      (dom/div style (dom/a (assoc style :href "#/login") "Login"))
     )
   )
 )
