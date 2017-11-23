@@ -89,6 +89,23 @@
   (set! (.-title js/document) (str "יחידה:" devid) )
 )
 
+(defcomponent showstatuses [data owner]
+  (render
+    [_]
+    (dom/td
+      (map (fn [item]
+        (let []
+          (dom/i {:className (case (:isok item) false "fa fa-bullhorn" "fa fa-bullhorn") :style {:color (case (:isok item) false "#dd0000" "#00dd00") :font-size "18px"}})
+          ;(dom/i {:className (case (:isok item) false "fa fa-bullhorn" "fa fa-battery-three-quarters") :style {:color (case (:isok item) false "#dd0000" "#00dd00") :font-size "24px"}})
+          
+        )
+        )
+        
+      (:indications data))
+    )
+  )
+)
+
 (defcomponent showdevices-view [data owner]
   (render
     [_]
@@ -119,11 +136,7 @@
           (dom/td
             (:address item)
           )
-
-          (dom/td
-            (dom/i {:className (case (:status item) 3 "fa fa-bullhorn" "fa fa-battery-three-quarters") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-            ;(case (:status item) 3 "Inactive" "Active")
-          )
+          (om/build showstatuses item {})
 
 
           (dom/td
@@ -132,11 +145,11 @@
           )
 
           (dom/td
-            (:address item)
+            (str (:name (nth (:contacts item) 0)) " " (:phone (nth (:contacts item) 0)))
           )
 
           (dom/td
-            (:address item)
+            (str (:name (nth (:contacts item) 1)) " " (:phone (nth (:contacts item) 1)))
           )
         )
         )(sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) true false)) (:devices @data )))
@@ -171,6 +184,27 @@
   )
 )
 
+(defcomponent topbuttons-view [data owner]
+  (render [_]
+    (dom/div {:className "row" :style {:padding-top "70px"}}
+      (dom/div {:className "row"}
+        (dom/div {:className "col-xs-1"}
+          (b/button {:className "btn btn-primary" :onClick (fn [e]
+            (-> js/document .-location (set! "#/devdetail")))} "Add New"
+          )
+        )
+
+        (dom/div {:className "col-xs-1"}
+          (b/button {:className "btn btn-primary"
+            ;:disabled? (= (count (:selectedunits @data)) 0)
+            :onClick (fn [e] (sendcommand1))} (:name (first (:commands @shelters/app-state)))
+          )
+        )
+      )
+    )
+  )
+)
+
 (defcomponent dashboard-view [data owner]
   (will-mount [_]
     (onMount data)
@@ -184,22 +218,7 @@
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
           (dom/div {:className "col-md-12"}
             
-            (dom/div {:className "row" :style {:padding-top "70px"}}
-              (dom/div {:className "row"}
-                (dom/div {:className "col-xs-1"}
-                  (b/button {:className "btn btn-primary" :onClick (fn [e]
-                    (-> js/document .-location (set! "#/devdetail")))} "Add New"
-                  )
-                )
-
-                (dom/div {:className "col-xs-1"}
-                  (b/button {:className "btn btn-primary"
-                    ;:disabled? (= (count (:selectedunits @app-state)) 0)
-                    :onClick (fn [e] (sendcommand1))} (:name (first (:commands @data)))
-                  )
-                )
-              )
-            )
+            (om/build topbuttons-view app-state {})
 
             ;; (dom/div {:className "row":style {:padding-top "10px"}}
             ;;   (dom/div
@@ -232,7 +251,7 @@
                         (dom/b "Status")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "184px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "94px" :text-align "center"}}
                         (dom/i {:className "fa fa-map-marker"})
                         (dom/b "Location")
                       )
@@ -242,7 +261,7 @@
                         (dom/b "Alert")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "70px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "160px" :text-align "center"}}
                         ;(dom/i {:className "fa fa-bullhorn"})
                         (dom/b "Bars")
                       )
