@@ -307,7 +307,7 @@
   (jquery
     (fn []
       (-> (jquery "#tree" )
-        (.treeview (buildTreeGroups) ) ;;js-object
+        (.treeview (buildTreeGroups) ) ;;js-object        
         (.on "nodeSelected"
           (fn [event data] (
              let [
@@ -418,9 +418,9 @@
 
 
         (dom/div {:className "row maprow" :style {:height (case (or (:isalert @data) (:isnotification @data)) true "80%" "100%")}}
-          (dom/div  {:className "col-3 col-sm-3"}
+          (dom/div  {:className "col-3 col-sm-3" :style {:height "100%"}}
             (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} (:name (first (:commands @data))))
-            (dom/div  {:className "tree" :id "tree"})
+            (dom/div  {:className "tree" :id "tree" :style {:max-height "100%" :overflow-y "scroll"}})
           )
           
           (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
