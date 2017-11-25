@@ -8,6 +8,9 @@
             [ajax.core :refer [GET POST]]
             [om.dom :as omdom :include-macros true]
 
+            [cljs-time.format :as tf]
+            [cljs-time.coerce :as tc]
+
             [om-bootstrap.button :as b]
             [shelters.settings :as settings]
             [clojure.string :as str]
@@ -19,10 +22,17 @@
 
 (enable-console-print!)
 
+(def custom-formatter (tf/formatter "dd/MM/yyyy"))
+(def custom-formatter2 (tf/formatter "dd/MM/yyyy hh:mm:ss"))
+
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:state 0 :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}] :alerts [{:id 1001 :type "error" :text "In device theer is an error"} {:id 1002 :type "common" :text "In That device no error"}] :notifications [{:id 101 :type "error" :text "This device works incorrect"} {:id 102 :type "common" :text "That device working properly"}] :devices [] :users []}))
+(defonce app-state (atom {:state 0 :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
+:alerts [] 
+;[{:id 1001 :type "error" :text "In device theer is an error"} {:id 1002 :type "common" :text "In That device no error"}]
+:notifications [] ;[{:id 101 :type "error" :text "This device works incorrect"} {:id 102 :type "common" :text "That device working properly"}]
+:devices [] :users []}))
 
 
 
@@ -30,6 +40,13 @@
 
 (def jquery (js* "$"))
 
+
+(defn comp-alerts [alert1 alert2]
+  (if (> (:open alert1) (:open alert2)) true false
+
+    ;(if (and (= (:open alert1) (:open alert2)) (> )))
+  )
+)
 
 (defn setVersionInfo [info]
   (swap! app-state assoc-in [:verinfo] 
@@ -217,27 +234,58 @@
   (render [_]
     (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
-        (let []
+        (let [
+          unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
+
+          user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
+          ]
           (dom/div {:className "row" :style {:border-top "1px solid"}}
-            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
             )
-            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
-                (:id item)
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
+                (:controller unit)
               )
             )
-            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
-                (:text item)
-                (dom/span {:className "pull-right text-muted small"}
-                  "4 minutes ago"
-                )
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
+                (:name unit)
+              )
+            )
+
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:address unit)                
+              )
+            )
+
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                "Failure"                
+              )
+            )
+
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (tf/unparse custom-formatter2 (:open item))              
+              )
+            )
+
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:status item)               
+              )
+            )
+
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (str (:firstname user) " " (:lastname user))
               )
             )
           )
         ))
-      (:notifications @app-state))
+      (take 3 (sort (comp comp-alerts) (:notifications @data))))
     )
   )
 )
@@ -270,27 +318,58 @@
   (render [_]
     (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
-        (let []
+        (let [
+          unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
+
+          user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
+          ]
           (dom/div {:className "row" :style {:border-top "1px solid"}}
-            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
             )
-            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
-                (:id item)
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:controller unit)
               )
             )
-            (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
-                (:text item)
-                (dom/span {:className "pull-right text-muted small"}
-                  "  4 minutes ago"
-                )
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:name unit)                
+              )
+            )
+
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:address unit)                
+              )
+            )
+
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                "Alert"                
+              )
+            )
+
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (tf/unparse custom-formatter2 (:open item))              
+              )
+            )
+
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:status item)               
+              )
+            )
+
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (str (:firstname user) " " (:lastname user))
               )
             )
           )
         ))
-      (:alerts @app-state))
+      (take 3 (sort (comp comp-alerts) (:alerts @data))))
     )
   )
 )
@@ -1209,6 +1288,41 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
+              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
+      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
+            )
+          )
+          (dom/ul {:className "nav navbar-top-links navbar-left"}
+            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
+            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
+            (dom/li {:className "dropdown" :style {:margin-right "0px" :background-color "grey"}}
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e]
+                  (let []
+(swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
+(swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
+                (dom/span {:style {:color "white"}} " Notifications ")
+                (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})   
+              )
+              ;(om/build notifications-navbar data {})
+            )
+
+            (dom/li {:className "dropdown" :style {:background-color "grey" :margin-right "0px"}}
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (let []
+                                                                                     (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
+                                                                                     (swap! app-state assoc :isnotification false)
+                                                                                     ) )} (str (count (:alerts @data))))
+                (dom/span {:style {:color "white"}} " Alerts ")
+                (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
+                
+              )
+              ;(om/build alerts-navbar data {})
+            )
+          )
+          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
+            (dom/li
               (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
@@ -1348,37 +1462,10 @@
                 )
               )
             )
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
-            )
-            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
-            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
+            
           )
 
-          (dom/ul {:className "nav navbar-top-links navbar-right" :style {:background-color "grey"}}
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
-                (dom/i {:className "fa fa-bell fa-fw" :style {:color "red"}})
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px"} :onClick (fn [e]
-                  (let []
-(swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
-(swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
-              )
-              ;(om/build notifications-navbar data {})
-            )
 
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
-                (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red"}})
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px"} :onClick (fn [e] (let []
-                                                                                     (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
-                                                                                     (swap! app-state assoc :isnotification false)
-                                                                                     ) )} (str (count (:alerts @data))))
-              )
-              ;(om/build alerts-navbar data {})
-            )
-          )
         )
       )
     )

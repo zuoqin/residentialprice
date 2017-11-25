@@ -30,6 +30,8 @@
 
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 
+(def custom-formatter2 (tf/formatter "MM/dd/yyyy hh:mm:ss"))
+
 (def custom-formatter1 (tf/formatter "MMM dd yyyy hh:mm:ss"))
 
 (def ch (chan (dropping-buffer 2)))
@@ -434,12 +436,22 @@
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
                   (dom/div {:className "row"}
 
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "seen")
 
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "device")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "device")
 
 
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "name")
+
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "address")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "event")
+
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "open")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "status")
+
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "user")
 
                   )
 
@@ -457,12 +469,24 @@
               (dom/div {:className "panel panel-primary"}
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
                   (dom/div {:className "row"}
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}} "seen")
 
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "id")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "seen")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "device")
 
 
-                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}  "text")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "name")
+
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "address")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "event")
+
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "open")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "status")
+
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "user")
+
                   )
                 )
               )
@@ -510,13 +534,22 @@
 (defn processMessage [notification]
   (let [
     unitid (get notification "unitId")
-    status (get notification "Status")
+    userid (get notification "userId")
+    status (get notification "status")
+    type (get notification "notificationType")
+    id (get notification "notificationId")
+    ;tr1 (.log js/console (subs (get notification "openTime") 0 19))
+    open (tf/parse custom-formatter2 (subs (get notification "openTime") 0 19))
+    
+    open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
     ;tr1 (.log js/console (str "unitid in Notification: " unitid))
     marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
 
     newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
-
+    
     tr1 (if (not (nil? marker)) (swap! shelters/app-state assoc-in [:devices] newunits))
+
+    tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:notifications @shelters/app-state)))) (swap! shelters/app-state assoc-in [:notifications] (conj (:notifications @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))) (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))))
     
     ]
     (if (nil? marker)

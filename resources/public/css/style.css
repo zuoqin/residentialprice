@@ -149,7 +149,7 @@ h1 {
 }
 
 @media screen and (min-width: 768px) and (max-width: 1007px) {
-  h4 {font-size: 14px;}
+   h4 {font-size: 14px;}
   .col-md-1 {font-size: 14px;}
   .col-md-2 {font-size: 14px;}  
   .colbtn {font-size: 14px;}
@@ -158,10 +158,10 @@ h1 {
   .plprogress {font-size: 12px;}
   .plprdiv {padding-top: 10px; padding-right: 0px; padding-left: 0xpx}
 
-  .tree{ padding-top: 100px; }
-  .maprow { padding-top: 120px; }
+  .tree{ padding-top: 0px; }
+  .maprow { padding-top: 143px; }
   .panel-primary {padding-top: 100px;}
-  #map { padding-top: 100px;}
+   #map { padding-top: 100px;}
 }
 
 @media screen and (min-width: 300px) and (max-width: 767px) {  
@@ -176,7 +176,7 @@ h1 {
   .plprdiv {padding-top: 4px; padding-right: 0px; padding-left: 0xpx}
 
   .tree { visibility: hidden; height: 0%}
-  #map { padding-top: 1px;}
+   #map { padding-top: 1px;}
 }
 
 
