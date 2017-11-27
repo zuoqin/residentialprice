@@ -24,7 +24,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:map nil :markers [] :selectedunits []}))
+(defonce app-state (atom  {:map nil :markers []}))
 
 (def jquery (js* "$"))
 
@@ -128,7 +128,7 @@
 )
 
 (defn buildTreeGroups []
-  (swap! app-state assoc-in [:selectedunits] [])
+  (swap! shelters/app-state assoc-in [:selectedunits] [])
   (do (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
 )
 
@@ -319,8 +319,8 @@
              (.log js/console (str "unitid=" unitid))
              ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
              (if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
-             (if (= (.indexOf (:selectedunits @app-state) unitid) -1) 
-               (swap! app-state assoc-in [:selectedunits] (conj (:selectedunits @app-state) unitid))
+             (if (= (.indexOf (:selectedunits @shelters/app-state) unitid) -1)
+               (swap! shelters/app-state assoc-in [:selectedunits] (conj (:selectedunits @shelters/app-state) unitid))
              )
              ;(gotoSelection (first res)) 
             )
@@ -339,8 +339,8 @@
              (.log js/console (str "unitid=" unitid))
              ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
              ;(if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
-             (if (> (.indexOf (:selectedunits @app-state) unitid) -1) 
-               (swap! app-state assoc-in [:selectedunits] (remove (fn [x] (if (= unitid x) true false)) (:selectedunits @app-state)))
+             (if (> (.indexOf (:selectedunits @shelters/app-state) unitid) -1) 
+               (swap! shelters/app-state assoc-in [:selectedunits] (remove (fn [x] (if (= unitid x) true false)) (:selectedunits @shelters/app-state)))
              )
              ;(gotoSelection (first res))
             )
@@ -388,7 +388,7 @@
         :error-handler error-handler
         :format :json
         :headers {:token (str (:token  (:token @shelters/app-state)))}
-        :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (:selectedunits @app-state)}
+        :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (:selectedunits @shelters/app-state)}
     }
   )
 )

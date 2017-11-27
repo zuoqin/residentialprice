@@ -155,7 +155,7 @@
 
 
 (defn OnGetCommands [response]
-  (swap! shelters/app-state assoc-in [:commands] (map map-command response) )
+  (swap! shelters/app-state assoc-in [:commands] (map map-command (case (count response) 0 [{"commandId" 1 "commandName" "unlock"}] response)))
   ;(reqsecurities)
   ;(swap! app-state assoc-in [:state] 0)
   (reqindications)
