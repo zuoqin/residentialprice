@@ -129,13 +129,13 @@
                 (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton"}
                   (dom/li {:className "dropdown-item"}
                     (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
-                      "View"
+                      "פרטים"
                     )
 
                   )
                   (dom/li {:className "dropdown-item" :href "#"}
                     (dom/a {:href (str "#/devdetail/" (:id item))}
-                      "Edit"
+                      "עדכון"
                     )
                   )
                 )
@@ -244,19 +244,20 @@
 
 (defcomponent topbuttons-view [data owner]
   (render [_]
-    (dom/div {:className "row" :style {:padding-top "70px"}}
-      (dom/div {:className "row"}
-        (dom/div {:className "col-xs-1"}
-          (b/button {:className "btn btn-primary" :onClick (fn [e]
-            (-> js/document .-location (set! "#/devdetail")))} "Add New"
-          )
-        )
+    (dom/div {:className "row"}
+      (dom/div {:className "col-xs-10"}
+      )
 
-        (dom/div {:className "col-xs-1"}
-          (b/button {:className "btn btn-primary"
-            :disabled? (= (count (:selectedunits @data)) 0)
-            :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") units")
-          )
+      (dom/div {:className "col-xs-1"}
+        (b/button {:className "btn btn-primary" :onClick (fn [e]
+          (-> js/document .-location (set! "#/devdetail")))} "Add New"
+        )
+      )
+
+      (dom/div {:className "col-xs-1"}
+        (b/button {:className "btn btn-primary"
+          :disabled? (= (count (:selectedunits @data)) 0)
+          :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") יחידות")
         )
       )
     )
@@ -275,7 +276,9 @@
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
           (dom/div {:className "col-md-12"}
-            
+            (dom/div {:className "row" :style {:padding-top "70px" :text-align "center" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
+              (dom/h2 "רשימת יחידות")
+            )
             (om/build topbuttons-view data {})
 
             ;; (dom/div {:className "row":style {:padding-top "10px"}}
