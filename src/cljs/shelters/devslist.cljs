@@ -244,17 +244,18 @@
 
 (defcomponent topbuttons-view [data owner]
   (render [_]
-    (dom/div {:className "row"}
-      (dom/div {:className "col-xs-10"}
+    (dom/div {:className "row" :style {:padding-top "70px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
+      (dom/div {:className "col-xs-10" :style { :text-align "right" }}
+        (dom/h2 "רשימת יחידות")
       )
 
-      (dom/div {:className "col-xs-1"}
+      (dom/div {:className "col-xs-1" :style {:padding-top "15px"}}
         (b/button {:className "btn btn-primary" :onClick (fn [e]
           (-> js/document .-location (set! "#/devdetail")))} "Add New"
         )
       )
 
-      (dom/div {:className "col-xs-1"}
+      (dom/div {:className "col-xs-1" :style {:margin-right "-35px" :padding-top "15px"}}
         (b/button {:className "btn btn-primary"
           :disabled? (= (count (:selectedunits @data)) 0)
           :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") יחידות")
@@ -274,11 +275,8 @@
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
-          (dom/div {:className "col-md-12"}
-            (dom/div {:className "row" :style {:padding-top "70px" :text-align "center" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
-              (dom/h2 "רשימת יחידות")
-            )
+        (dom/div {:className "container" :style {:margin-top "0px" :width "100%":padding-left "50px" :padding-right "50px"}}
+          (dom/div {:className "col-md-12"}            
             (om/build topbuttons-view data {})
 
             ;; (dom/div {:className "row":style {:padding-top "10px"}}

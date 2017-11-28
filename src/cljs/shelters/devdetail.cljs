@@ -29,7 +29,7 @@
 
 (def iconBase "/images/")
 
-(defonce app-state (atom  {:device {} :marker nil :isinsert false :view 1 :current "Device Detail"} ))
+(defonce app-state (atom  {:device {} :showmap 1 :marker nil :isinsert false :view 1 :current "Device Detail"} ))
 
 (defn comp-groups
   [group1 group2]
@@ -278,7 +278,7 @@
         )
       )
     )
-    (.panTo (:map @app-state) (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))))
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))))    
   )
 )
 
@@ -296,6 +296,8 @@
          (<! (timeout 100))
          (addsearchbox)
        )
+
+    44 (swap! app-state assoc-in [:showmap] -1)
   )
 )
 
@@ -454,29 +456,40 @@
     )
   )
 )
-
-(defcomponent devdetail-page-view [data owner]
-  (did-mount [_]
-    (let [
+(defn createMap []
+  (let [
       map-canvas (. js/document (getElementById "map"))
       map-options (clj->js {"center" {:lat (:lat (:selectedcenter @shelters/app-state)) :lng (:lon (:selectedcenter @shelters/app-state))} "zoom" 12})
       map (js/google.maps.Map. map-canvas map-options)
       tr1 (swap! app-state assoc-in [:map] map)
       tr1 (.set map "disableDoubleClickZoom" true)
-      ]
-      (onMount data)
+    ]
+  )
+)
 
+(defcomponent devdetail-page-view [data owner]
+  (did-mount [_]
+    (let [
+
+      ]
+      (createMap)
+      (onMount data)
+      (put! ch 44)
       (jquery
         (fn []
-          (-> map
-            (.addListener "dblclick"
-              (fn [e]
-                ;(.log js/console (str "LatLng=" (.. e -latLng)))
+          (let [
+            map (:map @app-state)
+            ]
+            (-> map
+              (.addListener "dblclick"
+                (fn [e]
+                  ;(.log js/console (str "LatLng=" (.. e -latLng)))
 
-                (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
-                (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
-                (.stopPropagation (.. js/window -event))
-                (.stopImmediatePropagation (.. js/window -event))
+                  (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
+                  (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
+                  (.stopPropagation (.. js/window -event))
+                  (.stopImmediatePropagation (.. js/window -event))
+                )
               )
             )
           )
@@ -578,7 +591,10 @@
             )
             (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
 
-            (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px"}}
+            (dom/div
+              (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (swap! app-state assoc-in [:showmap] (- (:showmap @data))))} (case (:showmap @data) -1 "Show map" "Hide Map"))
+            )
+            (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px" :display (case (:showmap @data) -1 "none" "block")}}
               (dom/div  {:className "col-12 col-sm-12" :id "map" :style {:margin-top "0px" :height "100%"}})
               ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
             )
@@ -586,7 +602,11 @@
               (dom/i {:className "fa fa-phone"} "Contacts:")
             )
             (om/build showcontacts-view data {})
-            (om/build parentgroups-view data {})
+
+            (dom/div
+              (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (aset js/window "location" (str "/#/groupstounit/" (:id (:device @data)))))} "Assign to groups")
+            )
+            ;(om/build parentgroups-view data {})
 
             (dom/div
 
@@ -616,8 +636,9 @@
 (sec/defroute devdetail-page "/devdetail/:devid" [devid]
   (let[
       dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))       
-      ;tr2 (.log js/console "hjkhkh")
+      tr2 (.log js/console "hjkhkh")
     ]
+    (swap! app-state assoc-in [:showmap] 1)
     (swap! app-state assoc-in [:device] dev )
     (swap! app-state assoc-in [:isinsert] false)
     (swap! shelters/app-state assoc-in [:view] 7)
@@ -634,6 +655,7 @@
     (swap! app-state assoc-in [:device]  {:id "" :ip "1.1.1.1" :port 5050 :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)]} ) 
     (swap! app-state assoc-in [:isinsert]  true )
     (swap! shelters/app-state assoc-in [:view] 7) 
+    (swap! app-state assoc-in [:showmap] 1)
     ;(swap! app-state assoc-in [:group ]  "group" ) 
     ;(swap! app-state assoc-in [:password] "" )
     (om/root devdetail-page-view
