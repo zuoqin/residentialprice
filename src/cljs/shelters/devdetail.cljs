@@ -603,9 +603,9 @@
             )
             (om/build showcontacts-view data {})
 
-            (dom/div
-              (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (aset js/window "location" (str "/#/groupstounit/" (:id (:device @data)))))} "Assign to groups")
-            )
+            ;; (dom/div
+            ;;   (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (aset js/window "location" (str "/#/groupstounit/" (:id (:device @data)))))} "Assign to groups")
+            ;; )
             ;(om/build parentgroups-view data {})
 
             (dom/div

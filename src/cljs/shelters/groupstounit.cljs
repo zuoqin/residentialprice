@@ -53,14 +53,26 @@
 )
 
 (defn setcheckboxtoggle []
-  (let []
+  (let [
+    tr1 (.log js/console "Calling setcheckboxtoggle")
+    ]
     (doall
       (map (fn [item]
-        (let []
+        (let [
+          isselected (if (and (nil? (:groups (:selecteddevice @shelters/app-state)))) false (if (> (.indexOf (:groups (:selecteddevice @shelters/app-state)) (:id item)) -1) true false))
+          ]
           (jquery
             (fn []
                (-> (jquery (str "#chckbgroup" (:id item)))
                  (.bootstrapToggle (clj->js {:on "הוסיף" :off "לא נוסף"}))
+               )
+            )
+          )
+
+          (jquery
+            (fn []
+               (-> (jquery (str "#chckbgroup" (:id item)))
+                 (.bootstrapToggle (case isselected true "on" "off"))
                )
             )
           )
@@ -72,14 +84,14 @@
                   (fn [e]
                     (let [
                         id (str/join (drop 10 (.. e -currentTarget -id)))
-                        groups (:groups (:device @app-state))
+                        groups (:groups (:selecteddevice @shelters/app-state))
                         newgroups (if (= true (.. e -currentTarget -checked)) (conj groups id) (remove (fn [x] (if (= x id) true false)) groups))
 
                         ;tr1 (.log js/console "gg")
                       ]
                       (.stopPropagation e)
                       ;(.stopImmediatePropagation (.. e -nativeEvent) )
-                      (swap! app-state assoc-in [:device :groups] newgroups)
+                      (swap! shelters/app-state assoc-in [:selecteddevice :groups] newgroups)
                     )
                   )
                 )
@@ -109,35 +121,50 @@
 
 (defcomponent showgroups-view [data owner]
   (render
-    [_]
-    (dom/div {:className "list-group" :style {:display "block"}}
-      (map (fn [item]
-        (let [
-          isselected (if (and (nil? (:groups (:device @app-state)))) false (if (> (.indexOf (:groups (:device @app-state)) (:id item)) -1) true false))
-          ]
-          (dom/div {:className "row"}
-            (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" }}
+    [_
+      
+    ]
+    (let [
+      ;tr1 (.log js/console data)
+      ]
+      (dom/div {:className "list-group" :style {:display "block"}}
+        (map (fn [item]
+          (let [
 
-            )
-            (dom/div {:className "col-xs-3" }
-              (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item)) :onClick (fn [e] (shelters/goGroupDetail e))}
-                (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
-                ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
-                ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
-                ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
+            isselected (if (and (nil? (:groups (:selecteddevice @data)))) false (if (> (.indexOf (:groups (:selecteddevice @data)) (:id item)) -1) true false))         
+            ]
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
+
               )
-            )
+              (dom/div {:className "col-xs-4" }
+                (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item)) :onClick (fn [e] (shelters/goGroupDetail e))}
+                  (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
+                  ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
+                  ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
+                  ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
+                )
+              )
 
-            (dom/div {:className "col-xs-3" :style {:text-align "center"}}
-              (dom/label {:className "checkbox-inline"}              
-                (dom/input {:id (str "chckbgroup" (:id item)) :type "checkbox" :checked isselected :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34" :onChange (fn [e] (handle-chkgroup-change e ))})
+              (dom/div {:className "col-xs-3" :style {:text-align "center"}}
+                (dom/h5 (case isselected true "On" "Off"))
+              )
+
+              (dom/div {:className "col-xs-3" :style {:text-align "center"}}
+                (dom/label {:className "checkbox-inline"}              
+                  (dom/input {:id (str "chckbgroup" (:id item)) :type "checkbox" :checked isselected :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34" :onChange (fn [e] (handle-chkgroup-change e ))})
+                )
+              )
+
+              (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
               )
             )
           )
+          )(sort (comp comp-groups) (:groups @shelters/app-state ))
         )
-        )(sort (comp comp-groups) (:groups @shelters/app-state ))
       )
     )
+
   )
 )
 
@@ -206,11 +233,15 @@
           (dom/h1 {:style {:text-align "center"}} (:current @data))
           (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" }}
+              (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
                 
               )
-              (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}
+              (dom/div {:className "col-xs-5 col-md-5" :style {:text-align "center" :border-left "1px solid"}}
                 (dom/h5 "Name")
+              )
+
+              (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}
+                (dom/h5 "Selection")
               )
 
               (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}

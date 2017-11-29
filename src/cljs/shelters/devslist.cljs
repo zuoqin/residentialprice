@@ -1,4 +1,5 @@
 (ns shelters.devslist (:use [net.unit8.tower :only [t]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -6,7 +7,9 @@
             [shelters.core :as shelters]
             [ajax.core :refer [GET POST]]
 
-
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! timeout]]
+            [ajax.core :refer [GET POST PUT DELETE]]
+            [shelters.groupstounit :as groupstounit]
             [om-bootstrap.button :as b]
             [clojure.string :as str]
             [shelters.settings :as settings]
@@ -17,6 +20,9 @@
 (enable-console-print!)
 
 (defonce app-state (atom  {}))
+(defonce dev-state (atom  {}))
+(def jquery (js* "$"))
+(def ch (chan (dropping-buffer 2)))
 
 (defn printDevices []
   (.print js/window)
@@ -41,17 +47,120 @@
   (swap! shelters/app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
 )
 
+(defn OnUpdateUnitError [response]
+  (let [     
+    ]
 
-(defn getUsers [data] 
-  (GET (str settings/apipath "api/user") {
-    :handler OnGetUsers
-    :error-handler error-handler
-    :headers {
-      :content-type "application/json"
-      :Authorization (str "Bearer "  (:token  (first (:token @shelters/app-state)))) }
-  })
+  )
+  ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
+(defn OnUpdateUnitSuccess [response]
+  (let [
+      units (:devices @shelters/app-state)
+      delunit (remove (fn [unit] (if (= (:id unit) (:id (:selecteddevice @shelters/app-state)) ) true false  )) units)
+      addunit (conj delunit (:selecteddevice @shelters/app-state)) 
+    ]
+    (swap! shelters/app-state assoc-in [:devices] addunit)
+    ;(shelters/goDashboard nil)
+    (js/window.history.back)
+  )
+)
+
+(defn savegroups []
+  (PUT (str settings/apipath  "updateUnit") {
+    :handler OnUpdateUnitSuccess
+    :error-handler OnUpdateUnitError
+    :headers {
+      :token (str (:token (:token @shelters/app-state)))}
+    :format :json
+    :params {:unitId (:id (:selecteddevice @shelters/app-state)) :controllerId (:controller (:selecteddevice @shelters/app-state)) :name (:name (:selecteddevice @shelters/app-state)) :parentGroups (:groups (:selecteddevice @shelters/app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:selecteddevice @shelters/app-state)) :port (:port (:selecteddevice @shelters/app-state)) :latitude (:lat (:selecteddevice @shelters/app-state)) :longitude (:lon (:selecteddevice @shelters/app-state)) :details [{:key "address" :value (:address (:selecteddevice @shelters/app-state))} {:key "phone" :value (:tel (first (:contacts (:selecteddevice @shelters/app-state))))}]}})
+)
+
+
+
+(defn openDialog []
+  (let [
+    ;tr1 (.log js/console (:device @dev-state))
+    ]
+    (jquery
+      (fn []
+        (-> (jquery "#groupsModal")
+          (.modal)
+        )
+      )
+    )
+    (groupstounit/setcheckboxtoggle)
+  )
+)
+
+(defn onAssignGroups [id]
+  (let [
+      dev (first (filter (fn [x] (if (= (:id x) id) true false)) (:devices @shelters/app-state)))
+      ]
+    (swap! shelters/app-state assoc-in [:selecteddevice] dev)
+    (swap! shelters/app-state assoc-in [:selecteddevice :current] (str "שייך לקבוצה " (:name dev)))
+    (put! ch 47)
+  )
+)
+
+
+(defcomponent addModal [data owner]
+  (render [_]
+    (dom/div
+      (dom/div {:id "groupsModal" :className "modal fade" :role "dialog"}
+        (dom/div {:className "modal-dialog"} 
+          ;;Modal content
+          (dom/div {:className "modal-content"} 
+            (dom/div {:className "modal-header"} 
+              (b/button {:type "button" :className "close" :data-dismiss "modal"})
+              (dom/h4 {:className "modal-title"} (:modalTitle @app-state) )
+            )
+            (dom/div {:className "modal-body"}
+
+              (dom/div {:className "panel panel-primary"}
+
+                (dom/h1 {:style {:text-align "center"}} (:current (:selecteddevice @data)))
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
+                    )
+                    (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}
+                      (dom/h5 "Name")
+                    )
+                    (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}
+                      (dom/h5 "Selection")
+                    )
+                    (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "0px solid"}}
+                      (dom/h5 "Selected")
+                    )
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
+                    )
+                  )
+                )
+
+                (om/build groupstounit/showgroups-view data {})
+              )
+                     ;(om/build groupstounit/showgroups-view dev-state {})
+            )
+            (dom/div {:className "modal-footer"}
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                  (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal"} "Close")
+                )
+
+                (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                  (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal" :onClick (fn [e] (savegroups))} "Save")
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+
+)
 
 (defn comp-devs
   [dev1 dev2]
@@ -131,17 +240,21 @@
                     (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
                       "פרטים"
                     )
-
                   )
                   (dom/li {:className "dropdown-item" :href "#"}
                     (dom/a {:href (str "#/devdetail/" (:id item))}
                       "עדכון"
                     )
                   )
+
+                  (dom/li {:className "dropdown-item" :href "#"}
+                    (dom/a {:href "#" :onClick (fn [e] (onAssignGroups (:id item)))}
+                      "שייך לקבוצה"
+                    )
+                  )
                 )
               )
             )
-
 
             (dom/td
               (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
@@ -216,6 +329,36 @@
   )
 )
 
+(defn setcontrols [value]
+  (case value
+    ;46 (setGroup)
+    47 (go
+         (<! (timeout 100))
+         (openDialog)
+       )
+  )
+)
+
+
+(defn initqueue []
+  (doseq [n (range 1000)]
+    (go ;(while true)
+      (take! ch(
+        fn [v] (
+           ;.log js/console v
+           ;(setcalculatedfields) 
+           setcontrols v
+           
+           ;(.log js/console v)  
+          )
+        )
+      )
+    )
+  )
+)
+
+
+(initqueue)
 
 
 (defn onMount [data]
@@ -379,8 +522,7 @@
                     (dom/col {:style {:width "127px"}})
                   )
                   (om/build showdevices-view data {})
-                  (
-                  )
+                  (om/build addModal data {})
                 )
               )
             )
