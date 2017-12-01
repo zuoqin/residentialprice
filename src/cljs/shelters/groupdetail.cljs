@@ -500,9 +500,22 @@
             (dom/div  (assoc styleprimary  :className "panel panel-default"  :id "divUserInfo")
               
               (dom/div {:className "panel-heading"}
-                (dom/h5 "Name: " 
-                  (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
+
+                (dom/div {:className "row"}
+
+                  (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-top "2px"}}
+                    "Name: "
+                  )
+
+                  (dom/div {:className "col-xs-3"} 
+
+                    (dom/input {:id "name" :type "text" :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value (:name (:group @data))} )
+                  )
+                  (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                    (dom/span {:className "asterisk"} "*")
+                  )
                 )
+
               )
               ;; (dom/div {:className "checkbox"}
               ;;   (dom/label
@@ -534,7 +547,7 @@
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :onClick (fn [e] (if (:isinsert @app-state) (createGroup) (updateGroup)) )} (if (:isinsert @app-state) "Insert" "Update"))
+            (b/button {:className "btn btn-default" :disabled? (or (< (count (:name (:group @data))) 1)) :onClick (fn [e] (if (:isinsert @app-state) (createGroup) (updateGroup)) )} (if (:isinsert @app-state) "Insert" "Update"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteGroup (:id (:group @data))))} "Delete")
 
             (b/button {:className "btn btn-info" :onClick (fn [e] (-> js/document

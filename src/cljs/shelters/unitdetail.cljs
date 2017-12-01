@@ -279,7 +279,7 @@
   (set! (.-title js/document) "Unit Detail")
   (getUnitDetail)
   (setcontrols 46)
-  (put! ch 43)
+  ;(put! ch 43)
 )
 
 
@@ -331,17 +331,9 @@
       (map (fn [item num]
         (dom/div
           (dom/div {:className "row"}
-            (dom/div {:className "col-xs-5"})
-            (dom/div {:className "col-xs-2"} (dom/h5 (str "Contact " (+ num 1) ":")))
-            (dom/div {:className "col-xs-2"}
-              (omdom/select #js {:id (str "contact" num)
-                                 :className "selectpicker"
-                                 :data-show-subtext "true"
-                                 :data-live-search "true"
-                                 :onChange #(handle-change % owner)
-                                 }
-                (buildContactList data owner)
-              )
+            (dom/div {:className "col-xs-3"} (dom/h5 (str "Contact " (+ num 1) ":")))
+            (dom/div {:className "col-xs-9"}
+              (dom/h5 (str (:name (nth (:contacts (:device @data)) num)) " " (:phone (nth (:contacts (:device @data)) num)) " " (:email (nth (:contacts (:device @data)) num))))
             )
           )
           ;; (dom/b
@@ -350,7 +342,7 @@
           ;; (dom/p (:tel item))
         )
       )
-      (:contacts (:device @app-state)) (range))
+      (:contacts (:device @data)) (range))
     )
   )
 )
@@ -444,17 +436,11 @@
 
               (dom/h5 "Address: " (:address (:device @data)))
             )
-
-            (dom/div {:className "row"}
-              (dom/h5 "Controller Id: " (:controller (:device @data)))
-
-              (dom/h5 {:style {:display:inline true}} "Status: " (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
-              )
-
-              (dom/h5 "Name: " (:name (:device @data)))
-
-              (dom/h5 "Address: " (:address (:device @data)))
+            (dom/h4
+              (dom/i {:className "fa fa-phone"} "Contacts:")
             )
+            (om/build showcontacts-view data {})
+
 
             (om/build sensors-list data {})
           )

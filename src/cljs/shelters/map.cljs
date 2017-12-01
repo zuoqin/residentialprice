@@ -119,7 +119,7 @@
       let [
         childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
         ]
-        (if (> (count childs) 0) {:text (:name x) :groupid (:id x) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes childs} {:text (:name x) :groupid (:id x) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false}})
+        (if (> (count childs) 0) {:text (:name x) :groupid (:id x) :icon "glyphicon glyphicon-user" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes childs} {:text (:name x) :groupid (:id x) :icon "glyphicon glyphicon-user" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false}})
       ) ) children))
     ;tr1 (.log js/console nodes)
     ]

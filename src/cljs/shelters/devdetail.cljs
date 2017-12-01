@@ -432,8 +432,8 @@
     (dom/div
       (map (fn [item num]
         (dom/div
-          (dom/div {:className "row"}
-            (dom/div {:className "col-xs-5"})
+          (dom/div {:className "row":style {:margin-top "5px"}}
+            ;(dom/div {:className "col-xs-5"})
             (dom/div {:className "col-xs-2"} (dom/h5 (str "Contact " (+ num 1) ":")))
             (dom/div {:className "col-xs-2"}
               (omdom/select #js {:id (str "contact" num)
@@ -591,7 +591,7 @@
             )
             (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
 
-            (dom/div
+            (dom/div {:style {:margin-bottom "10px"}}
               (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (swap! app-state assoc-in [:showmap] (- (:showmap @data))))} (case (:showmap @data) -1 "Show map" "Hide Map"))
             )
             (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px" :display (case (:showmap @data) -1 "none" "block")}}
@@ -608,12 +608,12 @@
             ;; )
             ;(om/build parentgroups-view data {})
 
-            (dom/div
+            (dom/div {:style {:margin-top "10px"}}
 
-              (b/button {:className "btn btn-default" :disabled? (or (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
-              (b/button {:className "btn btn-danger" :style {:visibility (if (:isinsert @app-state) "hidden" "visible")} :onClick (fn [e] (deleteUnit))} "Delete")
+              (b/button {:className "btn btn-default" :style {:margin "5px"} :disabled? (or (> (count (filter (fn [x] (if (= (:controller x) (:controller (:device @data))) true false)) (:devices @shelters/app-state))) 0) (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
+              (b/button {:className "btn btn-danger" :style {:display (if (:isinsert @app-state) "none" "inline") :margin "5px"} :onClick (fn [e] (deleteUnit))} "Delete")
 
-              (b/button {:className "btn btn-info" :onClick (fn [e]
+              (b/button {:className "btn btn-info" :margin "5px" :onClick (fn [e]
                 ;(shelters/goDashboard e)
                 (js/window.history.back)
                 )  } "Cancel"

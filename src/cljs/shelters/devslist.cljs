@@ -276,49 +276,49 @@
             )
 
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+            (dom/td {:style {:text-align "center"}}
+              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style { :color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+              ;(case (:status item) 3 "Inactive" "Active")
             )
 
-            (dom/td
+            (dom/td {:style {:text-align "center" :border-right-width "1px"}}
               (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              (case (:status item) 3 "Inactive" "Active")
+              ;(case (:status item) 3 "Inactive" "Active")
             )
             ;(om/build showstatuses item {})
           )
@@ -440,11 +440,11 @@
                 (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
                   (dom/thead
                     (dom/tr {:className "info" :role "row"}
-                      (dom/th {:className "sorting_asc" :style {:width "15px" :valign "middle" }}
+                      (dom/th {:className "sorting_asc" :style {:width "30px" :valign "middle" }}
                         (dom/i {:className "fa fa-square-o"})
                       )
 
-                      (dom/th {:className "sorting_asc" :style {:width "15px" :valign "middle" }}
+                      (dom/th {:className "sorting_asc" :style {:width "80px" :valign "middle" }}
                         
                       )
                       (dom/th {:className "sorting" :style {:width "150px"}}
@@ -452,74 +452,78 @@
                         (dom/b "מזהה יחידה")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "150px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "275px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         ;(dom/i {:className "fa fa-bullseye"})
                         (dom/b "שם יחידה")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "400px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "300px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-map-marker"})
                         (dom/b "כתובת")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
 
-                      (dom/th {:className "sorting" :style {:width "120px" :text-align "center"}}
+                      (dom/th {:className "sorting" :style {:width "100px" :text-align "center" :vertical-align "middle" :padding "0px" :border-right-width "1px"}}
                         (dom/i {:className "fa fa-bullhorn"})
                         (dom/b "חיישן בשם")
                       )
-
                     )
                   )
 
                   (dom/colgroup
                     (dom/col {:style {:width "30px"}})
-                    (dom/col {:style {:width "91px"}})
-                    (dom/col {:style {:width "68px"}})
-                    (dom/col {:style {:width "342px"}})
-                    (dom/col {:style {:width "184px"}})
-                    (dom/col {:style {:width "70px"}})
-                    (dom/col {:style {:width "70px"}})
-                    (dom/col {:style {:width "127px"}})
-                    (dom/col {:style {:width "127px"}})
+                    (dom/col {:style {:width "80px"}})
+                    (dom/col {:style {:width "150px"}})
+                    (dom/col {:style {:width "275px"}})
+                    (dom/col {:style {:width "300px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
+                    (dom/col {:style {:width "100px"}})
                   )
                   (om/build showdevices-view data {})
                   (om/build addModal data {})
