@@ -610,7 +610,7 @@
 
             (dom/div {:style {:margin-top "10px"}}
 
-              (b/button {:className "btn btn-default" :style {:margin "5px"} :disabled? (or (> (count (filter (fn [x] (if (= (:controller x) (:controller (:device @data))) true false)) (:devices @shelters/app-state))) 0) (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
+              (b/button {:className "btn btn-default" :style {:margin "5px"} :disabled? (or (and (:isinsert @app-state) (> (count (filter (fn [x] (if (= (:controller x) (:controller (:device @data))) true false)) (:devices @shelters/app-state))) 0)) (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
               (b/button {:className "btn btn-danger" :style {:display (if (:isinsert @app-state) "none" "inline") :margin "5px"} :onClick (fn [e] (deleteUnit))} "Delete")
 
               (b/button {:className "btn btn-info" :margin "5px" :onClick (fn [e]

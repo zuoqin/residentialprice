@@ -38,7 +38,7 @@
 
 
 div.tablerow:nth-child(2n+0){
-  background: #DDDDDD;
+  background: #FFFFFF;
 }
 
 div.tablerow:nth-child(2n+1){
@@ -145,7 +145,7 @@ h1 {
 @media screen and (min-width: 1008px) {
 
   .tree{ padding-top: 0px; }
-  .maprow { padding-top: 143px; }
+  .maprow { padding-top: 73px; }
 }
 
 @media screen and (min-width: 768px) and (max-width: 1007px) {
@@ -159,7 +159,7 @@ h1 {
   .plprdiv {padding-top: 10px; padding-right: 0px; padding-left: 0xpx}
 
   .tree{ padding-top: 0px; }
-  .maprow { padding-top: 143px; }
+  .maprow { padding-top: 73px; }
   .panel-primary {padding-top: 100px;}
    #map { padding-top: 100px;}
 }

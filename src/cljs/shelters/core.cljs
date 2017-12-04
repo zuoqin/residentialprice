@@ -1270,7 +1270,7 @@
       ;tr1 (.log js/console (str "in map navigation"))
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "140px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1286,42 +1286,9 @@
         )
 
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
-            )
-          )
+
           (dom/ul {:className "nav navbar-top-links navbar-left"}
-            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
-            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
-            (dom/li {:className "dropdown" :style {:margin-right "0px" :background-color "grey"}}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e]
-                  (let []
-(swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
-(swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
-                (dom/span {:style {:color "white"}} " Notifications ")
-                (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})   
-              )
-              ;(om/build notifications-navbar data {})
-            )
 
-            (dom/li {:className "dropdown" :style {:background-color "grey" :margin-right "0px"}}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
-
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (let []
-                                                                                     (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
-                                                                                     (swap! app-state assoc :isnotification false)
-                                                                                     ) )} (str (count (:alerts @data))))
-                (dom/span {:style {:color "white"}} " Alerts ")
-                (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
-                
-              )
-              ;(om/build alerts-navbar data {})
-            )
-          )
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
               (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
@@ -1343,15 +1310,6 @@
             )
 
             (if (not= role settings/dispatcherrole)
-              (dom/li
-                (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
-                  (dom/i {:className "fa fa-key"})
-                  "משתמשים והרשאות"
-                )
-              )
-            ) 
-
-            (if (not= role settings/dispatcherrole)
               (dom/li {:className "dropdown"}
                 (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
                   (dom/span {:className "caret"})
@@ -1369,6 +1327,16 @@
                       )
                     )
                   )
+
+                  (if (not= role settings/dispatcherrole)
+                    (dom/li
+                      (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
+                        (dom/i {:className "fa fa-key"})
+                        "משתמשים והרשאות"
+                      )
+                    )
+                  ) 
+
 
                   (dom/li
                     (dom/div {:className "row"}
@@ -1462,7 +1430,36 @@
                 )
               )
             )
-            
+
+
+
+            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
+            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
+            (dom/li {:className "dropdown" :style {:margin-right "0px" :background-color "grey"}}
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e]
+                  (let []
+(swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
+(swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
+                (dom/span {:style {:color "white"}} " Notifications ")
+                (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})   
+              )
+              ;(om/build notifications-navbar data {})
+            )
+
+            (dom/li {:className "dropdown" :style {:background-color "grey" :margin-right "0px"}}
+              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (let []
+                                                                                     (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
+                                                                                     (swap! app-state assoc :isnotification false)
+                                                                                     ) )} (str (count (:alerts @data))))
+                (dom/span {:style {:color "white"}} " Alerts ")
+                (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
+                
+              )
+              ;(om/build alerts-navbar data {})
+            )
           )
 
 

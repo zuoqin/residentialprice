@@ -31,6 +31,14 @@
 
 (defonce app-state (atom  {:device {} :marker nil :isinsert false :view 1 :current "Device Detail"} ))
 
+(defn comp-alerts [alert1 alert2]
+  (if (> (:open alert1) (:open alert2)) true false
+
+    ;(if (and (= (:open alert1) (:open alert2)) (> )))
+  )
+)
+
+
 (defn comp-groups
   [group1 group2]
   ;(.log js/console group1)
@@ -364,7 +372,7 @@
             )
           )
         ))
-      (:alerts @shelters/app-state))
+      (take 3 (sort (comp comp-alerts) (:alerts @shelters/app-state))))
     )
   )
 )

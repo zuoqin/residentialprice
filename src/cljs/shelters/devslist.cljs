@@ -237,19 +237,19 @@
                 )
                 (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton"}
                   (dom/li {:className "dropdown-item"}
-                    (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
-                      "פרטים"
+                    (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
+                      "עדכון נתונים"
                     )
                   )
                   (dom/li {:className "dropdown-item" :href "#"}
                     (dom/a {:href (str "#/devdetail/" (:id item))}
-                      "עדכון"
+                      "ביטול יחידה"
                     )
                   )
 
                   (dom/li {:className "dropdown-item" :href "#"}
                     (dom/a {:href "#" :onClick (fn [e] (onAssignGroups (:id item)))}
-                      "שייך לקבוצה"
+                      "שיוך לקבוצה"
                     )
                   )
                 )
@@ -388,7 +388,7 @@
 (defcomponent topbuttons-view [data owner]
   (render [_]
     (dom/div {:className "row" :style {:padding-top "70px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
-      (dom/div {:className "col-xs-10" :style { :text-align "right" }}
+      (dom/div {:className "col-xs-9" :style { :text-align "right" }}
         (dom/h2 "רשימת יחידות")
       )
 
@@ -398,7 +398,7 @@
         )
       )
 
-      (dom/div {:className "col-xs-1" :style {:margin-right "-35px" :padding-top "15px"}}
+      (dom/div {:className "col-xs-2" :style {:margin-right "0px" :padding-top "15px" :text-align "left"}}
         (b/button {:className "btn btn-primary"
           :disabled? (= (count (:selectedunits @data)) 0)
           :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") יחידות")
@@ -418,8 +418,8 @@
       ]
       (dom/div
         (om/build shelters/website-view data {})
-        (dom/div {:className "container" :style {:margin-top "0px" :width "100%":padding-left "50px" :padding-right "50px"}}
-          (dom/div {:className "col-md-12"}            
+        (dom/div {:className "container" :style {:margin-top "0px" :width "100%" :padding-left "50px" :padding-right "50px" :height "100%"}}
+          (dom/div {:className "col-md-12" :style {:height "100%"}}
             (om/build topbuttons-view data {})
 
             ;; (dom/div {:className "row":style {:padding-top "10px"}}
@@ -435,7 +435,7 @@
  
             ;;   )
             ;; )
-            (dom/div {:className "table-responsive" :style {:padding-top "10px"}}
+            (dom/div {:className "table-responsive" :style {:padding-top "10px" :height "100%"}}
               (dom/div {:className "floatThead-wrapper" :style {:position "relative" :clear "both"}}
                 (dom/table {:id "devicesTable" :className "table table-hover table-responsive table-bordered floatThead-table"}
                   (dom/thead
