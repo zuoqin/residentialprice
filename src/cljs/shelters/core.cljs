@@ -1285,7 +1285,7 @@
           )          
         )
 
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse navbar-right" :id "bs-example-navbar-collapse-1"}
 
           (dom/ul {:className "nav navbar-top-links navbar-left"}
 
@@ -1432,16 +1432,13 @@
             )
 
 
-
-            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
-            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "Logout"))
             (dom/li {:className "dropdown" :style {:margin-right "0px" :background-color "grey"}}
               (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
                 (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e]
                   (let []
 (swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
 (swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
-                (dom/span {:style {:color "white"}} " Notifications ")
+                (dom/span {:style {:color "white"}} " התראות ")
                 (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})   
               )
               ;(om/build notifications-navbar data {})
@@ -1454,15 +1451,16 @@
                                                                                      (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
                                                                                      (swap! app-state assoc :isnotification false)
                                                                                      ) )} (str (count (:alerts @data))))
-                (dom/span {:style {:color "white"}} " Alerts ")
+                (dom/span {:style {:color "white"}} " תקלות ")
                 (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
                 
               )
               ;(om/build alerts-navbar data {})
             )
+
+            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
+            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "יְצִיאָה"))
           )
-
-
         )
       )
     )

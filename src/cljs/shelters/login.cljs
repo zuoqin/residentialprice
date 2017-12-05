@@ -196,7 +196,7 @@
 (defn OnGetGroups [response]
   (swap! shelters/app-state assoc-in [:groups] (map map-group response) )
   ;(reqsecurities)
-  (swap! app-state assoc-in [:state] 0)
+  ;(swap! app-state assoc-in [:state] 0)
   (reqcommands)
 )
 
@@ -246,7 +246,7 @@
 (defn OnGetUnits [response]
   (swap! shelters/app-state assoc-in [:devices] (map map-unit response) )
   ;(reqsecurities)
-  (swap! app-state assoc-in [:state] 0)
+  ;(swap! app-state assoc-in [:state] 0)
   (reqgroups)
 )
 
@@ -410,7 +410,7 @@
       tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
       newdata {:token (get response "token") :userid (get response "userId" ) }
     ]
-    (swap! app-state assoc-in [:state] 0)
+    ;(swap! app-state assoc-in [:state] 0)
     ;(.log js/console (str (:token newdata)))
     (swap! shelters/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:view] 2 )
