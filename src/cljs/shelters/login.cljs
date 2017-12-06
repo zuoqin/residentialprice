@@ -502,6 +502,7 @@
     
   )
   (did-mount [_]
+    (.log js/console "gg")
     (onMount data owner)
   )
   (render

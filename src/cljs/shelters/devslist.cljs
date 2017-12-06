@@ -460,7 +460,7 @@
       (dom/div
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%" :padding-left "50px" :padding-right "50px" :height "100%"}}
-          (dom/div {:className "panel panel-primary"}
+          (dom/div {:className "panel panel-primary" :style {:padding-bottom "70px"}}
             (om/build topbuttons-view data {})
 
             ;; (dom/div {:className "row":style {:padding-top "10px"}}
@@ -489,26 +489,26 @@
                 )
 
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
+                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :white-space "nowrap"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
     (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3))
     (shelters/doswaps)
-                  ))} (dom/i {:className "fa fa-bullseye"})
+                  ))} ;(dom/i {:className "fa fa-bullseye"})
                         (dom/b "מזהה יחידה")) (case (:sort-list @app-state) 3 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 4 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span)))
 
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
+                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :white-space "nowrap"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
     (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1))
     (shelters/doswaps)
-                  ))} (dom/i {:className "fa fa-bullseye"})
+                  ))} ;(dom/i {:className "fa fa-bullseye"})
                         (dom/b "שם יחידה")) (case (:sort-list @app-state) 1 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 2 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span))
                 )
 
                 (dom/div {:className "col-xs-9 col-md-9" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}  
-                  (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
+                  (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :white-space "nowrap"}}
                     (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
     (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5))
     (shelters/doswaps)
-                  ))} (dom/i {:className "fa fa-bullseye"})
+                  ))} ;(dom/i {:className "fa fa-bullseye"})
                         (dom/b "כתובת")) (case (:sort-list @app-state) 5 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 6 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span))
                     
                   )

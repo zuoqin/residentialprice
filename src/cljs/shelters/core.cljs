@@ -1270,7 +1270,7 @@
       ;tr1 (.log js/console (str "in map navigation"))
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-toggleable-md navbar-inverse bg-inverse navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1285,9 +1285,9 @@
           )          
         )
 
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse navbar-right" :id "bs-example-navbar-collapse-1"}
+        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
 
-          (dom/ul {:className "nav navbar-top-links navbar-left"}
+          (dom/ul {:className "nav navbar-nav"}
 
             (dom/li
               (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
@@ -1457,9 +1457,12 @@
               )
               ;(om/build alerts-navbar data {})
             )
+          )
+
+          (dom/ul {:className "nav navbar-nav navbar-left"}
 
             (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
-            (dom/li (dom/a {:href "/#/login":style {:padding-top "18px"}} "יְצִיאָה"))
+            (dom/li (dom/a {:href "/#/login" :style {:padding-top "18px"}} "יְצִיאָה"))
           )
         )
       )
@@ -1472,7 +1475,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-toggleable-md navbar-inverse bg-inverse navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
