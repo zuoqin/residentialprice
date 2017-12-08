@@ -583,5 +583,4 @@
   )
 )
 
-;(initsocket)
-
+(initsocket)

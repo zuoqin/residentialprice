@@ -118,10 +118,10 @@
   (render
     [_]
 
-    (dom/div
+    (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
          (map (fn [item]
            (let []
-             (dom/div {:className "col-xs-3" :style {:border "1px solid #ddd" :width "23%" :margin-left "20px" :margin-top "20px" :min-width "290px"}}
+             (dom/div { :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :width "23%" :margin-left "20px" :margin-top "20px" :min-width "290px"}}
                (dom/div {:className "row" :style {:font-weight "bold" :text-align "center"}}
                  (dom/h3 (if (or (nil? (:name item)) (< (count (:name item)) 1)) "empty" (:name item))) 
                )
