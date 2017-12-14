@@ -239,9 +239,9 @@
 
           user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
           ]
-          (dom/div {:className "row" :style {:border-top "1px solid"}}
+          (dom/div {:className "row" :style {:border-top "1px solid" :display "flex"}}
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
-              (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
+              (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
@@ -285,7 +285,7 @@
             )
           )
         ))
-      (take 3 (sort (comp comp-alerts) (:notifications @data))))
+      (take 10 (sort (comp comp-alerts) (:notifications @data))))
     )
   )
 )
@@ -314,18 +314,19 @@
   )
 )
 
+
 (defcomponent alerts-table [data owner]
   (render [_]
-    (dom/div {:className "list-group" :style {:display "block"}}
+    (dom/div
       (map (fn [item]
         (let [
           unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
 
           user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
           ]
-          (dom/div {:className "row" :style {:border-top "1px solid"}}
+          (dom/div {:className "row" :style {:border-top "1px solid" :display "flex"}}
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
-              (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
+              (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
@@ -369,7 +370,7 @@
             )
           )
         ))
-      (take 3 (sort (comp comp-alerts) (:alerts @data))))
+      (take 10 (sort (comp comp-alerts) (:alerts @data))))
     )
   )
 )

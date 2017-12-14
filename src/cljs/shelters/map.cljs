@@ -38,6 +38,8 @@
 
 (def iconBase "/images/")
 
+(def tableheight (- (* 35 12) 20))
+
 (defn map-dev-node [dev]
   {:text (:name dev) :unitid (:id dev) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
 )
@@ -412,15 +414,16 @@
     (onMount data)
   )
   (render [_]
-    (let []
+    (let [
+      tr1 (.log js/console (str (- (.. js/document -body -clientHeight) tableheight 0) "px"))
+      ]
       (dom/div
         (om/build shelters/website-view data {})
-
-
-        (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true "80%" "100%")}}
+        (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) tableheight 0)) "px") "100%")}}
           (dom/div  {:className "col-3 col-sm-3" :style {:height "100%"}}
+            (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) tableheight 150) 0 )  "px") (str (+ (- (.. js/document -body -clientHeight)  100) 0 )  "px")) }})
+
             (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} (:name (first (:commands @data))))
-            (dom/div  {:className "tree" :id "tree" :style {:max-height "95%" :overflow-y "scroll"}})
           )
           
           (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
@@ -428,33 +431,34 @@
         )
 
 
+
+
         (if (:isalert @data)
-          (dom/div {:className "row" :style {:padding-top "10px" :height (str (+ 55 (* 35 (count (:alerts @data)))) "px")}}
-            (dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-9 col-sm-9"}
-              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px"}}
+          (dom/div {:className "row" :style {:padding-top "10px" :height (str tableheight "px") :position "absolute" :bottom "0px" :width "100%"}}
+            ;(dom/div  {:className "col-3 col-sm-3 tree"})
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "0px"}}
+              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
                   (dom/div {:className "row"}
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "seen")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "device")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מזהה יחידה")
 
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "name")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "address")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "מיקום יחידה")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "event")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם אירוע")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "open")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "תאריך וזמן אירוע")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "status")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "סטטוס")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "user")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "אירוע טופל ע''י")
 
                   )
-
                 )
               )
               (om/build shelters/alerts-table data {})
@@ -463,29 +467,28 @@
         )
 
         (if (:isnotification @data)
-          (dom/div {:className "row" :style {:height (str (+ 55 (* 35 (count (:notifications @data)))) "px") :padding-top "10px"}}
-            (dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-9 col-sm-9"}
-              (dom/div {:className "panel panel-primary"}
+          (dom/div {:className "row" :style {:height tableheight :padding-top "10px" :position "absolute" :bottom "0px" :width "100%"}}
+            ;(dom/div  {:className "col-3 col-sm-3 tree"})
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "15px"}}
+              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                  (dom/div {:className "row"}
+                  (dom/div {:className "row" :style {:display "flex"}}
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "seen")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "device")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מזהה יחידה")
 
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "name")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "מיקום יחידה")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "address")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם אירוע")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "event")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "תאריך וזמן אירוע")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "open")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "סטטוס")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "status")
-
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "user")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "אירוע טופל עי")
 
                   )
                 )
