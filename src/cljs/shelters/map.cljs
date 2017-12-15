@@ -436,9 +436,9 @@
         (if (:isalert @data)
           (dom/div {:className "row" :style {:padding-top "10px" :height (str tableheight "px") :position "absolute" :bottom "0px" :width "100%"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "0px"}}
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px"}}
               (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
-                (dom/div {:className "panel-heading" :style {:padding "0px" :margin "0px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
                   (dom/div {:className "row"}
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
@@ -469,7 +469,7 @@
         (if (:isnotification @data)
           (dom/div {:className "row" :style {:height tableheight :padding-top "10px" :position "absolute" :bottom "0px" :width "100%"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "15px"}}
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px"}}
               (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
                   (dom/div {:className "row" :style {:display "flex"}}

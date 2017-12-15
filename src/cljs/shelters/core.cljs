@@ -29,7 +29,38 @@
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
 (defonce app-state (atom {:state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
-:alerts [] 
+:alerts [{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
+
+{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13")}
+]
 ;[{:id 1001 :type "error" :text "In device theer is an error"} {:id 1002 :type "common" :text "In That device no error"}]
 :notifications [] ;[{:id 101 :type "error" :text "This device works incorrect"} {:id 102 :type "common" :text "That device working properly"}]
 :devices [] :users []}))
@@ -223,9 +254,7 @@
             )
           )
         ))
-
       (:notifications @app-state))
-
     )
   )
 )
@@ -370,7 +399,7 @@
             )
           )
         ))
-      (take 10 (sort (comp comp-alerts) (:alerts @data))))
+      (sort (comp comp-alerts) (:alerts @data)))
     )
   )
 )
