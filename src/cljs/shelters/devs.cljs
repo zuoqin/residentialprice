@@ -121,62 +121,118 @@
     (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
          (map (fn [item]
            (let []
-             (dom/div { :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :min-width "290px"}}
-               (dom/div {:className "row" :style {:font-weight "bold" :text-align "center"}}
-                 (dom/h3 (if (or (nil? (:name item)) (< (count (:name item)) 1)) "empty" (:name item))) 
+             (dom/div { :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :min-width "290px" :margin-bottom "0px"}}
+               (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+                 (dom/div {:style {:white-space "normal"}} (str "מזהה יחידה: " (if (or (nil? (:controller item)) (< (count (:controller item)) 1)) "empty" (:controller item))))
                )
-               (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                 (dom/div {:className "col-xs-6" :style { :border-bottom "solid 1px grey" :text-align "center"}}
-                   (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                     (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "20px" :height "42px" :font-size "xx-large" :color "red"}})
+
+               (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+                 (dom/div {:style {:white-space "normal"}} (str "שם יחידה: " (if (or (nil? (:name item)) (< (count (:name item)) 1)) "empty" (:name item))))
+               )
+
+               (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+                 (dom/div {:style {:white-space "normal"}} (str "כתובת יחידה: " (if (or (nil? (:address item)) (< (count (:address item)) 1)) "empty" (:address item))))
+               )
+
+               (dom/div {:className "row" :style {:padding-top "5px" :margin-left "0px" :margin-right "0px"}}
+                 (dom/div {:className "col-xs-6" ;:style { :border-bottom "solid 1px grey" :text-align "center"}
+                   }
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
+                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                         (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "red"}})
+                       )
+
+                     )
                    )
+
+
                  )
-                 (dom/div {:className "col-xs-6" :style {:border-right "solid 1px grey" :border-bottom "solid 1px grey" :text-align "center"}}
-                   (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                     (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "green"}})
+                 (dom/div {:className "col-xs-6" ;:style {:border-right "solid 1px grey" :border-bottom "solid 1px grey" :text-align "center"}
+                   }
+
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
+                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                         (dom/span {:className "glyphicon glyphicon-ok" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "green"}})
+                       )
+
+                     )
                    )
                  )
                )
 
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                 (dom/div {:className "col-xs-6" :style {:border-bottom "solid 1px grey" :text-align "center"}}
-                   (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                     (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "brown"}})
+                 (dom/div {:className "col-xs-6" :style {:padding-top "10px"}
+                   }
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
+                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                         (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "brown"}})
+                       )
+
+                     )
                    )
                  )
-                 (dom/div {:className "col-xs-6" :style {:border-right "solid 1px grey" :border-bottom "solid 1px grey" :text-align "center"}}
-                   (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                     (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "blue"}})
+                 (dom/div {:className "col-xs-6" :style {:padding-top "10px"}
+                   }
+
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
+                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                         (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "blue"}})
+                       )
+
+                     )
                    )
+
                  )
                )
 
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                 (dom/div {:className "col-xs-6" :style { :text-align "center" :border-bottom "solid 1px grey"}}
-                   (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                     (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "aqua"}})
+                 (dom/div {:className "col-xs-6" :style { :padding-top "10px" }}
+
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
+                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                         (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "aqua"}})
+                       )
+
+                     )
                    )
                  )
-                 (dom/div {:className "col-xs-6" :style {:border-right "solid 1px grey" :border-bottom "solid 1px grey" :text-align "center"}}
-                   (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                     (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "10px" :height "52px" :font-size "xx-large" :color "yellow"}})
+                 (dom/div {:className "col-xs-6" :style {:padding-top "10px"}}
+
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
+                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
+                         (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                       )
+
+                     )
                    )
                  )
 
                )
-               (dom/div {:className "row"}
-                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px"}}
-                   (b/button {:className "btn btn-block btn-info" :style {:margin-top "17px" :font-size "12px"} :onClick (fn [e] (
-                                                                                       (shelters/goUserDetail e)
-                                                                                       (-> js/document .-location (set! "#/userdetail"))
-                                                                                       ))} "פתח מנעול")
+
+               (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :padding-bottom "40px"}}
+                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center" :padding-top "20px" :padding-bottom "20px" :padding-left "5px" :padding-right "5px"}}
+                       ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] ((shelters/goUserDetail e) (-> js/document .-location (set! "#/userdetail")) ))} "פתח מנעול")
+                     )
+                   )
                  )
 
-                 (dom/div {:className "col-xs-6" :style {:border-right "solid 1px grey" :text-align "center" :height "75px"}}
-                   (b/button {:className "btn btn-block btn-info" :style {:margin-top "17px" :font-size "12px"} :onClick (fn [e] (
-           (shelters/goUserDetail e)
-           (-> js/document .-location (set! "#/userdetail"))
-  ))} "בדיקת תקשורת")
+                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
+                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center" :padding-top "20px" :padding-bottom "20px" :padding-left "5px" :padding-right "5px"}}
+                       ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
+                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] ((shelters/goUserDetail e) (-> js/document .-location (set! "#/userdetail"))))} "בדיקת תקשורת")
+                     )
+                   )
+
                  )
 
                )
@@ -211,25 +267,18 @@
       (dom/div
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
-          (dom/div {:className "col-md-12" :style {:margin-top "70px"}}
-            (dom/div {:className "row" :style {:padding-top "5px"}}
-              (dom/div
-                (b/button {:className "btn btn-primary" :onClick (fn [e]
-                  (-> js/document
-                    .-location
-                    (set! "#/devdetail")
-                  ))} "Add New"
-                )
-              )
-              (dom/div
- 
-              )
-            )            
+          (dom/div {:className "row" :style {:margin-top "70px" :margin-left "30px" :margin-right "15px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
+            (dom/div {:className "col-xs-9" :style {:text-align "right"  :padding-top "5px"}}
+              (dom/h2 "תמונת מצב")
+            )
+            (dom/div {:className "col-xs-3" :style {:margin-top "20px" :text-align "left"}}
+               (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה")
+            )
           )
           (om/build showdevices-view  data {})
         )
-        (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
-        )
+        (dom/div {:className "panel panel-primary" :style {:margin-top "30px"}} ;;:onClick (fn [e](println e))
+        
           ; (dom/div {:className "panel-heading"}
           ;   (dom/div {:className "row"}
           ;     ; (dom/div {:className "col-md-10"}

@@ -418,7 +418,7 @@
 
       (dom/div {:className "col-xs-1" :style {:padding-top "15px"}}
         (b/button {:className "btn btn-primary" :onClick (fn [e]
-          (-> js/document .-location (set! "#/devdetail")))} "Add New"
+          (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה"
         )
       )
 
