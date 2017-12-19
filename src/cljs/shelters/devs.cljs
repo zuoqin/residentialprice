@@ -137,7 +137,10 @@
                (dom/div {:className "row" :style {:padding-top "5px" :margin-left "0px" :margin-right "0px"}}
                  (dom/div {:className "col-xs-6" ;:style { :border-bottom "solid 1px grey" :text-align "center"}
                    }
-                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                   (dom/div {:className "row" :style {:text-align "center"}}
+                      "דלת"
+                   )
+                   (dom/div {:className "row" :style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
                        (dom/a {:href (str "/#/devdetail/" (:id item)) }
                          (dom/span {:className "glyphicon glyphicon-off" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "red"}})
@@ -150,6 +153,9 @@
                  )
                  (dom/div {:className "col-xs-6" ;:style {:border-right "solid 1px grey" :border-bottom "solid 1px grey" :text-align "center"}
                    }
+                   (dom/div {:className "row" :style {:text-align "center"}}
+                      "בריח"
+                   )
 
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
@@ -165,6 +171,10 @@
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                  (dom/div {:className "col-xs-6" :style {:padding-top "10px"}
                    }
+
+                   (dom/div {:className "row" :style {:text-align "center"}}
+                      "ארון תקשורת"
+                   )
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
                        (dom/a {:href (str "/#/devdetail/" (:id item)) }
@@ -176,7 +186,9 @@
                  )
                  (dom/div {:className "col-xs-6" :style {:padding-top "10px"}
                    }
-
+                   (dom/div {:className "row" :style {:text-align "center"}}
+                      "גלאי"
+                   )
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
                        (dom/a {:href (str "/#/devdetail/" (:id item)) }
@@ -185,13 +197,14 @@
 
                      )
                    )
-
                  )
                )
 
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                  (dom/div {:className "col-xs-6" :style { :padding-top "10px" }}
-
+                   (dom/div {:className "row" :style {:text-align "center"}}
+                      "תקשורת"
+                   )
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
                        (dom/a {:href (str "/#/devdetail/" (:id item)) }
@@ -202,7 +215,9 @@
                    )
                  )
                  (dom/div {:className "col-xs-6" :style {:padding-top "10px"}}
-
+                   (dom/div {:className "row" :style {:text-align "center"}}
+                      "סוללה"
+                   )
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "lightgrey" :text-align "center"}}
                        (dom/a {:href (str "/#/devdetail/" (:id item)) }
@@ -218,7 +233,7 @@
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :padding-bottom "40px"}}
                  (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center" :padding-top "20px" :padding-bottom "20px" :padding-left "5px" :padding-right "5px"}}
+                     (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "20px" :padding-bottom "20px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
                        (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] ((shelters/goUserDetail e) (-> js/document .-location (set! "#/userdetail")) ))} "פתח מנעול")
                      )
@@ -227,7 +242,7 @@
 
                  (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "lightgrey" :text-align "center" :padding-top "20px" :padding-bottom "20px" :padding-left "5px" :padding-right "5px"}}
+                     (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "20px" :padding-bottom "20px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
                        (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] ((shelters/goUserDetail e) (-> js/document .-location (set! "#/userdetail"))))} "בדיקת תקשורת")
                      )
@@ -272,7 +287,7 @@
               (dom/h2 "תמונת מצב")
             )
             (dom/div {:className "col-xs-3" :style {:margin-top "20px" :text-align "left"}}
-               (b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה")
+               ;(b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה")
             )
           )
           (om/build showdevices-view  data {})
