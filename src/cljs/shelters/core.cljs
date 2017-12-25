@@ -1,4 +1,5 @@
 (ns shelters.core
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -10,7 +11,7 @@
 
             [cljs-time.format :as tf]
             [cljs-time.coerce :as tc]
-
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout]]
             [om-bootstrap.button :as b]
             [shelters.settings :as settings]
             [clojure.string :as str]
@@ -25,10 +26,13 @@
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 (def custom-formatter2 (tf/formatter "dd/MM/yyyy hh:mm:ss"))
 
+(defn tableheight [count] 
+  (+ 14 (* 34 (min count 10)))
+)
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
+(defonce app-state (atom {:map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
 :alerts [] ;; [{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
 
            ;;  {:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
@@ -261,60 +265,66 @@
 
 (defcomponent notifications-table [data owner]
   (render [_]
-    (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :border-bottom "1px solid"}}
+    (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :height (str (tableheight (count (:notifications @data))) "px") :overflow-y "scroll"}}
       (map (fn [item]
         (let [
           unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
 
           user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
           ]
-          (dom/div {:className "row" :style {:border-top "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
+          (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
+                (:id item)
+              )
+            )
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
                 (:controller unit)
               )
             )
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
                 (:name unit)
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (:address unit)                
               )
             )
 
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 "Failure"                
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (tf/unparse custom-formatter2 (:open item))              
               )
             )
 
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (:status item)               
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (str (:firstname user) " " (:lastname user))
               )
             )
           )
         ))
-      (take 10 (sort (comp comp-alerts) (:notifications @data))))
+        (sort (comp comp-alerts) (:notifications @data))
+      )
     )
   )
 )
@@ -346,53 +356,58 @@
 
 (defcomponent alerts-table [data owner]
   (render [_]
-    (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :border-bottom "1px solid"}}
+    (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :height (str (tableheight (count (:alerts @data))) "px") :overflow-y "scroll"}}
       (map (fn [item]
         (let [
           unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
 
           user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
           ]
-          (dom/div {:className "row" :style {:border-top "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
+          (dom/div {:className "row" :style {:border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                (:id item)                
+              )
+            )
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (:controller unit)
               )
             )
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (:name unit)                
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (:address unit)                
               )
             )
 
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 "Alert"                
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (tf/unparse custom-formatter2 (:open item))              
               )
             )
 
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (:status item)               
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (str (:firstname user) " " (:lastname user))
               )
@@ -1292,6 +1307,31 @@
 )
 
 
+(defn notificationsclick []
+  (let [
+    tr1 (.log js/console (str "gggg"))
+    ]
+
+    (swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
+    (swap! app-state assoc :isalert false)
+    (go
+      (<! (timeout 100))
+      (js/google.maps.event.trigger (:map @app-state) "resize")
+    )
+  )
+)
+
+(defn alertsclick []
+  (let []
+                                                                                   (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
+                                                                                   (swap! app-state assoc :isnotification false)
+     
+    (go
+      (<! (timeout 100))
+      (js/google.maps.event.trigger (:map @app-state) "resize")
+    )
+  )
+)
 
 (defcomponent map-navigation-view [data owner]  
   (render [_]
@@ -1464,11 +1504,8 @@
 
             (dom/li {:className "dropdown" :style {:margin-right "0px" :background-color "grey"}}
               (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e]
-                  (let []
-(swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
-(swap! app-state assoc :isalert false)))} (str (count (:notifications @data))))
-                (dom/span {:style {:color "white"}} " התראות ")
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (notificationsclick))} (str (count (:notifications @data))))
+                (dom/span {:style {:color "white"} :onClick (fn [e] (alertsclick))} " התראות ")
                 (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})   
               )
               ;(om/build notifications-navbar data {})
@@ -1477,10 +1514,7 @@
             (dom/li {:className "dropdown" :style {:background-color "grey" :margin-right "0px"}}
               (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
 
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (let []
-                                                                                     (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
-                                                                                     (swap! app-state assoc :isnotification false)
-                                                                                     ) )} (str (count (:alerts @data))))
+                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (alertsclick))} (str (count (:alerts @data))))
                 (dom/span {:style {:color "white"}} " תקלות ")
                 (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
                 

@@ -24,7 +24,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:map nil :markers []}))
+(defonce app-state (atom  {:markers []}))
 
 (def jquery (js* "$"))
 
@@ -38,7 +38,9 @@
 
 (def iconBase "/images/")
 
-(def tableheight (- (* 35 12) 0))
+(defn tableheight [count] 
+  (+ 85 (* 34 (min count 10)))
+)
 
 (defn map-dev-node [dev]
   {:text (:name dev) :unitid (:id dev) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
@@ -213,7 +215,7 @@
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
     ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "red_point.png" "green_point.png")) "map" (:map @app-state) "title" (:name device) "unitid" (:id device)})
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "red_point.png" "green_point.png")) "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
     ]
     (jquery
@@ -221,7 +223,7 @@
         (-> marker
           (.addListener "click"
             (fn []              
-              (.open infownd (:map @app-state) marker)
+              (.open infownd (:map @shelters/app-state) marker)
             )
           )
         )
@@ -234,12 +236,12 @@
 (defn addplace [place]
   (let [
     ;tr1 (.log js/console place)
-    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" (str iconBase "green_point.png") "title" (.. place -name)})
+    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @shelters/app-state) "icon" (str iconBase "green_point.png") "title" (.. place -name)})
 
     ;If need to add marker on the map:
     ;marker (js/google.maps.Marker. marker-options)
     ]
-    (.panTo (:map @app-state) (.. place -geometry -location))
+    (.panTo (:map @shelters/app-state) (.. place -geometry -location))
   )
 )
 
@@ -250,7 +252,7 @@
     searchbox (js/google.maps.places.SearchBox. input)
     ;tr1 (.log js/console input)
     ]
-    (.push (aget (.-controls (:map @app-state)) 1) input)
+    (.push (aget (.-controls (:map @shelters/app-state)) 1) input)
 
     (jquery
       (fn []
@@ -288,7 +290,7 @@
     tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
     tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) }  )
     ]
-    (.panTo (:map @app-state) (google.maps.LatLng. (:lat latlon), (:lon latlon)))
+    (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat latlon), (:lon latlon)))
   )
 )
 
@@ -299,7 +301,7 @@
     ;tr1 (.log js/console (str "device=" device " obj=" thedev))
     tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
     ]
-    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
+    (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
   )
 )
 
@@ -405,7 +407,7 @@
       map (js/google.maps.Map. map-canvas map-options)
 
       
-      tr1 (swap! app-state assoc-in [:map] map  )
+      tr1 (swap! shelters/app-state assoc-in [:map] map  )
       ]
     )
   )
@@ -417,11 +419,11 @@
     (let [
       ;tr1 (.log js/console (str (- (.. js/document -body -clientHeight) tableheight 0) "px"))
       ]
-      (dom/div
+      (dom/div {:style { :padding-right "15px"}}
         (om/build shelters/website-view data {})
-        (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) tableheight 0)) "px") "100%")}}
+        (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)) "px") "100%")}}
           (dom/div  {:className "col-3 col-sm-3" :style {:height "100%"}}
-            (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) tableheight 100) 0 )  "px") (str (+ (- (.. js/document -body -clientHeight)  100) 0 )  "px")) }})
+            (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 120) 0 ) "px") (str (+ (- (.. js/document -body -clientHeight) 120) 0) "px")) }})
 
             (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} (:name (first (:commands @data))))
           )
@@ -434,19 +436,21 @@
 
 
         (if (:isalert @data)
-          (dom/div {:className "row" :style {:padding-top "10px" :height (str tableheight "px") :position "absolute" :bottom "0px" :width "100%"}}
+          (dom/div {:className "row" :style {:padding-top "0px" :bottom "0px" :width "100%"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px" :height (str tableheight "px") :overflow "scroll" :padding-bottom "30px" :padding-left "0px"}}
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px" :padding-bottom "30px" :padding-left "15px"}}
               (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
-                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                  (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
+                  (dom/div {:className "row" :style {:margin-left "17px" :margin-right "0px"}}
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מספר אירוע")
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מזהה יחידה")
 
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
 
                     (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "מיקום יחידה")
 
@@ -467,18 +471,20 @@
         )
 
         (if (:isnotification @data)
-          (dom/div {:className "row" :style {:height tableheight :padding-top "10px" :position "absolute" :bottom "0px" :width "100%"}}
+          (dom/div {:className "row" :style { :padding-top "0px" :bottom "0px" :width "100%"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px" :height (str tableheight "px") :overflow "scroll" :padding-bottom "30px" :padding-left "0px"}}
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px"  :padding-bottom "30px" :padding-left "15px"}}
               (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
-                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                  (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
+                  (dom/div {:className "row" :style {:margin-left "17px" :margin-right "0px"}}
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
 
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מספר אירוע")
+
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מזהה יחידה")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
 
                     (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "מיקום יחידה")
 
