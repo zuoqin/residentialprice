@@ -11,7 +11,7 @@
 
 	    [chord.client :refer [ws-ch]]
             [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout]]
-
+            [om.dom :as omdom :include-macros true]
             [cljs-time.format :as tf]
             [cljs-time.coerce :as tc]
 
@@ -133,7 +133,7 @@
 
 (defn buildTreeGroups []
   (swap! shelters/app-state assoc-in [:selectedunits] [])
-  (do (clj->js {:multiSelect true :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
+  (do (clj->js {:multiSelect true :searchResultBackColor "#0000FF" :searchResultColor "#FFFFFF" :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
 )
 
 
@@ -155,31 +155,6 @@
   (.log js/console (str "something bad happened: " status " " status-text))
 )
 
-
-
-
-(defn getPortfolios [] 
-
-;;  (if (> (count (:porfolios ((keyword (:selectedsec @sbercore/app-state)) @sbercore/app-state)) 0))
-;;    (sbercore/setSecsDropDown)
-;;    (GET (str settings/apipath "api/portfolios?security=" (:selectedsec @sbercore/app-state) ) {
-;;      :handler OnGetPortfolios
-;;      :error-handler error-handler
-;;      :headers {
-;;        :content-type "application/json"
-;;        :Authorization (str "Bearer "  (:token (:token @sbercore/app-state))) }
-;;    })
-;;  )
-)
-
-
-(defn comp-portfs
-  [portf1 portf2]
-  (if (or (> (:amount portf1)  (:amount portf2))  (and (<= (:amount portf1)  (:amount portf2)) (> (compare (:name portf1)  (:name portf2)  ) 0) ) ) 
-      true
-      false
-  )
-)
 
 
 
@@ -235,13 +210,38 @@
 
 (defn addplace [place]
   (let [
-    ;tr1 (.log js/console place)
+    tr1 (.log js/console place)
     marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @shelters/app-state) "icon" (str iconBase "green_point.png") "title" (.. place -name)})
 
     ;If need to add marker on the map:
     ;marker (js/google.maps.Marker. marker-options)
     ]
     (.panTo (:map @shelters/app-state) (.. place -geometry -location))
+  )
+)
+
+(defn setcenterbydevice [device]
+  (let [
+    thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @shelters/app-state)))
+
+    ;tr1 (.log js/console (str "device=" device " obj=" thedev))
+    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
+    ]
+    (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
+  )
+)
+
+(defn locatedevice [device]
+  (let [
+    options (clj->js [(:name device) {:ignoreCase true :exactMatch false :revealResults true}])
+    ]
+    (setcenterbydevice (:id device))
+    (-> (jquery "#tree" )
+      (.treeview "clearSearch")
+    )
+    (-> (jquery "#tree" )
+        (.treeview "search" options)
+    )
   )
 )
 
@@ -253,14 +253,25 @@
     ;tr1 (.log js/console input)
     ]
     (.push (aget (.-controls (:map @shelters/app-state)) 1) input)
-
+    (.addDomListener js/google.maps.event input "change"
+      (fn []
+        (let [
+          tr1 (.log js/console "onchange value:" (.-value input))
+          ]
+        )
+      )
+    )
     (jquery
       (fn []
         (-> searchbox
           (.addListener "places_changed"
             (fn []              
               ;(.log js/console (.getPlaces searchbox))
-              (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
+              (if (> (count (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))) 0) 
+                (locatedevice (first (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))))
+                (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
+              )
+              
             )
           )
         )
@@ -294,16 +305,6 @@
   )
 )
 
-(defn setcenterbydevice [device]
-  (let [
-    thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @shelters/app-state)))
-
-    ;tr1 (.log js/console (str "device=" device " obj=" thedev))
-    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
-    ]
-    (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
-  )
-)
 
 (defn setTreeControl []
   ;(.log js/console "Set Tree called")
@@ -397,6 +398,27 @@
   )
 )
 
+(defn handle-change [e owner]
+  
+  (swap! app-state assoc-in [:form (keyword (.. e -target -id))] 
+    (.. e -target -value)
+  ) 
+)
+
+
+(defn buildStatusesList [data owner]
+  (map
+    (fn [text]
+      (let [
+        ;tr1 (.log js/console (str  "name=" (:name text) ))
+        ]
+        (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
+      )
+    )
+    [{:id 1 :name "הכל"} {:id 2 :name  "בטיפול"} {:id 3 :name "פתוח"} {:id 4 :name  "סגור"} ] 
+  )
+)
+
 
 (defcomponent map-view [data owner]
 
@@ -458,7 +480,18 @@
 
                     (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "תאריך וזמן אירוע")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "סטטוס")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
+                      (omdom/select #js {:id "statuses"
+                                         :className "selectpicker"
+                                         :data-width "100px"
+                                         :data-style "btn-primary"
+                                         :data-show-subtext "false"
+                                         :data-live-search "true"
+                                         :onChange #(handle-change % owner)
+                                         }                
+                        (buildStatusesList data owner)
+                      )
+                    )
 
                     (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "אירוע טופל ע''י")
 
@@ -492,7 +525,17 @@
 
                     (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "תאריך וזמן אירוע")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "סטטוס")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
+                      (omdom/select #js {:id "statuses"
+                                         :className "selectpicker"
+                                         :data-width "100px"
+                                         :data-show-subtext "false"
+                                         :data-live-search "true"
+                                         :onChange #(handle-change % owner)
+                                         }                
+                        (buildStatusesList data owner)
+                      )
+                    )
 
                     (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "אירוע טופל עי")
 

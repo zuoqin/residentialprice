@@ -148,6 +148,10 @@ h1 {
   .maprow { padding-top: 73px; }
 }
 
+.btn.dropdown-toggle.selectpicker.btn-default{
+  padding: 0px;
+}
+
 @media screen and (min-width: 768px) and (max-width: 1007px) {
    h4 {font-size: 14px;}
   .col-md-1 {font-size: 14px;}

@@ -25,14 +25,14 @@
 
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 (def custom-formatter2 (tf/formatter "dd/MM/yyyy hh:mm:ss"))
-
+(def ch (chan (dropping-buffer 2)))
 (defn tableheight [count] 
   (+ 14 (* 34 (min count 10)))
 )
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
+(defonce app-state (atom {:selectedstatus 1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
 :alerts [] ;; [{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
 
            ;;  {:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
@@ -323,7 +323,7 @@
             )
           )
         ))
-        (sort (comp comp-alerts) (:notifications @data))
+        (sort (comp comp-alerts) (filter (fn [x] (if (= 1 (:selectedstatus @data)) true (if (= (:status x) (:selectedstatus @data)) true false))) (:notifications @data)))
       )
     )
   )
@@ -414,7 +414,7 @@
             )
           )
         ))
-      (sort (comp comp-alerts) (:alerts @data)))
+      (sort (comp comp-alerts) (filter (fn [x] (if (= 1 (:selectedstatus @data)) true (if (= (:status x) (:selectedstatus @data)) true false))) (:alerts @data)) ))
     )
   )
 )
@@ -762,173 +762,11 @@
   ;;(.log js/console value)  
 )
 
-(defn onDropDownChange [id value]
-  (let [
-        code (:code (first (filter (fn[x] (if (= (:id x) (js/parseInt value) ) true false)) (:clients @app-state)))  )
-        ;;tr1 (.log js/console (str "value=" value " code=" code))
-        
-        ]
-    (swap! app-state assoc :state 1 )
-    (swap! app-state assoc-in [:dealspage] -1)
-    (swap! app-state assoc-in [:nomoredeals] false)
-    (swap! app-state assoc-in [:selectedclient] code)
-    (if (nil? (:positions ((keyword value) @app-state)))
-      (getPositions)
-    )
-
-    (if (nil? (:deals ((keyword code) @app-state)))
-      (getDeals)
-    )
-  )
-  
-
-  ;;(.log js/console value)  
-
-)
-
-
-(defn comp-clients
-  [client1 client2]
-  (if (> (compare (:code client1) (:code client2)) 0) 
-      false
-      true
-  )
-)
-
-(defn comp-secs
-  [security1 security2]
-  (if (> (compare (:acode security1) (:acode security2)) 0) 
-      false
-      true
-  )
-)
-
-
-(defn buildClientsList [data owner]
-  (map
-    (fn [text]
-      (dom/option {:key (:code text) :value (:id text)
-                    :onChange #(handle-change % owner)} (:name text))
-    )
-    (sort (comp comp-clients) (:clients @app-state )) 
-  )
-)
-
-
-(defn buildSecsList [data owner]
-  (map
-    (fn [text]
-      (dom/option {:key (:id text) :value (:id text)
-                    :onChange #(handle-change % owner)} (:acode text))
-    )
-    (sort (comp comp-secs) (filter (fn [x] (if (or (= 10 (:assettype x)) (= true (:ismatured x))  (and (= 4 (:view @data)) (= 15 (:assettype x))))  false true)) (:securities @app-state )))
-  )
-)
-
-
-
-(defn setSecsDropDown []
-  (jquery
-     (fn []
-       (-> (jquery "#securities" )
-         (.selectpicker {})
-       )
-     )
-   )
-   (jquery
-     (fn []
-       (-> (jquery "#securities" )
-         (.selectpicker "val" (:id (first (filter (fn [x] (if (= (:id x) (:selectedsec @app-state)) true false )) (:securities @app-state)) )) )
-         (.on "change"
-           (fn [e]
-             (
-               onSecsDropDownChange (.. e -target -id) (.. e -target -value)
-             )
-           )
-         )
-       )
-     )
-   )
-)
-
-(defn setCalcSecsDropDown []
-  (swap! app-state assoc :state 0)
-  ;(set! ( . (.getElementById js/document "btnrefresh") -disabled) true)
-  (jquery
-     (fn []
-       (-> (jquery "#securities" )
-         (.selectpicker {})
-       )
-     )
-   )
-   (jquery
-     (fn []
-       (-> (jquery "#securities" )
-         (.selectpicker "val" (:id (first (filter (fn [x] (if (= (:id x) (:selectedsec @app-state)) true false )) (:securities @app-state)) )) )
-         (.on "change"
-           (fn [e]
-             (
-               onCalcSecsDropDownChange (.. e -target -id) (.. e -target -value)
-             )
-           )
-         )
-       )
-     )
-   )
-
-
-
-  (jquery
-     (fn []
-       (-> (jquery "#currencies" )
-         (.selectpicker {})
-       )
-     )
-   )
-   (jquery
-     (fn []
-       (-> (jquery "#currencies" )
-         (.selectpicker "val" (:selectedcurrency @app-state))
-         (.on "change"
-           (fn [e]
-             (
-               onCalcCurrenciesDropDownChange (.. e -target -id) (.. e -target -value)
-             )
-           )
-         )
-       )
-     )
-   )
-)
-
-(defn setClientsDropDown []  
-  (jquery
-     (fn []
-       (-> (jquery "#clients" )
-         (.selectpicker {})
-       )
-     )
-   )
-   (jquery
-     (fn []
-       (-> (jquery "#clients" )
-         (.selectpicker "val" (:id (first (filter (fn [x] (if (= (:code x) (:selectedclient @app-state)) true false )) (:clients @app-state)) )) )
-         (.on "change"
-           (fn [e]
-             (
-               onDropDownChange (.. e -target -id) (.. e -target -value)
-             )
-           )
-         )
-       )
-     )
-   )
-)
 
 
 
 (defn onDidUpdate [data]
-  (setClientsDropDown)
+  ;(setClientsDropDown)
     ;; (jquery
     ;;   (fn []
     ;;     (-> (jquery "#side-menu")
@@ -941,7 +779,13 @@
 
 (defn onMount [data]
   (.log js/console "Mount core happened")
-  (setClientsDropDown)
+
+  (if (or (:isalert @app-state) (:isnotification @app-state))
+    (go
+         (<! (timeout 500))
+         (put! ch 42)
+    )
+  )
 )
 
 
@@ -1306,10 +1150,48 @@
   (aset js/window "location" (str "/clientbloombergtrans/" (:selectedclient @app-state)))
 )
 
+(defn onDropDownChange [id value]
+  (let [
+        tr1 (.log js/console "id=" id " value=" value)
+    ]
+    (if (= id "statuses")
+      (swap! app-state assoc-in [:selectedstatus] (js/parseInt value))
+    )
+  )
+  ;;(.log js/console value)  
+
+)
+
+
+(defn setStatusesDropDown []
+       (-> (jquery "#statuses" )
+         (.selectpicker)
+       )
+  ;; (jquery
+  ;;    (fn []
+
+  ;;    )
+  ;;  )
+   (jquery
+     (fn []
+       (-> (jquery "#statuses" )
+         (.selectpicker "val" (:selectedstatus @app-state))
+         (.on "change"
+           (fn [e]
+             (
+               onDropDownChange (.. e -target -id) (.. e -target -value)
+             )
+           )
+         )
+       )
+     )
+   )
+)
+
 
 (defn notificationsclick []
   (let [
-    tr1 (.log js/console (str "gggg"))
+    ;tr1 (.log js/console (str "gggg"))
     ]
 
     (swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
@@ -1317,7 +1199,10 @@
     (go
       (<! (timeout 100))
       (js/google.maps.event.trigger (:map @app-state) "resize")
+      (put! ch 42)
     )
+
+    ;(setStatusesDropDown)
   )
 )
 
@@ -1329,11 +1214,21 @@
     (go
       (<! (timeout 100))
       (js/google.maps.event.trigger (:map @app-state) "resize")
+      (put! ch 42)
     )
+    ;(setStatusesDropDown)
+    
   )
 )
 
 (defcomponent map-navigation-view [data owner]  
+  (did-mount [this]
+    (let [
+      ;tr1 (.log js/console "did mount")
+      ]
+      (onMount data)
+    )    
+  )
   (render [_]
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
@@ -2202,3 +2097,26 @@
   ;(.log js/console "One is found in view")
   (dashboard-navigation-view data owner)
 )
+
+(defn setcontrols [value]
+  (case value
+    42 ( let [] 
+         (setStatusesDropDown)
+       )
+  )
+)
+
+(defn initqueue []
+  (doseq [n (range 1000)]
+    (go ;(while true)
+      (take! ch(
+        fn [v] (
+           setcontrols v
+          )
+        )
+      )
+    )
+  )
+)
+
+(initqueue)
