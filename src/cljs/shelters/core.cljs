@@ -794,7 +794,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top navbar-inverse" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1191,18 +1191,18 @@
 
 (defn notificationsclick []
   (let [
-    ;tr1 (.log js/console (str "gggg"))
+    oldstate (:isnotification @app-state)
+    newstate (if (= true oldstate) false true)
+    ;tr1 (.log js/console (str "old state= " oldstate "; new state = " newstate))
     ]
 
-    (swap! app-state assoc :isnotification (if (:isnotification @app-state) false true))
-    (swap! app-state assoc :isalert false)
+    (swap! app-state assoc-in [:isnotification] newstate)
+    (swap! app-state assoc-in [:isalert] false)
     (go
       (<! (timeout 100))
       (js/google.maps.event.trigger (:map @app-state) "resize")
       (put! ch 42)
     )
-
-    ;(setStatusesDropDown)
   )
 )
 
@@ -1235,7 +1235,7 @@
       ;tr1 (.log js/console (str "in map navigation"))
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
-      (dom/div {:className "navbar navbar-toggleable-md navbar-inverse bg-inverse navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-toggleable-md bg-inverse navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1397,22 +1397,25 @@
             )
 
 
-            (dom/li {:className "dropdown" :style {:margin-right "0px" :background-color "grey"}}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (notificationsclick))} (str (count (:notifications @data))))
-                (dom/span {:style {:color "white"} :onClick (fn [e] (alertsclick))} " התראות ")
-                (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})   
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px"}}
+              (dom/a {:style {:padding "5px"} :onClick (fn [e] (notificationsclick))}
+                (dom/div {:style {:background-color "grey" :border-radius "5px"}}
+                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (notificationsclick))} (str (count (:notifications @data))))
+                  (dom/span {:style {:color "white"} :onClick (fn [e] (alertsclick))} " התראות ")
+                  (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})
+                )
               )
               ;(om/build notifications-navbar data {})
             )
 
-            (dom/li {:className "dropdown" :style {:background-color "grey" :margin-right "0px"}}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown" :href "#" :aria-expanded "false" :style {:color "red"}}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px"}}
+              (dom/a {:style {:padding "5px"} :onClick (fn [e] (alertsclick))}
+                (dom/div {:style {:background-color "grey" :border-radius "5px"}}
+                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (alertsclick))} (str (count (:alerts @data))))
 
-                (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (alertsclick))} (str (count (:alerts @data))))
-                (dom/span {:style {:color "white"}} " תקלות ")
-                (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
-                
+                  (dom/span {:style {:color "white"}} " תקלות ")
+                  (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
+                )
               )
               ;(om/build alerts-navbar data {})
             )
@@ -1434,7 +1437,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-toggleable-md navbar-inverse bg-inverse navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-toggleable-md navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1588,7 +1591,7 @@
             )
             (dom/li
               (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "24px" :margin-top "12px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
+              )
             )
           )        
         )

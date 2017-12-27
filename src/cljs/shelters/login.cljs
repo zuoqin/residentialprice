@@ -21,7 +21,8 @@
             [shelters.contactdetail :as contactdetail]
             [shelters.userdetail :as userdetail]
 
-
+            [cljs-time.format :as tf]
+            [cljs-time.coerce :as tc]
             [shelters.groupstounit :as groupstounit]
             [shelters.reportunits :as reportunits]
             [shelters.notedetail :as notedetail]
@@ -38,7 +39,8 @@
 
 (enable-console-print!)
 
-
+(def custom-formatter2 (tf/formatter "MM/dd/yyyy hh:mm:ss"))
+(def iconBase "/images/")
 (def application
   (js/document.getElementById "app"))
 
@@ -157,7 +159,7 @@
 
 
 (defn OnGetCommands [response]
-  (swap! shelters/app-state assoc-in [:commands] (map map-command (case (count response) 0 [{"commandId" 1 "commandName" "פתח דלת"}] response)))
+  (swap! shelters/app-state assoc-in [:commands] (map map-command (case (count response) 0 [{"commandId" 1 "commandName" "פתח מנעול"}] response)))
   ;(reqsecurities)
   ;(swap! app-state assoc-in [:state] 0)
   (reqindications)
@@ -418,7 +420,7 @@
     (requsers)
     ;;(requser {:token newdata})
     ;;(put! ch 43)
-    ;(put! ch 42)
+    (put! ch 45)
   )
 )
 
@@ -502,7 +504,7 @@
     
   )
   (did-mount [_]
-    (.log js/console "gg")
+    ;(.log js/console "gg")
     (onMount data owner)
   )
   (render
@@ -524,10 +526,82 @@
   )
 )
 
+(defn processMessage [notification]
+  (let [
+    unitid (get notification "unitId")
+    userid (get notification "userId")
+    status (get notification "status")
+    type (get notification "notificationType")
+    id (get notification "notificationId")
+    ;tr1 (.log js/console (subs (get notification "openTime") 0 19))
+    open (tf/parse custom-formatter2 (subs (get notification "openTime") 0 19))
+    
+    open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
+    ;tr1 (.log js/console (str "unitid in Notification: " unitid))
+    marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
+
+    newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
+    
+    tr1 (if (not (nil? marker)) (swap! shelters/app-state assoc-in [:devices] newunits))
+
+    tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:notifications @shelters/app-state)))) (swap! shelters/app-state assoc-in [:notifications] (conj (:notifications @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))) (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))))
+    
+    ]
+    (if (nil? marker)
+      (.log js/console (str "did not find a unit for unitid=" unitid " in notification"))
+      (.setIcon marker (str iconBase (case status 3 "red_point.png" "green_point.png")))
+    )
+  )
+)
+
+
+(defn processNotification [notification]
+  (let [
+      tr1 (js/console.log "Hooray! Message:" (pr-str notification))
+    ]
+    (processMessage notification)
+  )
+)
+
+
+(defn receivesocketmsg []
+  (go
+    (let [
+        {:keys [ws-channel error]} (<! (ws-ch "ws://52.14.180.219:5060" {:format :json}))
+        {:keys [message error]} (<! ws-channel)
+        
+      ]
+      (if error
+        (js/console.log "Uh oh:" error)
+        (processNotification message)      
+      )
+      (receivesocketmsg)
+    )
+  )
+)
+
+(defn initsocket []
+  (go
+    (let [
+        {:keys [ws-channel error]} (<! (ws-ch "ws://52.14.180.219:5060" {:format :json}))
+        ;{:keys [message error]} (<! ws-channel)
+        
+      ]
+      (.log js/console (str "token to send in socket: " (:token (:token @shelters/app-state))))
+      (if-not error
+        (>! ws-channel (:token (:token @shelters/app-state)))
+        (js/console.log "Error:" (pr-str error))
+      )
+      (receivesocketmsg)
+    )
+  )
+)
+
 (defn setcontrols [value]
   (case value
     42 (shelters/goMap 0)
-    ;43 (requser @shelters/app-state)
+    45 (initsocket)
+    
   )
 )
 
@@ -582,3 +656,4 @@
 )
 
 (main)
+

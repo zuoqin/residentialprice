@@ -154,8 +154,11 @@
     unitid (str (get unit "unitId"))    
     address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value" )
+
+    contact1 (get (first (filter (fn [x] (if (= (get x "key") "contact1") true false)) (get unit "details"))) "value")
+    contact2 (get (first (filter (fn [x] (if (= (get x "key") "contact2") true false)) (get unit "details"))) "value")
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :contacts [{:tel phone}]}
+    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :contacts [(first (filter (fn [x] (if (= contact1 (:id x)) true false)) (:contacts @shelters/app-state))) (first (filter (fn [x] (if (= contact1 (:id x)) true false)) (:contacts @shelters/app-state)))]}
     ]
     ;
     result
@@ -181,7 +184,7 @@
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "contact1" :value (:id (nth (:contacts (:device @app-state)) 0))} {:key "contact2" :value (:id (nth (:contacts (:device @app-state)) 0))}]}})
 )
 
 
@@ -434,8 +437,8 @@
         (dom/div
           (dom/div {:className "row":style {:margin-top "5px"}}
             ;(dom/div {:className "col-xs-5"})
-            (dom/div {:className "col-xs-2"} (dom/h5 (str "Contact " (+ num 1) ":")))
-            (dom/div {:className "col-xs-2"}
+            (dom/div {:className "col-xs-3"} (dom/h5 (str "Contact " (+ num 1) ":")))
+            (dom/div {:className "col-xs-3"}
               (omdom/select #js {:id (str "contact" num)
                                  :className "selectpicker"
                                  :data-show-subtext "true"

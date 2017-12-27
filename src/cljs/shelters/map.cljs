@@ -39,7 +39,7 @@
 (def iconBase "/images/")
 
 (defn tableheight [count] 
-  (+ 85 (* 34 (min count 10)))
+  (+ 100 (* 34 (min count 10)))
 )
 
 (defn map-dev-node [dev]
@@ -133,7 +133,7 @@
 
 (defn buildTreeGroups []
   (swap! shelters/app-state assoc-in [:selectedunits] [])
-  (do (clj->js {:multiSelect true :searchResultBackColor "#0000FF" :searchResultColor "#FFFFFF" :data [{:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
+  (do (clj->js {:multiSelect true :searchResultBackColor "#0000FF" :searchResultColor "#FFFFFF" :data [{:text "כל ישראל" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
 )
 
 
@@ -444,10 +444,23 @@
       (dom/div {:style { :padding-right "15px"}}
         (om/build shelters/website-view data {})
         (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)) "px") "100%")}}
-          (dom/div  {:className "col-3 col-sm-3" :style {:height "100%"}}
-            (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 120) 0 ) "px") (str (+ (- (.. js/document -body -clientHeight) 120) 0) "px")) }})
+          (dom/div  {:className "col-3 col-sm-3" :style {:height "100%" :padding-left "5px"}}
+            (dom/div {:className "panel-default" :style {:border "1px solid darkgrey"}}
+              (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}} "בחר קבוצה/יחידה")
+              (dom/div {:className "panel-body" :style {:margin-top "0px" :padding-bottom "5px" :margin-left "0px" :margin-right "0px"}}
+                (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 175) 0 ) "px") (str (+ (- (.. js/document -body -clientHeight) 175) 0) "px")) }})
+                (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px"}}
+                  (dom/div {:className "col-xs-6" :style {:padding-left "5px" :padding-right "5px"}}
+                    (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} (:name (first (:commands @data))))
+                  )
+                  (dom/div {:className "col-xs-6" :style {:padding-right "5px" :padding-left "5px"}}
+                    (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} "בטל בחירה")
+                  )
+                )
+              )
+            )
+            
 
-            (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px"}} (:name (first (:commands @data))))
           )
           
           (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
@@ -465,20 +478,20 @@
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
                   (dom/div {:className "row" :style {:margin-left "17px" :margin-right "0px"}}
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מספר אירוע")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מזהה יחידה")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
 
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם יחידה")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "מיקום יחידה")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מיקום יחידה")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם אירוע")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "תאריך וזמן אירוע")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "תאריך וזמן אירוע")
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
                       (omdom/select #js {:id "statuses"
@@ -493,7 +506,7 @@
                       )
                     )
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "אירוע טופל ע''י")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "אירוע טופל ע''י")
 
                   )
                 )
@@ -511,24 +524,25 @@
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
                   (dom/div {:className "row" :style {:margin-left "17px" :margin-right "0px"}}
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}} "ראיתי")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מספר אירוע")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "מזהה יחידה")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם יחידה")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם יחידה")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "מיקום יחידה")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מיקום יחידה")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"}}  "שם אירוע")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "תאריך וזמן אירוע")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "תאריך וזמן אירוע")
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
                       (omdom/select #js {:id "statuses"
                                          :className "selectpicker"
                                          :data-width "100px"
+                                         :data-style "btn-primary"
                                          :data-show-subtext "false"
                                          :data-live-search "true"
                                          :onChange #(handle-change % owner)
@@ -537,7 +551,7 @@
                       )
                     )
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid"}}  "אירוע טופל עי")
+                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "אירוע טופל ע''י")
 
                   )
                 )
@@ -583,56 +597,3 @@
   )
 )
 
-(defn processMessage [notification]
-  (let [
-    unitid (get notification "unitId")
-    userid (get notification "userId")
-    status (get notification "status")
-    type (get notification "notificationType")
-    id (get notification "notificationId")
-    ;tr1 (.log js/console (subs (get notification "openTime") 0 19))
-    open (tf/parse custom-formatter2 (subs (get notification "openTime") 0 19))
-    
-    open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
-    ;tr1 (.log js/console (str "unitid in Notification: " unitid))
-    marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
-
-    newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
-    
-    tr1 (if (not (nil? marker)) (swap! shelters/app-state assoc-in [:devices] newunits))
-
-    tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:notifications @shelters/app-state)))) (swap! shelters/app-state assoc-in [:notifications] (conj (:notifications @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))) (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))))
-    
-    ]
-    (if (nil? marker)
-      (.log js/console (str "did not find a unit for unitid=" unitid " in notification"))
-      (.setIcon marker (str iconBase (case status 3 "red_point.png" "green_point.png")))
-    )
-  )
-)
-
-(defn processNotification [notification]
-  (let [
-      tr1 (js/console.log "Hooray! Message:" (pr-str notification))
-    ]
-    (processMessage notification)
-  )
-)
-
-
-(defn initsocket []
-  (go
-    (let [
-        {:keys [ws-channel]} (<! (ws-ch "ws://52.14.180.219:5060" {:format :json}))
-        {:keys [message error]} (<! ws-channel)
-      ]
-      (if error
-        (js/console.log "Uh oh:" error)
-        (processNotification message)      
-      )
-      (initsocket)
-    )
-  )
-)
-
-(initsocket)

@@ -1,4 +1,4 @@
-מזהה יחידה(ns shelters.devslist (:use [net.unit8.tower :only [t]])
+(ns shelters.devslist (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -254,38 +254,37 @@
   (render
     [_]
 
-    (dom/div
+    (dom/div {:style {:border-left "1px solid" :border-right "1px solid"}}
       (map (fn [item]
         (let [
           isselected (if (= (.indexOf (:selectedunits @data) (:id item)) -1) false true)
           ;tr1 (.log js/console (str item))
           ]
-          (dom/div {:className "row tablerow":style {:padding-top "10px" :margin-right "0px" :margin-left "0px"}}
-            (dom/div {:className "col-xs-1 col-md-1"}
-              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center"}}
+          (dom/div {:className "row tablerow":style {:border-bottom "1px solid" :padding-top "0px" :margin-right "0px" :margin-left "0px"}}
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid"}}
+              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-left "15px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid"}}
                 (dom/input { :id (str "checksel" (:id item)) :type "checkbox" :className "device_checkbox" :checked isselected :onChange (fn [e] (handle-chkbsend-change e))})
               )
 
-              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center"}}
-
+              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-right "12px" :padding-left "0px"}}
                 (dom/div { :className "dropdown"}
-                  (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false"}
+                  (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false" :style {:padding-top "3px" :padding-bottom "3px" :padding-left "6px" :padding-right "6px" :margin-top "6px"}}
                     "☰"
                   )
-                  (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton"}
+                  (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "100px"}}
                     (dom/li {:className "dropdown-item"}
-                      (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
+                      (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item))) :style {:padding-left "0px" :padding-right "5px"}}
                         "עדכון נתונים"
                       )
                     )
                     (dom/li {:className "dropdown-item" :href "#"}
-                      (dom/a {:href (str "#/devdetail/" (:id item))}
+                      (dom/a {:href (str "#/devdetail/" (:id item)) :style {:padding-left "0px" :padding-right "5px"}}
                         "ביטול יחידה"
                       )
                     )
 
                     (dom/li {:className "dropdown-item" :href "#"}
-                      (dom/a {:href "#" :onClick (fn [e] (onAssignGroups (:id item)))}
+                      (dom/a {:href "#" :onClick (fn [e] (onAssignGroups (:id item))) :style {:padding-left "0px" :padding-right "5px"}}
                         "שיוך לקבוצה"
                       )
                     )
@@ -294,7 +293,7 @@
               )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1"}
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
               (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o"})
                 (:controller item)
@@ -302,52 +301,76 @@
             )
 
 
-            (dom/div {:className "col-xs-1 col-md-1"}
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
               (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o"})
                 (:name item)
               )
             )
 
-            (dom/div {:className "col-xs-3 col-md-3"}
+            (dom/div {:className "col-xs-3 col-md-3" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
 
               (:address item)
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center"}}
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              ;(case (:status item) 3 "Inactive" "Active")
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center"}}
+              (dom/div {:className "row"}
+                (str (:name (nth (:contacts item) 0)))
+              )
+              (dom/div {:className "row"}
+                (str (:phone (nth (:contacts item) 0)))
+              )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center"}}
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              ;(case (:status item) 3 "Inactive" "Active")
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center"}}
+              (dom/div {:className "row"}
+                (str (:name (nth (:contacts item) 1)))
+              )
+              (dom/div {:className "row"}
+                (str (:phone (nth (:contacts item) 1)))
+              )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center"}}
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              ;(case (:status item) 3 "Inactive" "Active")
+
+            (dom/div {:className "col-xs-4 col-md-4"}
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+                  ;(case (:status item) 3 "Inactive" "Active")
+                )
+
+                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+                  ;(case (:status item) 3 "Inactive" "Active")
+                )
+
+                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+                  ;(case (:status item) 3 "Inactive" "Active")
+                )
+
+                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+                  ;(case (:status item) 3 "Inactive" "Active")
+                )
+
+                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style { :color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+                  ;(case (:status item) 3 "Inactive" "Active")
+                )
+
+                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-right-width "1px" :padding-top "8px" :padding-bottom "8px"}}
+                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
+                  ;(case (:status item) 3 "Inactive" "Active")
+                )
+              )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center"}}
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              ;(case (:status item) 3 "Inactive" "Active")
-            )
-
-            (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center"}}
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style { :color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              ;(case (:status item) 3 "Inactive" "Active")
-            )
-
-            (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-right-width "1px"}}
-              (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-              ;(case (:status item) 3 "Inactive" "Active")
-            )
 
             ;(om/build showstatuses item {})
           )
           )
-        ) (sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) true false)) (:devices @data )))
+        ) (sort (comp comp-devs) (filter (fn [x] (if (or (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:controller x)) (str/upper-case (:search @data)))) true false)) (:devices @data )))
       )
     )
   )
@@ -411,25 +434,41 @@
 
 (defcomponent topbuttons-view [data owner]
   (render [_]
-    (dom/div {:className "row" :style {:padding-top "70px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
-      (dom/div {:className "col-xs-9" :style { :text-align "right" }}
-        (dom/h2 "רשימת יחידות")
-      )
+    (dom/div
 
-      (dom/div {:className "col-xs-1" :style {:padding-top "15px"}}
-        (b/button {:className "btn btn-primary" :onClick (fn [e]
-          (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה"
+      (dom/div {:className "row" :style {:padding-top "60px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
+        (dom/div {:className "col-xs-9" :style { :text-align "right" }}
+          (dom/h3 "רשימת יחידות")
+        )
+
+        (dom/div {:className "col-xs-1" :style {:padding-top "15px"}}
+          (b/button {:className "btn btn-primary" :style { :padding-left "5px" :padding-right "5px"} :onClick (fn [e]
+                                                                       (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה"
+          )
+        )
+
+        (dom/div {:className "col-xs-2" :style {:margin-right "0px" :padding-top "15px" :text-align "left"}}
+          (b/button {:className "btn btn-primary"  :style { :padding-left "5px" :padding-right "5px"}
+            :disabled? (= (count (:selectedunits @data)) 0)
+            :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") יחידות")
+          )
         )
       )
 
-      (dom/div {:className "col-xs-2" :style {:margin-right "0px" :padding-top "15px" :text-align "left"}}
-        (b/button {:className "btn btn-primary"
-          :disabled? (= (count (:selectedunits @data)) 0)
-          :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") יחידות")
-        )
+      (dom/div {:className "row" :style {:margin-right "0px"}}
+        (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )
+)
+
+(defn checkelement [unit]
+  ;(set! (.-checked (js/document.getElementById (str "checksel" (:id unit)))) true)
+  (.click (js/document.getElementById (str "checksel" (:id unit))))
+)
+
+(defn selectallunits []
+  (doall (map (fn [x] (checkelement x)) (:devices @shelters/app-state)))
 )
 
 (defcomponent dashboard-view [data owner]
@@ -443,83 +482,113 @@
       (dom/div
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%" :padding-left "50px" :padding-right "50px" :height "100%"}}
-          (dom/div {:className "panel panel-primary" :style {:padding-bottom "70px"}}
+          (dom/div { :style {:padding-bottom "90px"}}
             (om/build topbuttons-view data {})
 
-            ;; (dom/div {:className "row":style {:padding-top "10px"}}
-            ;;   (dom/div
-            ;;     (b/button {:className "btn btn-primary" :onClick (fn [e]
-            ;;       (-> js/document
-            ;;         .-location
-            ;;         (set! "#/devdetail")
-            ;;       ))} "Add New"
-            ;;     )
-            ;;   )
-            ;;   (dom/div
- 
-            ;;   )
-            ;; )
-            (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-              (dom/div {:className "row" :style {:margin-right "0px" :margin-left "0px"}}
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center"}}
-                  (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center"}}
-                    (dom/i {:className "fa fa-square-o"})
+
+            (dom/div {:className "panel-primary" :style {:padding "0px" :margin-top "10px"}}
+              (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "0px"}}
+                (dom/div {:className "row" :style {}}
+                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
+                    (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid"}}
+                      (dom/i {:className "fa fa-square-o" :onClick (fn [e] (selectallunits))})
+                    )
+
+                    (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-top "10px" :padding-bottom "10px"}}
+                      (dom/div "☰")
+                    )
                   )
 
-                  (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center"}}
-                    (dom/div "☰")
+
+                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                      (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "0px"}}
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
+                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))})
+                        )
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
+                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))})                   
+                        )
+                        
+                      )
+                      (dom/div {:className "col-xs-10" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
+                        (dom/span   "מזהה יחידה")
+                      )
+                    )
                   )
-                )
 
+                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                      (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
+                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))})
+                        )
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
+                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))})                   
+                        )
+                        
+                      )
+                      (dom/div {:className "col-xs-9" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
+                        (dom/span  "שם יחידה")
+                      )
+                    )
+                  )
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "5px" :padding-bottom "5px" :white-space "nowrap"}} (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (
-    (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3))
-    (shelters/doswaps) ))} "מזהה יחידה") (case (:sort-list @app-state) 3 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 4 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span)))
+                  (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                      (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "0px"}}
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
+                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))})
+                        )
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
+                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))})                   
+                        )
+                        
+                      )
+                      (dom/div {:className "col-xs-10" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
+                        (dom/span "כתובת")
+                      )
+                    )
+                  )
 
+                  (dom/div {:className "col-xs-1" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid" :text-align "center"}}
+                    "איש קשר 1"
+                  )
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "5px" :padding-bottom "5px" :white-space "nowrap"}} (b/button {:className "btn btn-primary colbtn" :style {} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))} "שם יחידה") (case (:sort-list @app-state) 1 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 2 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span))
-                )
+                  (dom/div {:className "col-xs-1" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :text-align "center" :border-left "1px solid"}}
+                    "איש קשר 2"
+                  )
+                  (dom/div {:className "col-xs-4 col-md-4"}
+                    (dom/div {:className "row"}
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
+                        (dom/div {:className "row"} "דלת")               
+                      )
 
-                (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "5px" :padding-bottom "5px" :white-space "nowrap"}}
-                  (b/button {:className "btn btn-primary colbtn" :style {:width "100%"} :onClick (fn [e] (
-  (swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5))
-  (shelters/doswaps)))} "כתובת"
-                  ) (case (:sort-list @app-state) 5 (dom/span {:className "glyphicon glyphicon-arrow-up"}) 6 (dom/span {:className "glyphicon glyphicon-arrow-down"}) (dom/span))
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
+                        (dom/div {:className "row"} "בריח")
+                      )
 
-                )
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px"}}
+                        (dom/div {:className "row"} "ארון") (dom/div {:className "row"} "תקשורת")
+                      )
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "סטטוס דלת"
-                )
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
+                        (dom/div {:className "row"} "גלאי")
+                      )
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "סטטוס בריח"
-                )
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
+                        (dom/div {:className "row"} "תקשורת")
+                      )
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "מתג ארון תקשורת"
-                )
+                      (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-top "10px" :padding-bottom "10px"}}
+                        (dom/div {:className "row"} " סוללה")
+                      )
+                    )
+                  )
 
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "גלאי"
-                )
-
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "תקשורת"
-                )
-
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "מצב סוללה"
-                )
-
-                (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
-                  "חיישן בשם"
-                )
-
-                (dom/div {:className "col-xs-9 col-md-9" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}  
-
-                )
+                )              
               )
+
             )
             (om/build showdevices-view data {})
             (om/build addModal data {})
