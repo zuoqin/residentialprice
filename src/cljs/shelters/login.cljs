@@ -24,6 +24,7 @@
             [cljs-time.format :as tf]
             [cljs-time.coerce :as tc]
             [shelters.groupstounit :as groupstounit]
+            [shelters.groupstouser :as groupstouser]
             [shelters.reportunits :as reportunits]
             [shelters.notedetail :as notedetail]
             [shelters.roledetail :as roledetail]
@@ -306,6 +307,7 @@
 
     ;tr1 (.log js/console "In map user")
     username (get user "userName")
+    groups (get user "childEntities")
     userid (get user "userId")
     role (first (filter (fn [x] (if (= (:id x) (get (get user "role") "roleId")) true false)) (:roles @shelters/app-state)))
 
@@ -347,7 +349,7 @@
     iscommand (if (or (nil? iscommand) (= iscommand 0)) false true)
 
     ;tr1 (.log js/console (str  "islocked=" islocked))
-    result {:login username :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email) :addedby (if (nil? addedby) "" addedby) :islocked islocked :iscommand iscommand}
+    result {:login username :groups groups :userid userid :role role :firstname (if (nil? firstname) "" firstname) :lastname (if (nil? lastname) "" lastname) :email (if (nil? email) "" email) :addedby (if (nil? addedby) "" addedby) :islocked islocked :iscommand iscommand}
     ]
     ;
     result

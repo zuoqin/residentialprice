@@ -41,7 +41,7 @@
 
 (defn handleChange [e]
   (let [
-    tr1 (.log js/console (str (.. e -nativeEvent -target -id)))
+    ;tr1 (.log js/console (str (.. e -nativeEvent -target -id)))
     ]
   )
   (swap! shelters/app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
@@ -253,7 +253,6 @@
 (defcomponent showdevices-view [data owner]
   (render
     [_]
-
     (dom/div {:style {:border-left "1px solid" :border-right "1px solid"}}
       (map (fn [item]
         (let [
@@ -272,6 +271,13 @@
                     "☰"
                   )
                   (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "100px"}}
+                    (dom/li {:className "dropdown-item" :style {:text-align "center"}}
+                      (dom/div {:style {:padding-left "0px" :padding-right "5px" :font-weight "800"}}
+                        "פעולות"
+                      )
+                    )
+                    (dom/li {:className "divider"}
+                    )
                     (dom/li {:className "dropdown-item"}
                       (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item))) :style {:padding-left "0px" :padding-right "5px"}}
                         "עדכון נתונים"
@@ -585,10 +591,8 @@
                       )
                     )
                   )
-
                 )              
               )
-
             )
             (om/build showdevices-view data {})
             (om/build addModal data {})

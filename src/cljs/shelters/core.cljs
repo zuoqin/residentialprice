@@ -32,7 +32,7 @@
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:selectedstatus 1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
+(defonce app-state (atom {:selectedusers [] :selectedstatus 1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
 :alerts [] ;; [{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
 
            ;;  {:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
@@ -794,7 +794,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-toggleable-md navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -947,10 +947,10 @@
                 )
               )
             )
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search by last first login" :style {:height "24px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e))}))
-            )
+      ;;       (dom/li
+      ;;         (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
+      ;; (dom/input {:id "search" :type "text" :placeholder "Search by last first login" :style {:height "24px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e))}))
+      ;;       )
           )        
         )
       )
@@ -1193,7 +1193,7 @@
   (let [
     oldstate (:isnotification @app-state)
     newstate (if (= true oldstate) false true)
-    ;tr1 (.log js/console (str "old state= " oldstate "; new state = " newstate))
+    tr1 (.log js/console (str "old state= " oldstate "; new state = " newstate))
     ]
 
     (swap! app-state assoc-in [:isnotification] newstate)
@@ -1235,7 +1235,7 @@
       ;tr1 (.log js/console (str "in map navigation"))
       role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
       ]
-      (dom/div {:className "navbar navbar-toggleable-md bg-inverse navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1295,9 +1295,13 @@
 
                   (if (not= role settings/dispatcherrole)
                     (dom/li
-                      (dom/a {:href "/#/users" :onClick (fn [e] (goUsers e))}
-                        (dom/i {:className "fa fa-key"})
-                        "משתמשים והרשאות"
+                      (dom/div {:className "row"}
+                        (dom/div {:className "col-md-12"}
+                          (dom/a {:href "/#/users" :className "menu_item" :onClick (fn [e] (goUsers e))}
+                            (dom/i {:className "fa fa-key"})
+                            "משתמשים והרשאות"
+                          )
+                        )
                       )
                     )
                   ) 
@@ -1397,10 +1401,10 @@
             )
 
 
-            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px"}}
-              (dom/a {:style {:padding "5px"} :onClick (fn [e] (notificationsclick))}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "5px" :margin-top "10px"}}
+              (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (notificationsclick))} (str (count (:notifications @data))))
+                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-25px"} :onClick (fn [e] (notificationsclick))} (str (count (:notifications @data))))
                   (dom/span {:style {:color "white"} :onClick (fn [e] (alertsclick))} " התראות ")
                   (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})
                 )
@@ -1408,10 +1412,10 @@
               ;(om/build notifications-navbar data {})
             )
 
-            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px"}}
-              (dom/a {:style {:padding "5px"} :onClick (fn [e] (alertsclick))}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "5px" :margin-top "10px"}}
+              (dom/a {:style {:padding "0px"} :onClick (fn [e] (alertsclick))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-40px"} :onClick (fn [e] (alertsclick))} (str (count (:alerts @data))))
+                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-25px"} :onClick (fn [e] (alertsclick))} (str (count (:alerts @data))))
 
                   (dom/span {:style {:color "white"}} " תקלות ")
                   (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
@@ -1437,7 +1441,7 @@
     (let [style {:style {:margin "10px" :padding-bottom "0px"}}
       stylehome {:style {:margin-top "10px"} }
       ]
-      (dom/div {:className "navbar navbar-toggleable-md navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
