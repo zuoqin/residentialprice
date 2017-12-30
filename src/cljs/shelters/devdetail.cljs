@@ -537,9 +537,9 @@
             )
 
 
-            (dom/h5 {:style {:display:inline true}} "Status: "
-              (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
-            )
+            ;; (dom/h5 {:style {:display:inline true}} "Status: "
+            ;;   (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
+            ;; )
 
 
             (dom/div {:className "row"}

@@ -16,6 +16,7 @@
 
 
 (def apipath "http://52.14.180.219:5050/")
+(def socketpath "ws://52.14.180.219:5060")
 ;(def apipath "https://virtserver.swaggerhub.com/Inocodes/Shelters/1.0.0/")
 (def demouser "beeper")
 (def demopassword "123456")

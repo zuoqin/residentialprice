@@ -569,7 +569,7 @@
 (defn receivesocketmsg []
   (go
     (let [
-        {:keys [ws-channel error]} (<! (ws-ch "ws://52.14.180.219:5060" {:format :json}))
+        {:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
         {:keys [message error]} (<! ws-channel)
         
       ]
@@ -585,7 +585,7 @@
 (defn initsocket []
   (go
     (let [
-        {:keys [ws-channel error]} (<! (ws-ch "ws://52.14.180.219:5060" {:format :json}))
+        {:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
         ;{:keys [message error]} (<! ws-channel)
         
       ]

@@ -157,7 +157,7 @@
                    (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "white" :text-align "center"}}
                        (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/img {:srcs "images/lock_closed.png" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "green"}})
+                         (dom/img {:src "images/lock_closed.png" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "green"}})
                        )
                      )
                      (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}

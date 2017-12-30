@@ -190,7 +190,9 @@
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
     ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" (str iconBase (case (:status device) 3 "red_point.png" "green_point.png")) "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
+    size (js/google.maps.Size. 48 48)
+    image (clj->js {:url (str iconBase (case (:status device) 3 "red_point.ico" "green_point.png")) :scaledSize size})
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" image "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
     ]
     (jquery

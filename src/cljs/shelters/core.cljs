@@ -804,7 +804,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
             ;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -827,7 +827,12 @@
 
 
             (dom/li
-              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+              (dom/a {:href "/#/devslist"
+                :onMouseOver (fn [x]
+                  (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none")
+                  (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
+                )
+                :onClick (fn [e] (goDevslist e))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
@@ -974,7 +979,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1191,13 +1196,12 @@
 
 (defn notificationsclick []
   (let [
-    oldstate (:isnotification @app-state)
+    oldstate (get @app-state :isnotification)
     newstate (if (= true oldstate) false true)
     tr1 (.log js/console (str "old state= " oldstate "; new state = " newstate))
+    tr1 (swap! app-state assoc-in [:isnotification] newstate)
+    tr1 (swap! app-state assoc-in [:isalert] false)
     ]
-
-    (swap! app-state assoc-in [:isnotification] newstate)
-    (swap! app-state assoc-in [:isalert] false)
     (go
       (<! (timeout 100))
       (js/google.maps.event.trigger (:map @app-state) "resize")
@@ -1245,7 +1249,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1255,145 +1259,124 @@
           (dom/ul {:className "nav navbar-nav"}
 
             (dom/li
-              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
+              (dom/a {:className "navbara" :href "/#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
+              (dom/a {:className "navbara" :href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
             )
 
             (dom/li
-              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+              (dom/a {:className "navbara" :href "/#/devslist" :onClick (fn [e] (goDevslist e)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
             )
 
             (if (not= role settings/dispatcherrole)
-              (dom/li {:className "dropdown"}
-                (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+              (dom/li {:className "dropdown" :style {:min-width "150px"}}
+                (dom/a { :href "#" :className "navbarasysmanage"
+                    :onMouseOver (fn [x]
+                      (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "block")
+                      (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none")
+                    )
+                    ;:onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))
+                  }
                   (dom/span {:className "caret"})
                   (dom/i {:className "fa fa-archive"})
                   "ניהול מערכת"
                 )
-                (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                  (dom/li
-                    (dom/div {:className "row"}
-                      (dom/div {:className "col-md-12"}
-                        (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                          (dom/i {:className "fa fa-users"})
-                          "ניהול קבוצות"
-                        )
+                (dom/div { :id "navbarulmanage" :className "navbarulmanage" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                        (dom/i {:className "fa fa-users"})
+                        "ניהול קבוצות"
                       )
                     )
                   )
 
                   (if (not= role settings/dispatcherrole)
-                    (dom/li
-                      (dom/div {:className "row"}
-                        (dom/div {:className "col-md-12"}
-                          (dom/a {:href "/#/users" :className "menu_item" :onClick (fn [e] (goUsers e))}
-                            (dom/i {:className "fa fa-key"})
-                            "משתמשים והרשאות"
-                          )
+                    (dom/div {:className "row"}
+                      (dom/div {:className "col-md-12"}
+                        (dom/a {:href "/#/users" :className "menu_item" :onClick (fn [e] (goUsers e))}
+                          (dom/i {:className "fa fa-key"})
+                          "משתמשים והרשאות"
                         )
                       )
                     )
                   ) 
 
-
-                  (dom/li
-                    (dom/div {:className "row"}
-                      (dom/div {:className "col-md-12"}
-                        (dom/a {:href "/devices" :className "menu_item"}
-                          (dom/i {:className "fa fa-hdd-o"})
-                          " מאגר יחידות"
-                        )
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/devices" :className "menu_item"}
+                        (dom/i {:className "fa fa-hdd-o"})
+                        " מאגר יחידות"
                       )
                     )
                   )
-
-                  (dom/li
-                    (dom/div {:className "row"}
-                      (dom/div {:className "col-md-12"}
-                        (dom/a {:href "/#/roles" :className "menu_item" :onClick (fn [e] (goRoles e))}
-                          (dom/i {:className "fa fa-phone"})
-                          "אנשי קשר"
-                        )
-                      )
-                    )
-                  )
-
-                  (dom/li
-                    (dom/div {:className "row"}
-                      (dom/div {:className "col-md-12"}
-                        (dom/a {:href "/polygons" :className "menu_item"}
-                          (dom/i {:className "fa fa-globe"})
-                          "ניהול Polygons"
-                        )
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-12"}
+                      (dom/a {:href "/#/roles" :className "menu_item" :onClick (fn [e] (goRoles e))}
+                        (dom/i {:className "fa fa-phone"})
+                        "אנשי קשר"
                       )
                     )
                   )
                 )
               )
-
-
             )
 
 
 
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
+            (dom/li {:className "dropdown" :style {:min-width "150px"}}
+              (dom/a { :href "#" :className "navbarareports"
+                :onMouseOver (fn [x]
+                  (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "block")
+                  (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
+                )
+                ;:onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))
+                }
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-archive"})
                 "דו״חות"
               )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/reportunits" :className "menu_item"}
-                        (dom/i {:className "fa fa-line-chart"})
-                        "דו״ח זמינות יחידות"
-                      )
+              (dom/div { :id "navbarulreports" :className "navbarulreports" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/#/reportunits" :className "menu_item"}
+                      (dom/i {:className "fa fa-line-chart"})
+                      "דו״ח זמינות יחידות"
+                    )
+                  )
+                )
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                      (dom/i {:className "fa fa-bullhorn"})
+                      "דו״ח תרגולים"
+                    )
+                  )
+                )
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.notifications" :className "menu_item"}
+                      (dom/i {:className "fa fa-envelope-o"})
+                      "דו״ח דיוור התראות"
                     )
                   )
                 )
 
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        "דו״ח תרגולים"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.notifications" :className "menu_item"}
-                        (dom/i {:className "fa fa-envelope-o"})
-                        "דו״ח דיוור התראות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.senselog" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "דו״ רעידות אדמה"
-                      )
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "/report.senselog" :className "menu_item"}
+                      (dom/i {:className "fa fa-globe"})
+                      "דו״ רעידות אדמה"
                     )
                   )
                 )
@@ -1401,23 +1384,22 @@
             )
 
 
-            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "5px" :margin-top "10px"}}
-              (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick))}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
+              (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-25px"} :onClick (fn [e] (notificationsclick))} (str (count (:notifications @data))))
-                  (dom/span {:style {:color "white"} :onClick (fn [e] (alertsclick))} " התראות ")
+                  (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (:notifications @data))))
+                  (dom/span {:style {:cursor "pointer" :color "white"}} " התראות ")
                   (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})
                 )
               )
               ;(om/build notifications-navbar data {})
             )
 
-            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "5px" :margin-top "10px"}}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px"  :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (alertsclick))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:border-radius "25px" :margin-top "-25px"} :onClick (fn [e] (alertsclick))} (str (count (:alerts @data))))
-
-                  (dom/span {:style {:color "white"}} " תקלות ")
+                  (b/button {:className "btn btn-danger" :style {:padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px" :border-radius "25px" :margin-top "-25px"}} (str (count (:alerts @data))))
+                  (dom/span {:style {:cursor "pointer" :color "white"}} " תקלות ")
                   (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
                 )
               )
@@ -1451,7 +1433,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1619,7 +1601,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1897,7 +1879,7 @@
             (dom/span {:className "icon-bar"})
           )
           (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "113px" :height "53px"}})
+            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )

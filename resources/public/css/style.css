@@ -2,6 +2,51 @@
   height: 100%;
 }
 
+.navbarasysmanage{
+  color: #337ab7!important; /*;*/
+}
+
+.navbarasysmanage:hover {
+  color: #3195C1!important;
+  border-bottom: 1px solid #3195C1!important;
+}
+
+.navbarasysmanage:hover~.navbarulmanage {
+    display: block;
+}
+
+
+
+.navbarareports{
+  color: #337ab7!important; /*;*/
+}
+
+.navbarareports:hover {
+  color: #3195C1!important;
+  border-bottom: 1px solid #3195C1!important;
+}
+
+
+.navbarareports:hover .navbarulreports {
+    display: block;
+}
+
+
+a{
+  cursor: pointer;
+}
+
+
+.navbara{
+  color: #337ab7!important; /*;*/
+}
+
+.navbara:hover{
+  color: #3195C1!important;
+  border-bottom: 1px solid #3195C1!important;
+  /*color: "#3195C1"!important;*/
+}
+
 #pac-input {
   background-color: #fff;
   font-family: Roboto;
@@ -76,9 +121,9 @@ html, body {
 [data-reactroot]
  {height: 100% !important; }
 
-a {
+/*a {
   border-style: none !important;
-}
+}*/
 
 h1 {
   text-decoration: underline;
