@@ -42,7 +42,6 @@
 
 (enable-console-print!)
 
-(def custom-formatter2 (tf/formatter "MM/dd/yyyy hh:mm:ss"))
 (def iconBase "/images/")
 (def application
   (js/document.getElementById "app"))
@@ -633,16 +632,16 @@
     type (get notification "notificationType")
     id (get notification "notificationId")
     ;tr1 (.log js/console (subs (get notification "openTime") 0 19))
-    open (tf/parse custom-formatter2 (subs (get notification "openTime") 0 19))
+    open (tf/parse shelters/custom-formatter2 (subs (get notification "openTime") 0 19))
     
     open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
 
 
-    close (tf/parse custom-formatter2 (subs (get notification "closeTime") 0 19))
+    close (tf/parse shelters/custom-formatter2 (subs (get notification "closeTime") 0 19))
     close (if (= (subs (get notification "closeTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) close)
 
 
-    accept (tf/parse custom-formatter2 (subs (get notification "acceptanceTime") 0 19))
+    accept (tf/parse shelters/custom-formatter2 (subs (get notification "acceptanceTime") 0 19))
     accept (if (= (subs (get notification "acceptanceTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) accept)
 
 

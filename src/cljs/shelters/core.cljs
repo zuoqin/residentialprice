@@ -1308,20 +1308,20 @@
           (dom/ul {:className "nav navbar-nav"}
 
             (dom/li
-              (dom/a {:className "navbara" :href "/#/map" :onClick (fn [e] (goMap e))}
+              (dom/a {:className "navbara" :href "#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:className "navbara" :href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
+              (dom/a {:className "navbara" :href "#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
             )
 
             (dom/li
-              (dom/a {:className "navbara" :href "/#/devslist" :onClick (fn [e] (goDevslist e)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
+              (dom/a {:className "navbara" :href "#/devslist" :onClick (fn [e] (goDevslist e)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
@@ -1343,7 +1343,7 @@
                 (dom/div { :id "navbarulmanage" :className "navbarulmanage" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goGroups e))}
+                      (dom/a {:href "#/groups" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1353,7 +1353,7 @@
                   (if (not= role settings/dispatcherrole)
                     (dom/div {:className "row"}
                       (dom/div {:className "col-md-12"}
-                        (dom/a {:href "/#/users" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goUsers e))}
+                        (dom/a {:href "#/users" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goUsers e))}
                           (dom/i {:className "fa fa-key"})
                           "משתמשים והרשאות"
                         )
@@ -1363,7 +1363,7 @@
 
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                      (dom/a {:href "#/devices" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                         (dom/i {:className "fa fa-hdd-o"})
                         " מאגר יחידות"
                       )
@@ -1371,7 +1371,7 @@
                   )
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goRoles e))}
+                      (dom/a {:href "#/roles" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goRoles e))}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -1398,7 +1398,7 @@
               (dom/div { :id "navbarulreports" :className "navbarulreports" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/#/reportunits" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                    (dom/a {:href "#/reportunits" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-line-chart"})
                       "דו״ח זמינות יחידות"
                     )
@@ -1406,7 +1406,7 @@
                 )
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.triggeredAlerts" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                    (dom/a {:href "#/report.triggeredAlerts" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-bullhorn"})
                       "דו״ח תרגולים"
                     )
@@ -1414,7 +1414,7 @@
                 )
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.notifications" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                    (dom/a {:href "#/report.notifications" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-envelope-o"})
                       "דו״ח דיוור התראות"
                     )
@@ -1423,7 +1423,7 @@
 
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.senselog" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                    (dom/a {:href "#/report.senselog" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-globe"})
                       "דו״ רעידות אדמה"
                     )
@@ -1459,7 +1459,7 @@
           (dom/ul {:className "nav navbar-nav navbar-left"}
 
             (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
-            (dom/li (dom/a {:href "/#/login" :style {:padding-top "18px"}} "יְצִיאָה"))
+            (dom/li (dom/a {:href "#/login" :style {:padding-top "18px"}} "יְצִיאָה"))
           )
         )
       )
@@ -1490,13 +1490,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
+              (dom/a {:href "#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
+              (dom/a {:href "#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1504,14 +1504,14 @@
 
 
             (dom/li
-              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+              (dom/a {:href "#/devslist" :onClick (fn [e] (goDevslist e))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
             )
 
             (dom/li
-              (dom/a {:href "/#/users"}
+              (dom/a {:href "#/users"}
                 (dom/i {:className "fa fa-key"})
                 "משתמשים והרשאות"
               )
@@ -1527,7 +1527,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                      (dom/a {:href "#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1538,7 +1538,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
+                      (dom/a {:href "#/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
                         " מאגר יחידות"
                       )
@@ -1549,20 +1549,9 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/contacts" :className "menu_item"}
+                      (dom/a {:href "#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/polygons" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "ניהול Polygons"
                       )
                     )
                   )
@@ -1582,7 +1571,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/reportunits" :className "menu_item"}
+                      (dom/a {:href "#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -1593,7 +1582,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                      (dom/a {:href "#/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
                         "דו״ח תרגולים"
                       )
@@ -1604,7 +1593,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                      (dom/a {:href "#/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
                         "דו״ח דיוור התראות"
                       )
@@ -1615,7 +1604,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                      (dom/a {:href "#/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
                         "דו״ רעידות אדמה"
                       )
@@ -1658,13 +1647,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
+              (dom/a {:href "#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
+              (dom/a {:href "#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1672,14 +1661,14 @@
 
 
             (dom/li
-              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+              (dom/a {:href "#/devslist" :onClick (fn [e] (goDevslist e))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
             )
 
             (dom/li
-              (dom/a {:href "/#/users"}
+              (dom/a {:href "#/users"}
                 (dom/i {:className "fa fa-key"})
                 "משתמשים והרשאות"
               )
@@ -1695,7 +1684,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                      (dom/a {:href "#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1706,7 +1695,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
+                      (dom/a {:href "#/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
                         " מאגר יחידות"
                       )
@@ -1717,20 +1706,9 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/contacts" :className "menu_item"}
+                      (dom/a {:href "#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/polygons" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "ניהול Polygons"
                       )
                     )
                   )
@@ -1750,7 +1728,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/reportunits" :className "menu_item"}
+                      (dom/a {:href "#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -1761,7 +1739,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                      (dom/a {:href "#/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
                         "דו״ח תרגולים"
                       )
@@ -1772,7 +1750,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                      (dom/a {:href "#/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
                         "דו״ח דיוור התראות"
                       )
@@ -1783,7 +1761,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                      (dom/a {:href "#/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
                         "דו״ רעידות אדמה"
                       )
@@ -1798,119 +1776,6 @@
     )
   )
 )
-
-(defcomponent settings-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      ]
-      (dom/nav {:className "navbar navbar-default navbar-fixed-top" :role "navigation"}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-ex1-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/span {:id "pageTitle"} (:text (:current @data)) )
-          )
-        )
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "menu"}
-          (dom/ul {:className "nav navbar-nav" :style {:padding-top "17px" :visibility (if (= (compare (:name (:current @app-state))  "Settings") 0) "visible" "hidden")}}
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "32px" :margin-top "1px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e )) })  )
-            )
-          )
-
-          (dom/ul {:className "nav navbar-nav navbar-right"}
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-exchange"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-messages"}
-                (dom/li 
-                  (dom/a {:style {:cursor "pointer" :pointer-events (if (nil? (:selectedclient @app-state)) "none" "all")} :onClick (fn [e] (printMonth) )}
-                    (dom/div
-                      (dom/i {:className "fa fa-print"})
-                      "Печать"
-                    )
-                  )
-                )
-              )
-            )
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-tasks fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-tasks"}
-                (dom/li
-                  (dom/a {:href "#/positions" :onClick (fn [e] (goMap e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-comment fa-fw"})
-                      "Позиции"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/portfolios/0" :onClick (fn [e] (goUserDetail e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-twitter fa-fw"})
-                      "Держатели бумаги"
-                    )
-                  )
-                )
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href "#/calcportfs" :onClick (fn [e] (goUserDetail e))}
-                    (dom/div
-                      (dom/i {:className "fa fa-tasks fa-fw"})
-                      "Расчеты"
-                    )
-                  )
-                )
-
-
-                (dom/li {:className "divider"})
-                (dom/li
-                  (dom/a {:href (str settings/apipath "tradeidea/" (:token (:token @app-state)))  :target "_blank"}
-                    (dom/div
-                      (dom/i {:className "fa fa-desktop fa-fw"})
-                      "Редактор торговой идеи"
-                    )
-                  )
-                )
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:className "dropdown-toggle" :data-toggle "dropdown"  :aria-expanded "false" }
-                 (dom/i {:className "fa fa-user fa-fw"})
-                 (dom/i {:className "fa fa-caret-down"})
-              )
-              (dom/ul {:className "dropdown-menu dropdown-user"}
-                (dom/li
-                  (dom/a {:href "#/login"}
-                    (dom/div
-                      (dom/i {:className "fa fa-sign-out fa-fw"})
-                      "Выход"
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
-
 
 
 (defcomponent devdetail-navigation-view [data owner]
@@ -1936,13 +1801,13 @@
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
           (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
             (dom/li
-              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
+              (dom/a {:href "#/map" :onClick (fn [e] (goMap e))}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
+              (dom/a {:href "#/dashboard" :onClick (fn [e] (goDashboard e))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
@@ -1950,14 +1815,14 @@
 
 
             (dom/li
-              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
+              (dom/a {:href "#/devslist" :onClick (fn [e] (goDevslist e))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
             )
 
             (dom/li
-              (dom/a {:href "/#/users"}
+              (dom/a {:href "#/users"}
                 (dom/i {:className "fa fa-key"})
                 "משתמשים והרשאות"
               )
@@ -1973,7 +1838,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                      (dom/a {:href "#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1984,7 +1849,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
+                      (dom/a {:href "#/devices" :className "menu_item"}
                         (dom/i {:className "fa fa-hdd-o"})
                         " מאגר יחידות"
                       )
@@ -1995,20 +1860,9 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/contacts" :className "menu_item"}
+                      (dom/a {:href "#/contacts" :className "menu_item"}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/polygons" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "ניהול Polygons"
                       )
                     )
                   )
@@ -2028,7 +1882,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/reportunits" :className "menu_item"}
+                      (dom/a {:href "#/reportunits" :className "menu_item"}
                         (dom/i {:className "fa fa-line-chart"})
                         "דו״ח זמינות יחידות"
                       )
@@ -2039,7 +1893,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                      (dom/a {:href "#/report.triggeredAlerts" :className "menu_item"}
                         (dom/i {:className "fa fa-bullhorn"})
                         "דו״ח תרגולים"
                       )
@@ -2050,7 +1904,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.notifications" :className "menu_item"}
+                      (dom/a {:href "#/report.notifications" :className "menu_item"}
                         (dom/i {:className "fa fa-envelope-o"})
                         "דו״ח דיוור התראות"
                       )
@@ -2061,7 +1915,7 @@
                 (dom/li
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.senselog" :className "menu_item"}
+                      (dom/a {:href "#/report.senselog" :className "menu_item"}
                         (dom/i {:className "fa fa-globe"})
                         "דו״ רעידות אדמה"
                       )
@@ -2112,11 +1966,6 @@
   (userdetail-navigation-view app-state owner)
 )
 
-(defmethod website-view 5
-  [data owner] 
-  ;(.log js/console "One is found in view")
-  (settings-navigation-view data owner)
-)
 
 (defmethod website-view 6
   [data owner] 

@@ -27,7 +27,7 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(defonce app-state (atom  {:user {} :isinsert false :view 1 :current "User Detail"}))
+(defonce app-state (atom  {:user {} :isinsert false :view 1 :current "פרטי משתמש"}))
 
 (defn handleChange [e]
   ;(.log js/console e  )  
@@ -239,7 +239,7 @@
     (jquery
       (fn []
          (-> (jquery (str "#chckblock"))
-           (.bootstrapToggle (clj->js {:on "נָעוּל" :off "לא נעול"}))
+           (.bootstrapToggle (clj->js {:on "נעול" :off "לא נעול"}))
          )
       )
     )
@@ -379,7 +379,8 @@
 
 
 (defn onMount [data]
-  (swap! app-state assoc-in [:current] "User Detail")
+  (swap! app-state assoc-in [:current] "פרטי משתמש")
+  (set! (.-title js/document) "פרטי משתמש")
   (getUserDetail)
   (setcontrols 46)
 
@@ -432,18 +433,14 @@
         (dom/div {:id "user-detail-container" :style {:text-align "center"}}
         (dom/div {:className "panel panel-default" :id "divUserInfo"}
           (dom/div {:className "panel-heading"}
-            (if (not (:isinsert @app-state))
-              (dom/h5 "ID: " (:userid (:user @app-state)))
-            )
-
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "Login: "))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}
-                (dom/input {:id "login" :type "text" :onChange (fn [e] (handleChange e)) :value (:login (:user @app-state))}                  
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "שם משתמש"))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
+                (dom/input {:id "login" :type "text" :placeholder "שם משתמש" :onChange (fn [e] (handleChange e)) :value (:login (:user @app-state))}
                 )
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
@@ -451,10 +448,10 @@
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "First Name: "))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "firstname" :type "text" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))}))
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "שם פרטי"))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "firstname" :type "text" :placeholder "שם פרטי" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))}))
 
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
@@ -462,20 +459,20 @@
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "Last Name: "))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))}))
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "שם משפחה"))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))}))
 
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "email:"))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "email" :type "text" :onChange (fn [e] (handleChange e)) :value (:email (:user @app-state))}))
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "כתובת דוא''ל"))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "email" :type "text" :placeholder "כתובת דוא''ל" :onChange (fn [e] (handleChange e)) :value (:email (:user @app-state))}))
 
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
@@ -483,9 +480,9 @@
             (if (:isinsert @app-state)
               (dom/div {:className "row"}
                 (dom/div {:className "col-xs-5"})
-                (dom/div {:className "col-xs-1"} (dom/h5 "Password: "))
-                (dom/div {:className "col-xs-1" :style {:margin-top "4px"}} (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value password}))
-                (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+                (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "סיסמא"))
+                (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value password}))
+                (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                   (dom/span {:className "asterisk"} "*")
                 )
               )
@@ -493,14 +490,17 @@
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "Role:"))
-              (dom/div {:className "col-xs-1"}
-                (omdom/select #js {:id "roles"
-                                   :className "selectpicker"
-                                   :data-show-subtext "true"
-                                   :data-live-search "true"
-                                   :onChange #(handle-change % owner)
-                                   }
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "רמת הרשאה"))
+              (dom/div {:className "col-xs-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
+                (omdom/select {:id "roles"
+                               :className "selectpicker"
+                               :title "בחר אחד מהבאים ..."
+                               :data-show-subtext "true"
+                               :data-width "172px"
+                               :data-height "34px"
+                               :data-live-search "true"
+                               :onChange #(handle-change % owner)
+                              }
                   (buildRolesList data owner)
                 )
               )
@@ -508,33 +508,43 @@
 
 
             (dom/div {:className "row" :style {:padding-top "5px"}}
-              (dom/label {:className "checkbox-inline"}
-                (dom/input {:id (str "chckblock") :type "checkbox" :checked (:islocked (:user @data)) :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "34"})
+              (dom/div {:className "col-xs-5"})
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "אם נעול"))
+              (dom/div {:className "col-xs-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "5px"}}
+                (dom/label {:className "checkbox-inline"}
+                  (dom/input {:id (str "chckblock") :type "checkbox" :checked (:islocked (:user @data)) :data-toggle "toggle" :data-size "large" :data-width "100" :data-height "26"})
+                )
               )
             )
 
             (dom/div {:className "row" :style {:padding-top "5px"}}
-              (dom/label {:className "checkbox-inline"}
-                (dom/input {:id (str "chckbcommand") :type "checkbox" :checked (:iscommand (:user @data)) :data-toggle "toggle" :data-size "large" :data-width "200" :data-height "34"})
+              (dom/div {:className "col-xs-5"})
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "רשאי לתת פקודה"))
+              (dom/div {:className "col-xs-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "5px"}}
+                (dom/label {:className "checkbox-inline"}
+                  (dom/input {:id (str "chckbcommand") :type "checkbox" :checked (:iscommand (:user @data)) :data-toggle "toggle" :data-width "172" :data-size "large" :data-height "26"})
+                )
               )
             )
 
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1"} (dom/h5 "addedby:"))
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :height "100%"}} (dom/label {:id "addedby"} addedby))
+            (if (not (:isinsert @app-state))
+              (dom/div {:className "row"}
+                (dom/div {:className "col-xs-5"})
+                (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "יוצר"))
+                (dom/div {:className "col-xs-2" :style {:margin-top "4px" :height "100%" :padding-left "0px" :padding-right "0px" :text-align "left"}} addedby)
+              )
             )
           )
         )
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :disabled? (or (< (count (:login (:user @data))) 1) (< (count (:firstname (:user @data))) 1) (< (count (:lastname (:user @data))) 1) (< (count (:email (:user @data))) 1) (if (:isinsert @data) (< (count password) 1) false) (< (count (:id (:role (:user @data)))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "Insert" "Update"))
+            (b/button {:className "btn btn-default" :disabled? (or (< (count (:login (:user @data))) 1) (< (count (:firstname (:user @data))) 1) (< (count (:lastname (:user @data))) 1) (< (count (:email (:user @data))) 1) (if (:isinsert @data) (< (count password) 1) false) (< (count (:id (:role (:user @data)))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "הוסף" "עדכון"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
 
             (b/button {:className "btn btn-info" :onClick
               (fn [e] (js/window.history.back)
-            )} "Cancel")
+            )} "ביטול")
           )
         )
 
@@ -544,23 +554,22 @@
               (dom/div
                 (dom/div {:className "row"}
                   (dom/div {:className "col-xs-5"})
-                  (dom/div {:className "col-xs-2"} (dom/h5 "New Password: "))
-                  (dom/div {:className "col-xs-2" :style {:margin-top "4px"}} (dom/input {:id "password" :type "password" :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value password}))
-                  (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+                  (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "סיסמא"))
+                  (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value password}))
+                  (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                     (dom/span {:className "asterisk"} "*")
                   )
                 )
 
                 (dom/div {:className "row"}
                   (dom/div {:className "col-xs-5"})
-                  (dom/div {:className "col-xs-2"} (dom/h5 "New Password again: "))
-                  (dom/div {:className "col-xs-2" :style {:margin-top "4px"}}
+                  (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "אימות סיסמא"))
+                  (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
                     (dom/input {:id "newpassword" :type "password"
-                      :style {:width "100%"}
                       :onChange (fn [e] (handleChange e))
                       :value newpassword})
                   )
-                  (dom/div {:className "col-xs-1" :style {:margin-top "4px"}}       
+                  (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                     (dom/span {:className "asterisk"} "*")
                   )
                 )

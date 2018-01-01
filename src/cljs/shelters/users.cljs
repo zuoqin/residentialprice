@@ -1,4 +1,3 @@
-
 (ns shelters.users (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
@@ -8,6 +7,8 @@
             [shelters.core :as shelters]
             [ajax.core :refer [GET POST PUT DELETE]]
             [cljs.core.async :refer [put! dropping-buffer chan take! <! timeout]]
+            [cljs-time.core :as tc]
+            [cljs-time.format :as tf]
             [shelters.groupstouser :as groupstouser]
             [om-bootstrap.button :as b]
             [clojure.string :as str]
@@ -260,27 +261,23 @@
     (dom/div {:style {:border-left "1px solid" :border-right "1px solid"}}
       (map (fn [item]
         (let [
-          isselected (if (= (.indexOf (:selectedusers @data) (:userid item)) -1) false true)
+          creator (first (filter (fn [x] (if (= (:id x) (:addedby item)) true false)) (:users @shelters/app-state)))
           ]
           (dom/div {:className "row tablerow" :style {:border-bottom "1px solid" :padding-top "0px" :margin-right "0px" :margin-left "0px"}}
             (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid"}}
-              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-left "15px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid"}}
-                (dom/input { :id (str "checksel" (:id item)) :type "checkbox" :className "device_checkbox" :checked isselected :onChange (fn [e] (handle-chkbsend-change e))})
-              )
-
-              (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-right "12px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-12 col-md-12" :style {:text-align "center" :padding-right "0px" :padding-left "0px" :padding-bottom "8px"}}
                 (dom/div { :className "dropdown"}
                   (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false" :style {:padding-top "3px" :padding-bottom "3px" :padding-left "6px" :padding-right "6px" :margin-top "6px"}}
                     "☰"
                   )
                   (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "100px"}}
-                    (dom/li {:className "dropdown-item" :style {:text-align "center"}}
-                      (dom/div {:style {:padding-left "0px" :padding-right "5px" :font-weight "800"}}
-                        "פעולות"
-                      )
-                    )
-                    (dom/li {:className "divider"}
-                    )
+                    ;; (dom/li {:className "dropdown-item" :style {:text-align "center"}}
+                    ;;   (dom/div {:style {:padding-left "0px" :padding-right "5px" :font-weight "800"}}
+                    ;;     "פעולות"
+                    ;;   )
+                    ;; )
+                    ;; (dom/li {:className "divider"}
+                    ;; )
                     (dom/li {:className "dropdown-item"}
                       (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (goUser (:userid item))) :style {:padding-left "0px" :padding-right "5px"}}
                         "עדכון נתונים"
@@ -311,21 +308,28 @@
           (dom/div {:className "col-xs-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
             (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
               ;(dom/i {:className "fa fa-hdd-o"})
-              (:firstname item)
+              (str (:firstname item) " " (:lastname item))
             )
           )
 
-          (dom/div {:className "col-xs-2" :style { :border-left "1px solid"}}
-            (dom/a {:className "list-group-item" :href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
-              ;(dom/i {:className "fa fa-hdd-o"})
-              (:lastname item)
-            )
-          )
-
-          (dom/div {:className "col-xs-5" :style { :padding-top "11px" :padding-bottom "11px"}}
+          (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
             (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
               ;(dom/i {:className "fa fa-hdd-o"})
-              (:email item)
+              (if (nil? (:name (:role item))) "אדמיניסטרטור" (:name (:role item)))
+            )
+          )
+
+          (dom/div {:className "col-xs-3" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+              ;(dom/i {:className "fa fa-hdd-o"})
+              (if (nil? creator) "Beeper" (str (:firstname creator) " " (:lastname creator)))
+            )
+          )
+
+          (dom/div {:className "col-xs-2" :style { :padding-top "11px" :padding-bottom "11px"}}
+            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+              ;(dom/i {:className "fa fa-hdd-o"})
+              (tf/unparse shelters/custom-formatter2 (tc/now))
             )
           )
         )
@@ -396,69 +400,44 @@
 
             (dom/div {:className "panel-primary" :style {:padding "0px" :margin-top "10px"}}
               (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "0px"}}
-                (dom/div {:className "row" :style {}}
+                (dom/div {:className "row" :style {:margin-left "-14px" :margin-right "-14px"}}
                   (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
-                    (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid"}}
-                      (dom/i {:className "fa fa-square-o" :onClick (fn [e] (selectallusers))})
-                    )
-
-                    (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-top "10px" :padding-bottom "10px"}}
-                      (dom/div "☰")
+                    (dom/div {:className "col-xs-12 col-md-12" :style {:text-align "center" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px"}}
+                      (dom/div "פעולות")
                     )
                   )
 
 
                   (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}))
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))})                
-                        )
-                      )
-                      (dom/div {:className "col-xs-10" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
-                        (dom/span   "קוד משתמש")
+                      (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "7px" :padding-bottom "3px" :text-align "center" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left"}}
+                        (dom/span {:onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))} "קוד משתמש")
                       )
                     )
                   )
 
-                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "3px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))})
-                        )
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))})                   
-                        )
-                        
-                      )
-                      (dom/div {:className "col-xs-9" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
-                        (dom/span  "שם פרטי")
+                      (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left"}}
+                        (dom/span {:onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))} "שם מלא")
                       )
                     )
                   )
 
-                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "3px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))})
-                        )
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))})                   
-                        )
-                        
-                      )
-                      (dom/div {:className "col-xs-10" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
-                        (dom/span "שם משפחה")
+                      (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left"}}
+                        (dom/span {:onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))} "רמת הרשאה")
                       )
                     )
                   )
 
-                  (dom/div {:className "col-xs-5" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :text-align "center"}}
-                    "email"
+                  (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :padding-bottom "5px" :border-left "1px solid" :text-align "center"}}
+                    "יוצר"
+                  )
+
+                  (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :padding-bottom "5px" :text-align "center"}}
+                    "נוצר בתאריך"
                   )
                 )              
               )
