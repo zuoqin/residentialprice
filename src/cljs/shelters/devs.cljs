@@ -256,7 +256,7 @@
              )
 
            )
-         ) (sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (:name x)) (str/lower-case (:search @data))) true false)) (:devices @data)))
+         ) (sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (if (nil? (:name x)) "" (:name x))) (str/lower-case (:search @data))) true false)) (:devices @data)))
       )
     )
   )

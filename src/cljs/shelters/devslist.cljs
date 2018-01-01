@@ -299,7 +299,7 @@
               )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o"})
                 (:controller item)
@@ -307,15 +307,14 @@
             )
 
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o"})
                 (:name item)
               )
             )
 
-            (dom/div {:className "col-xs-3 col-md-3" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
-
+            (dom/div {:className "col-xs-3 col-md-3" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (:address item)
             )
 

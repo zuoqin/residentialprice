@@ -21,6 +21,7 @@
             [shelters.contactdetail :as contactdetail]
             [shelters.userdetail :as userdetail]
 
+
             [cljs-time.format :as tf]
             [cljs-time.coerce :as tc]
             [shelters.groupstounit :as groupstounit]
@@ -28,6 +29,7 @@
             [shelters.reportunits :as reportunits]
             [shelters.notedetail :as notedetail]
             [shelters.roledetail :as roledetail]
+            [shelters.localstorage :as ls]
             [ajax.core :refer [GET POST]]
             [om-bootstrap.input :as i]
             [om-bootstrap.button :as b]
@@ -125,22 +127,38 @@
 
 
 (defn OnGetIndications [response]
-  (swap! shelters/app-state assoc-in [:indications] (map map-indication response) )
-  ;(reqsecurities)
-  (swap! app-state assoc-in [:state] 0)
-  (put! ch 42)
+  (let [
+    indicators (map map-indication response)
+    ]
+    (swap! shelters/app-state assoc-in [:indications] indicators)
+    (ls/set-item! "indicators" (.stringify js/JSON (clj->js indicators)))
+  )
 )
 
 
 (defn reqindications []
-  (GET (str settings/apipath "getUnitIndications")
-    {:handler OnGetIndications
-     :error-handler error-handler
-     :headers {
-       :content-type "application/json"
-       :token (str (:token  (:token @shelters/app-state)))
-       }
-    }
+  (let [
+    indicatorsstr (ls/get-item "indicators")
+    tmpindicators (js->clj (.parse js/JSON indicatorsstr))
+    ;tr1 (.log js/console (str (first tmpindicators)))
+    ]
+
+    (GET (str settings/apipath "getUnitIndications")
+      {:handler OnGetIndications
+       :error-handler error-handler
+       :headers {
+         :content-type "application/json"
+         :token (str (:token  (:token @shelters/app-state)))
+         }
+      }
+    )
+
+    (if (not (nil? tmpindicators))
+      (swap! shelters/app-state assoc-in [:indicators] tmpindicators )
+    )
+
+    (swap! app-state assoc-in [:state] 0)
+    (put! ch 42)
   )
 )
 
@@ -160,22 +178,36 @@
 
 
 (defn OnGetCommands [response]
-  (swap! shelters/app-state assoc-in [:commands] (map map-command (case (count response) 0 [{"commandId" 1 "commandName" "פתח מנעול"}] response)))
-  ;(reqsecurities)
+  (let [
+    commands (map map-command (case (count response) 0 [{"commandId" 1 "commandName" "פתח מנעול"}] response))
+    ]
+    (swap! shelters/app-state assoc-in [:commands] commands)
+    (ls/set-item! "commands" (.stringify js/JSON (clj->js commands)))
+  )
+
   ;(swap! app-state assoc-in [:state] 0)
-  (reqindications)
 )
 
 
 (defn reqcommands []
-  (GET (str settings/apipath "getCommands")
-    {:handler OnGetCommands
-     :error-handler error-handler
-     :headers {
-       :content-type "application/json"
-       :token (str (:token  (:token @shelters/app-state)))
-       }
-    }
+  (let [
+    commandsstr (ls/get-item "devices")
+    tmpcommands (js->clj (.parse js/JSON commandsstr))
+    ;tr1 (.log js/console (str (first tmpcommands)))
+    ]
+    (GET (str settings/apipath "getCommands")
+      {:handler OnGetCommands
+       :error-handler error-handler
+       :headers {
+         :content-type "application/json"
+         :token (str (:token  (:token @shelters/app-state)))
+         }
+      }
+    )
+    (if (not (nil? tmpcommands))
+      (swap! shelters/app-state assoc-in [:commands] tmpcommands )
+    )
+    (reqindications)
   )
 )
 
@@ -197,22 +229,36 @@
 
 
 (defn OnGetGroups [response]
-  (swap! shelters/app-state assoc-in [:groups] (map map-group response) )
-  ;(reqsecurities)
+  (let [
+    groups (map map-group response)
+    ]
+    (swap! shelters/app-state assoc-in [:groups] groups)
+    (ls/set-item! "groups" (.stringify js/JSON (clj->js groups)))
+  )
+  
   ;(swap! app-state assoc-in [:state] 0)
-  (reqcommands)
 )
 
 
 
 
 (defn reqgroups []
-  (GET (str settings/apipath "getGroups")
-       {:handler OnGetGroups
-        :error-handler error-handler
-        :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelters/app-state))) }
-       })
+  (let [
+    groupsstr (ls/get-item "groups")
+    tmpgroups (js->clj (.parse js/JSON groupsstr))
+    ;tr1 (.log js/console (str (first tmpgroups)))
+    ]
+    (GET (str settings/apipath "getGroups")
+         {:handler OnGetGroups
+          :error-handler error-handler
+          :headers {:content-type "application/json"
+                    :token (str (:token  (:token @shelters/app-state))) }
+         })
+    (if (not (nil? tmpgroups))
+      (swap! shelters/app-state assoc-in [:group] tmpgroups )
+    )
+    (reqcommands)
+  )
 )
 
 (defn map-unitindication [indication]
@@ -247,23 +293,41 @@
 
 
 (defn OnGetUnits [response]
-  (swap! shelters/app-state assoc-in [:devices] (map map-unit response) )
-  ;(reqsecurities)
-  ;(swap! app-state assoc-in [:state] 0)
-  (reqgroups)
+  (let [
+    units (map map-unit response)
+    ]
+    (swap! shelters/app-state assoc-in [:devices] units )
+    
+    (ls/set-item! "devices" (.stringify js/JSON (clj->js units)))
+    ;(swap! app-state assoc-in [:state] 0)
+    ;(reqgroups)
+  )
 )
 
 
 
 
 (defn requnits []
-  (GET (str settings/apipath "getUnits" ;"?userId="(:userid  (:token @shelters/app-state))
-       )
-       {:handler OnGetUnits
-        :error-handler error-handler
-        :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelters/app-state))) }
-       })
+  (let [
+    unitsstr (ls/get-item "devices")
+    tmpunits (js->clj (.parse js/JSON unitsstr))
+    tr1 (.log js/console (str (first tmpunits)))
+    ]
+    (GET (str settings/apipath "getUnits" ;"?userId="(:userid  (:token @shelters/app-state))
+         )
+         {:handler OnGetUnits
+          :error-handler error-handler
+          :headers {:content-type "application/json"
+                    :token (str (:token  (:token @shelters/app-state))) }
+         })
+    (if (not (nil? tmpunits))
+      (let []
+        (put! ch 45)
+        (swap! shelters/app-state assoc-in [:devices] tmpunits )
+      )
+    )
+    (reqgroups)
+  )
 )
 
 (defn map-role [role]
@@ -282,21 +346,37 @@
 
 
 (defn OnGetRoles [response]
-  (swap! shelters/app-state assoc-in [:roles] (map map-role response) )
-  ;(reqsecurities)
-  (requnits)
+  (let [
+    roles (map map-role response)
+    ]
+    (swap! shelters/app-state assoc-in [:roles] roles)
+    (ls/set-item! "roles" (.stringify js/JSON (clj->js roles)))
+  )
+  
+  ;(requnits)
 )
 
 
 
 
 (defn reqroles []
-  (GET (str settings/apipath "getRoles")
-       {:handler OnGetRoles
-        :error-handler error-handler
-        :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelters/app-state))) }
-       })
+  (let [
+    rolesstr (ls/get-item "roles")
+    tmproles (js->clj (.parse js/JSON rolesstr))
+    ;tr1 (.log js/console (str (first tmproles)))
+    ]
+    (GET (str settings/apipath "getRoles")
+         {:handler OnGetRoles
+          :error-handler error-handler
+          :headers {:content-type "application/json"
+                    :token (str (:token  (:token @shelters/app-state))) }
+         })
+
+    (if (not (nil? tmproles))
+      (swap! shelters/app-state assoc-in [:roles] tmproles )
+    )
+    (requnits)
+  )
 )
 
 
@@ -357,20 +437,34 @@
 )
 
 (defn OnGetUsers [response]
-  (swap! shelters/app-state assoc-in [:users] (map map-user response) )
-  ;(swap! shelters/app-state assoc-in [:view] 1 )
-  ;(aset js/window "location" "#/positions")
-  (reqroles)
-  
+  (let [
+    users (map map-user response)
+    ]
+    (swap! shelters/app-state assoc-in [:users] users )
+    ;(swap! shelters/app-state assoc-in [:view] 1 )
+
+    (ls/set-item! "users" (.stringify js/JSON (clj->js users)))
+  )
 )
 
 (defn requsers []
-  (GET (str settings/apipath "getUsers")
-       {:handler OnGetUsers
-        :error-handler error-handler
-        :headers {:content-type "application/json"
-                  :token (str (:token  (:token @shelters/app-state)))}
-       }
+  (let [
+    usersstr (ls/get-item "users")
+    tmpusers (js->clj (.parse js/JSON usersstr))
+    ;tr1 (.log js/console (str (first tmpusers)))
+    ]
+    (GET (str settings/apipath "getUsers")
+         {:handler OnGetUsers
+          :error-handler error-handler
+          :headers {:content-type "application/json"
+                    :token (str (:token  (:token @shelters/app-state)))}
+         }
+    )
+
+    (if (not (nil? tmpusers))
+      (swap! shelters/app-state assoc-in [:devices] tmpusers )
+    )
+    (reqroles)
   )
 )
 
@@ -422,7 +516,6 @@
     (requsers)
     ;;(requser {:token newdata})
     ;;(put! ch 43)
-    (put! ch 45)
   )
 )
 
@@ -437,20 +530,24 @@
 )
 
 (defn dologin [username password]
-  (swap! app-state assoc-in [:state] 1)
-  ;; currently logged in user
-  (swap! shelters/app-state assoc-in [:user :login] username)
+  (let [
 
-  ;; currently selected user
-  (swap! shelters/app-state assoc-in [:selecteduser] username)
+    ]
+    (swap! app-state assoc-in [:state] 1)
+    ;; currently logged in user
+    (swap! shelters/app-state assoc-in [:user :login] username)
+
+    ;; currently selected user
+    (swap! shelters/app-state assoc-in [:selecteduser] username)
 
 
-  (POST (str settings/apipath "verifyUser")
-    {:handler OnLogin
-     :error-handler onLoginError
-     :format :json
-     :params {:userName username :password password} 
-    }
+    (POST (str settings/apipath "verifyUser")
+      {:handler OnLogin
+       :error-handler onLoginError
+       :format :json
+       :params {:userName username :password password} 
+      }
+    )
   )
 )
 
@@ -539,6 +636,16 @@
     open (tf/parse custom-formatter2 (subs (get notification "openTime") 0 19))
     
     open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
+
+
+    close (tf/parse custom-formatter2 (subs (get notification "closeTime") 0 19))
+    close (if (= (subs (get notification "closeTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) close)
+
+
+    accept (tf/parse custom-formatter2 (subs (get notification "acceptanceTime") 0 19))
+    accept (if (= (subs (get notification "acceptanceTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) accept)
+
+
     ;tr1 (.log js/console (str "unitid in Notification: " unitid))
     marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
 
@@ -546,7 +653,17 @@
     
     tr1 (if (not (nil? marker)) (swap! shelters/app-state assoc-in [:devices] newunits))
 
-    tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:notifications @shelters/app-state)))) (swap! shelters/app-state assoc-in [:notifications] (conj (:notifications @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))) (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open}))))
+    tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type})))
+
+        (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:notifications @shelters/app-state)))) (swap! shelters/app-state assoc-in [:notifications] (conj (:notifications @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type}))
+          (let [
+              delnotification (filter (fn [x] (if (= (:id x) id) false true)) (:notifications @shelters/app-state))
+              newnotifications (conj delnotification {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type})
+            ]
+            (swap! shelters/app-state assoc-in [:notifications] newnotifications)
+          )
+        )
+    )
     
     ]
     (if (nil? marker)
@@ -561,7 +678,12 @@
   (let [
       tr1 (js/console.log "Hooray! Message:" (pr-str notification))
     ]
-    (processMessage notification)
+    (try
+      (processMessage notification)
+      (catch js/Error e
+        (println (str "error while processing message: " e))
+      )
+    )
   )
 )
 

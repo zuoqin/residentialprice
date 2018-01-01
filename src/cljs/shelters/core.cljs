@@ -6,11 +6,11 @@
             [secretary.core :as sec :include-macros true]
             [goog.events :as events]
             [goog.history.EventType :as EventType]
-            [ajax.core :refer [GET POST]]
+            [ajax.core :refer [GET PUT POST]]
             [om.dom :as omdom :include-macros true]
-
+            [cljs-time.core :as tc]
             [cljs-time.format :as tf]
-            [cljs-time.coerce :as tc]
+
             [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout]]
             [om-bootstrap.button :as b]
             [shelters.settings :as settings]
@@ -29,6 +29,7 @@
 (defn tableheight [count] 
   (+ 14 (* 34 (min count 10)))
 )
+
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
@@ -263,6 +264,44 @@
   )
 )
 
+
+(defn OnUpdateNotificationError [response]
+  (let [     
+    ]
+
+  )
+  ;;(.log js/console (str  (get (first response)  "Title") ))
+)
+
+(defn OnUpdateNotificationSuccess [response]
+  (let [
+      ;notifications (:users @app-state)
+      ;deluser (remove (fn [user] (if (= (:userid user) (:userid (:selecteduser @app-state)) ) true false  )) users)
+      ;adduser (conj deluser (:selecteduser @app-state))
+    ]
+    ;(swap! app-state assoc-in [:users] adduser)
+    ;(shelters/goDashboard nil)
+    ;(js/window.history.back)
+  )
+)
+
+
+(defn seenNotification [item]
+  (let [
+    ;tr1 (swap! app-state assoc-in [:user :addedby] (:userid (:token @shelters/app-state)))
+      accept (tf/unparse custom-formatter2 (tc/now))
+    ]
+    (PUT (str settings/apipath  "updateNotification") {
+      :handler OnUpdateNotificationSuccess
+      :error-handler OnUpdateNotificationError
+      :headers {
+        :token (str (:token (:token @app-state)))
+      }
+      :format :json
+      :params { :notificationId (:id item) :notificationType (:type item) :unitId (:unitid item) :openTime (tf/unparse custom-formatter2 (:open item)) :acceptanceTime accept :closeTime (tf/unparse custom-formatter2 (:close item)) :userid (:userid (:token @app-state)) :status "Accepted"}})
+  )
+)
+
 (defcomponent notifications-table [data owner]
   (render [_]
     (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :height (str (tableheight (count (:notifications @data))) "px") :overflow-y "scroll"}}
@@ -274,9 +313,9 @@
           ]
           (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
-              (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
+              (b/button {:className "btn btn-primary" :disabled? (if (= (:status item) "New") false true) :style {:padding-top "0px" :padding-bottom "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seenNotification item))} "ראיתי")
             )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "5px"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
                 (:id item)
               )
@@ -300,13 +339,23 @@
 
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
-                "Failure"                
+                (:type item)
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
-                (tf/unparse custom-formatter2 (:open item))              
+            (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :text-align "center"}}
+                  (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                    (tf/unparse custom-formatter2 (:open item))
+                  )
+                )
+
+                (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
+                  (dom/a {:href (str "/#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "#337ab7" "transparent" )}}
+                    (tf/unparse custom-formatter2 (:close item))
+                  )
+                )
               )
             )
 
@@ -316,7 +365,7 @@
               )
             )
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
               (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
                 (str (:firstname user) " " (:lastname user))
               )
@@ -1279,8 +1328,8 @@
             )
 
             (if (not= role settings/dispatcherrole)
-              (dom/li {:className "dropdown" :style {:min-width "150px"}}
-                (dom/a { :href "#" :className "navbarasysmanage"
+              (dom/li {:className "dropdown" :style {:min-width "170px"}}
+                (dom/a { :href "#" :className "navbarasysmanage" :style {:padding-left "0px" :padding-right "0px"}
                     :onMouseOver (fn [x]
                       (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "block")
                       (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none")
@@ -1294,7 +1343,7 @@
                 (dom/div { :id "navbarulmanage" :className "navbarulmanage" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
+                      (dom/a {:href "/#/groups" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goGroups e))}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1304,7 +1353,7 @@
                   (if (not= role settings/dispatcherrole)
                     (dom/div {:className "row"}
                       (dom/div {:className "col-md-12"}
-                        (dom/a {:href "/#/users" :className "menu_item" :onClick (fn [e] (goUsers e))}
+                        (dom/a {:href "/#/users" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goUsers e))}
                           (dom/i {:className "fa fa-key"})
                           "משתמשים והרשאות"
                         )
@@ -1314,7 +1363,7 @@
 
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
+                      (dom/a {:href "/devices" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                         (dom/i {:className "fa fa-hdd-o"})
                         " מאגר יחידות"
                       )
@@ -1322,7 +1371,7 @@
                   )
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/roles" :className "menu_item" :onClick (fn [e] (goRoles e))}
+                      (dom/a {:href "/#/roles" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goRoles e))}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -1334,7 +1383,7 @@
 
 
 
-            (dom/li {:className "dropdown" :style {:min-width "150px"}}
+            (dom/li {:className "dropdown" :style {:min-width "170px"}}
               (dom/a { :href "#" :className "navbarareports"
                 :onMouseOver (fn [x]
                   (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "block")
@@ -1349,7 +1398,7 @@
               (dom/div { :id "navbarulreports" :className "navbarulreports" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/#/reportunits" :className "menu_item"}
+                    (dom/a {:href "/#/reportunits" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-line-chart"})
                       "דו״ח זמינות יחידות"
                     )
@@ -1357,7 +1406,7 @@
                 )
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
+                    (dom/a {:href "/report.triggeredAlerts" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-bullhorn"})
                       "דו״ח תרגולים"
                     )
@@ -1365,7 +1414,7 @@
                 )
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.notifications" :className "menu_item"}
+                    (dom/a {:href "/report.notifications" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-envelope-o"})
                       "דו״ח דיוור התראות"
                     )
@@ -1374,7 +1423,7 @@
 
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "/report.senselog" :className "menu_item"}
+                    (dom/a {:href "/report.senselog" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-globe"})
                       "דו״ רעידות אדמה"
                     )
@@ -1387,8 +1436,8 @@
             (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (:notifications @data))))
-                  (dom/span {:style {:cursor "pointer" :color "white"}} " התראות ")
+                  (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (filter (fn [x] (if (= "New" (:status x)) true false)) (:notifications @data)))))
+                  (dom/span {:style {:cursor "pointer" :color "white"}} "התראות")
                   (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})
                 )
               )

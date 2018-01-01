@@ -482,7 +482,7 @@
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
 
@@ -521,14 +521,17 @@
         (if (:isnotification @data)
           (dom/div {:className "row" :style { :padding-top "0px" :bottom "0px" :width "100%"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px"  :padding-bottom "30px" :padding-left "15px"}}
-              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px"  :padding-bottom "10px" :padding-left "15px"}}
+              (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                "טבלת התראות"
+              )
+              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px" :margin-left "17px"}}
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
-                  (dom/div {:className "row" :style {:margin-left "17px" :margin-right "0px"}}
+                  (dom/div {:className "row" :style {:margin-left "-1px" :margin-right "-1px"}}
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"  :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
 
@@ -538,7 +541,17 @@
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "תאריך וזמן אירוע")
+                    (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
+                      (dom/div {:className "row"}
+                        (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                          "תאריך פתיחה"
+                        )
+
+                        (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                          "זמן סגירה"
+                        )
+                      )
+                    )
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
                       (omdom/select #js {:id "statuses"
@@ -553,7 +566,7 @@
                       )
                     )
 
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "אירוע טופל ע''י")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}}  "אירוע טופל ע''י")
 
                   )
                 )
