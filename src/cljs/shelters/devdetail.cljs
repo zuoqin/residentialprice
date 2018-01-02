@@ -1,4 +1,4 @@
-(ns shelters.devdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.devdetail
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -386,6 +386,8 @@
   (getUnitDetail)
   (setcontrols 46)
   (put! ch 43)
+  (swap! shelters/app-state assoc-in [:view] 7)
+  (set! (.-title js/document) (str "יחידה:" (:name (:device @app-state))))
 )
 
 
@@ -607,7 +609,7 @@
             (om/build showcontacts-view data {})
 
             ;; (dom/div
-            ;;   (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (aset js/window "location" (str "/#/groupstounit/" (:id (:device @data)))))} "Assign to groups")
+            ;;   (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (aset js/window "location" (str "#/groupstounit/" (:id (:device @data)))))} "Assign to groups")
             ;; )
             ;(om/build parentgroups-view data {})
 

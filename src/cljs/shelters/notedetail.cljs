@@ -1,4 +1,4 @@
-(ns shelters.notedetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.notedetail
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -84,12 +84,6 @@
     ;(swap! sbercore/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:groups] newgroups)
   )
-
-  (-> js/document
-    .-location
-    (set! "#/groups"))
-
-  (shelters/goGroups "")
 )
 
 (defn OnUpdateNoteError [response]
@@ -112,7 +106,6 @@
       tr1 (.log js/console (str "In OnUpdateNoteSuccess " response))
     ]
     (swap! shelters/app-state assoc-in [:notifications] addnote)
-    ;(shelters/goGroups nil)
   )
 )
 

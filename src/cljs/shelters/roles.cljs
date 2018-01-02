@@ -1,4 +1,4 @@
-(ns shelters.roles (:use [net.unit8.tower :only [t]])
+(ns shelters.roles
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -57,12 +57,12 @@
       (map (fn [item]
         (dom/div {:className "row"}
           (dom/div {:className "col-xs-6"}
-            (dom/a {:className "list-group-item" :href (str "#/roledetail/" (:id item)) :onClick (fn [e] (shelters/goRoleDetail e))}
+            (dom/a {:className "list-group-item" :href (str "#/roledetail/" (:id item))}
               (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
             ) 
           )
           (dom/div {:className "col-xs-6"}
-            (dom/a {:className "list-group-item" :href (str "#/roledetail/" (:id item)) :onClick (fn [e] (shelters/goRoleDetail e))}
+            (dom/a {:className "list-group-item" :href (str "#/roledetail/" (:id item))}
               (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:description item)}} nil)
             ) 
           )
@@ -82,6 +82,7 @@
   (swap! shelters/app-state assoc-in [:current] 
     "Roles"
   )
+  (swap! shelters/app-state assoc-in [:view] 3)
 )
 
 

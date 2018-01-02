@@ -1,4 +1,4 @@
-(ns shelters.groups (:use [net.unit8.tower :only [t]])
+(ns shelters.groups
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -56,7 +56,7 @@
     (dom/div {:className "list-group" :style {:display "block"}}
       (map (fn [item]
         (dom/span
-          (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item)) :onClick (fn [e] (shelters/goGroupDetail e))}
+          (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item))}
             (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
             ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
             ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
@@ -76,6 +76,8 @@
   (swap! shelters/app-state assoc-in [:current] 
     "Groups"
   )
+  (set! (.-title js/document) "ניהול קבוצות")
+  (swap! shelters/app-state assoc-in [:view] 8)
 )
 
 

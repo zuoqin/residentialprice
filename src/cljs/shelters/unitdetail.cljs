@@ -1,4 +1,4 @@
-(ns shelters.unitdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.unitdetail
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -388,12 +388,12 @@
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "seen")
             )
             (dom/div {:className "col-xs-4" :style {}}
-              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
+              (dom/a {:href (str "#/unitdetail/" (:id (first (:devices @app-state)))) }                
                 (:id item)
               )
             )
             (dom/div {:className "col-xs-4" :style {}}
-              (dom/a {:href (str "/#/unitdetail/" (:id (first (:devices @app-state)))) }                
+              (dom/a {:href (str "#/unitdetail/" (:id (first (:devices @app-state)))) }                
                 (:text item)
                 (dom/span {:className "pull-right text-muted small"}
                   "  4 minutes ago"

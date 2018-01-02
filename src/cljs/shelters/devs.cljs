@@ -1,12 +1,12 @@
-(ns shelters.devs (:use [net.unit8.tower :only [t]])
+(ns shelters.devs 
+  (:use [net.unit8.tower :only [t]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
             [secretary.core :as sec :include-macros true]
             [shelters.core :as shelters]
             [ajax.core :refer [GET POST]]
-
-
+ 
             [om-bootstrap.button :as b]
             [clojure.string :as str]
             [shelters.settings :as settings]
@@ -20,6 +20,26 @@
 
 (defn printDevices []
   (.print js/window)
+)
+
+(def main-tconfig
+  {:dictionary ; Map or named resource containing map
+    {:he 
+      {:indicators
+        {           
+        :lockState              "בריח"
+        :doorState              "דלת"
+        :lastCommunication      "ארון תקשורת"
+        :batteryState           "סוללה"
+        :tamper                 "גלאי"
+        :communicationStatus    "תקשורת"
+        }
+        :missing  "missing"
+      }
+    }
+   :dev-mode? true ; Set to true for auto dictionary reloading
+   :fallback-locale :he
+  }
 )
 
 (defn OnGetUsers [response]
@@ -61,55 +81,30 @@
   )
 )
 
-(defn goDevice [devid]
-  ;;(aset js/window "location" (str "#/devdetail/" devid) )
-  (swap! shelters/app-state assoc-in [:view] 7)
-  (set! (.-title js/document) (str "יחידה:" devid) )
-)
 
-
-(defcomponent speedo-view [data owner]
+(defcomponent showindications-view [unit]
   (render [_]
-    (dom/div {:style {:zoom 0.13 :width "640px" :height "480px" :margin-top "0px" :margin-right "0px" :margin-bottom "0px" :margin-left "0px" :overflow "hidden" :backgroundColor "#000" :position "relative"}}
-      (dom/div {:className "speedometr"}
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris-w"})
-        (dom/div {:className "ris ris-o1"})
-        (dom/div {:className "ris ris-o2"})
-        (dom/div {:className "ris ris-o3"})
-        (dom/div {:className "ris ris-o4"})
-        (dom/div {:className "ris ris-o5"})
-        (dom/div {:className "ris ris-o6"})
-        (dom/div {:className "ris ris-o7"})
-        (dom/div {:className "ris ris-o8"})
-        (dom/div {:className "ris ris-o9"})
-        (dom/div {:className "ris ris-o10"})
+    (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
+      (map (fn [item]
+        (let [
+          indicator (first (filter (fn [x] (if (= (:id x) (:id item)) true false))  (:indications @shelters/app-state)))
 
-
-        (dom/span {:className "speedo s-0"} "0")
-        (dom/span {:className "speedo s-20"} "20")
-        (dom/span {:className "speedo s-40"} "40")
-        (dom/span {:className "speedo s-60"} "60")
-        (dom/span {:className "speedo s-80"} "80")
-        (dom/span {:className "speedo s-100"} "100")
-        (dom/span {:className "speedo s-120"} "120")
-        (dom/span {:className "speedo s-140"} "140")
-        (dom/span {:className "speedo s-160"} "160")
-        (dom/span {:className "speedo s-180"} "180")
-        (dom/span {:className "speedo s-200"} "200")
-
-        (dom/div {:className "strelka"})
+         icon (case (:isok item) true (:okicon indicator) (if (> (count (:failicon indicator)) 0) (:failicon indicator) "fail"))
+         name (t :he main-tconfig (keyword (str "indicators/" (:name indicator))))
+          ]
+          (dom/div {:style {:border "solid 1px transparent" :padding "3px" :min-width "108px"}}
+            (dom/div {:style {:backgroundColor "white" :text-align "center"}}
+              (dom/a {:href (str "#/devdetail/" (:id item)) }
+                (dom/img {:src (str "images/" icon ".png") :style {:margin-top "5px" :margin-bottom "5px" :height "70px" :min-height "70px" :font-size "xx-large" :color "green"}})
+              )
+            )
+            (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+               name
+            )
+          )
+        )
       )
-      (dom/div {:className "black"})
+      (filter (fn [x] (if (> (count (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))) 0) true false)) (:indications unit)))
     )
   )
 )
@@ -136,108 +131,15 @@
                  )
                )
 
-               (dom/div {:className "row" :style {:padding-top "5px" :margin-left "0px" :margin-right "0px"}}
-                 (dom/div {:className "col-xs-6" :style { :padding-left "7px"}
-                   }
-                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "white" :text-align "center"}}
-                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/img {:src "images/door_closed.png" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "red"}})
-                       )
-                     )
+               (om/build showindications-view item {})
 
-                     (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                        "דלת"
-                     )
-                   )
-                 )
-                 (dom/div {:className "col-xs-6" :style {:padding-right "7px"}
-                   }
-
-                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "white" :text-align "center"}}
-                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/img {:src "images/lock_closed.png" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "green"}})
-                       )
-                     )
-                     (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                        "בריח"
-                     )
-                   )
-                 )
-               )
-
-               (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                 (dom/div {:className "col-xs-6" :style {:padding-left "7px"}
-                   }
-                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "white" :text-align "center"}}
-                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/span {:className "glyphicon glyphicon-star" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "brown"}})
-                       )
-
-                     )
-
-                     (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center"  :margin-left "0px" :margin-right "0px"}}
-                        "ארון תקשורת"
-                     )
-                   )
-                 )
-                 (dom/div {:className "col-xs-6" :style {:padding-right "7px"}
-                   }
-                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "white" :text-align "center"}}
-                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/span {:className "glyphicon glyphicon-save-file" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "blue"}})
-                       )
-
-                     )
-
-                     (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                        "גלאי"
-                     )
-                   )
-                 )
-               )
-
-               (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                 (dom/div {:className "col-xs-6" :style { :padding-left "7px" }
-                           }
-                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "white" :text-align "center"}}
-                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/span {:className "glyphicon glyphicon-th-large" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "aqua"}})
-                       )
-
-                     )
-                     (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                        "תקשורת"
-                     )
-                   )
-                 )
-                 (dom/div {:className "col-xs-6" :style {:padding-right "7px"}
-                           }
-                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
-                     (dom/div {:style {:backgroundColor "white" :text-align "center"}}
-                       (dom/a {:href (str "/#/devdetail/" (:id item)) }
-                         (dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       )
-                     )
-
-                     (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                        "סוללה"
-                     )
-                   )
-                 )
-
-               )
 
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :padding-bottom "0px"}}
                  (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] ((shelters/goUserDetail e) (-> js/document .-location (set! "#/userdetail")) ))} "פתח מנעול")
+                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (set! (.-title js/document) "פתח מנעול"))} "פתח מנעול")
                      )
                    )
                  )
@@ -246,15 +148,12 @@
                    (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] ((shelters/goUserDetail e) (-> js/document .-location (set! "#/userdetail"))))} "בדיקת תקשורת")
+                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] (set! (.-title js/document) "בדיקת תקשורת"))} "בדיקת תקשורת")
                      )
                    )
-
                  )
-
                )
              )
-
            )
          ) (sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (if (nil? (:name x)) "" (:name x))) (str/lower-case (:search @data))) true false)) (:devices @data)))
       )
@@ -269,6 +168,8 @@
   (swap! shelters/app-state assoc-in [:current] 
     "Dashboard"
   )
+  (set! (.-title js/document) "Dashboard")
+  (swap! shelters/app-state assoc-in [:view] 8)
 )
 
 

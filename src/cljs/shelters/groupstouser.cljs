@@ -1,4 +1,4 @@
-(ns shelters.groupstouser (:use [net.unit8.tower :only [t]])
+(ns shelters.groupstouser
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]

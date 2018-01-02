@@ -1,4 +1,4 @@
-(ns shelters.groupdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.groupdetail
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -84,12 +84,7 @@
     ;(swap! sbercore/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:groups] newgroups)
   )
-
-  (-> js/document
-    .-location
-    (set! "#/groups"))
-
-  (shelters/goGroups "")
+  (js/window.history.back)
 )
 
 (defn OnUpdateGroupError [response]
@@ -112,7 +107,7 @@
       tr1 (.log js/console (str "In OnUpdateGroupSuccess " response))
     ]
     (swap! shelters/app-state assoc-in [:groups] addgroup)
-    (shelters/goGroups nil)
+    (js/window.history.back)
   )
 )
 
@@ -161,10 +156,7 @@
       addgroup (conj groups (:group @app-state)) 
     ]
     (swap! shelters/app-state assoc-in [:groups] addgroup)
-    (-> js/document
-      .-location
-      (set! "#/groups"))
-    (shelters/goGroups "")
+    (js/window.history.back)
   )
 )
 
@@ -178,7 +170,7 @@
       :headers {
         :token (str "" (:token (:token @shelters/app-state)))}
       :format :json
-      :params { :groupName (:name (:group @app-state)) :groupId "" :parentGroups (:parents (:group @app-state)) :owners (if (nil? (:owners (:group @app-state))) [] (:owners (:group @app-state))) :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key" :value "value"}] }})
+      :params { :groupName (:name (:group @app-state)) :groupId "" :parentGroups (if (nil? (:parents (:group @app-state))) [] (:parents (:group @app-state)))  :owners (if (nil? (:owners (:group @app-state))) [] (:owners (:group @app-state))) :responsibleUser (:userid (:token @shelters/app-state)) :details [{:key "key" :value "value"}] }})
   )
 )
 
@@ -388,6 +380,7 @@
   (getGroupDetail)
   (put! ch 46)
   (put! ch 47)
+  (swap! shelters/app-state assoc-in [:view] 6)
 )
 
 

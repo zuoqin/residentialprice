@@ -1,4 +1,4 @@
-(ns shelters.devslist (:use [net.unit8.tower :only [t]])
+(ns shelters.devslist
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -19,7 +19,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:sort-list 1}))
+(defonce app-state (atom  {:sort-list 1 :state 0}))
 (defonce dev-state (atom  {}))
 (def jquery (js* "$"))
 (def ch (chan (dropping-buffer 2)))
@@ -62,19 +62,31 @@
       addunit (conj delunit (:selecteddevice @shelters/app-state)) 
     ]
     (swap! shelters/app-state assoc-in [:devices] addunit)
-    ;(shelters/goDashboard nil)
-    (js/window.history.back)
+
+    (-> (jquery "#groupsModal .close")
+          (.click)
+    )
+    (swap! app-state assoc-in [:state] 0)
+    ;(set! ( . (.getElementById js/document "btnsavegroups") -disabled) false)
+
+
+    ;(js/window.history.back)
   )
 )
 
 (defn savegroups []
-  (PUT (str settings/apipath  "updateUnit") {
-    :handler OnUpdateUnitSuccess
-    :error-handler OnUpdateUnitError
-    :headers {
-      :token (str (:token (:token @shelters/app-state)))}
-    :format :json
-    :params {:unitId (:id (:selecteddevice @shelters/app-state)) :controllerId (:controller (:selecteddevice @shelters/app-state)) :name (:name (:selecteddevice @shelters/app-state)) :parentGroups (:groups (:selecteddevice @shelters/app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:selecteddevice @shelters/app-state)) :port (:port (:selecteddevice @shelters/app-state)) :latitude (:lat (:selecteddevice @shelters/app-state)) :longitude (:lon (:selecteddevice @shelters/app-state)) :details [{:key "address" :value (:address (:selecteddevice @shelters/app-state))} {:key "phone" :value (:tel (first (:contacts (:selecteddevice @shelters/app-state))))}]}})
+  (swap! app-state assoc-in [:state] 1)
+  ;(set! ( . (.getElementById js/document "btnsavegroups") -disabled) true)
+  (go
+    (<! (timeout 50))
+    (PUT (str settings/apipath  "updateUnit") {
+      :handler OnUpdateUnitSuccess
+      :error-handler OnUpdateUnitError
+      :headers {
+        :token (str (:token (:token @shelters/app-state)))}
+      :format :json
+      :params {:unitId (:id (:selecteddevice @shelters/app-state)) :controllerId (:controller (:selecteddevice @shelters/app-state)) :name (:name (:selecteddevice @shelters/app-state)) :parentGroups (:groups (:selecteddevice @shelters/app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:selecteddevice @shelters/app-state)) :port (:port (:selecteddevice @shelters/app-state)) :latitude (:lat (:selecteddevice @shelters/app-state)) :longitude (:lon (:selecteddevice @shelters/app-state)) :details [{:key "address" :value (:address (:selecteddevice @shelters/app-state))} {:key "phone" :value (:tel (first (:contacts (:selecteddevice @shelters/app-state))))}]}})
+  )
 )
 
 
@@ -150,7 +162,7 @@
                 )
 
                 (dom/div {:className "col-xs-6" :style {:text-align "center"}}
-                  (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal" :onClick (fn [e] (savegroups))} "Save")
+                  (b/button {:id "btnsavegroups" :disabled? (if (= (:state @app-state) 1) true false) :type "button" :className (if (= (:state @app-state) 0) "btn btn-default" "btn btn-default m-progress" ) :onClick (fn [e] (savegroups))} "שמור")
                 )
               )
             )
@@ -271,13 +283,13 @@
                     "☰"
                   )
                   (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "100px"}}
-                    (dom/li {:className "dropdown-item" :style {:text-align "center"}}
-                      (dom/div {:style {:padding-left "0px" :padding-right "5px" :font-weight "800"}}
-                        "פעולות"
-                      )
-                    )
-                    (dom/li {:className "divider"}
-                    )
+                    ;; (dom/li {:className "dropdown-item" :style {:text-align "center"}}
+                    ;;   (dom/div {:style {:padding-left "0px" :padding-right "5px" :font-weight "800"}}
+                    ;;     "פעולות"
+                    ;;   )
+                    ;; )
+                    ;; (dom/li {:className "divider"}
+                    ;; )
                     (dom/li {:className "dropdown-item"}
                       (dom/a {:href (str "#/devdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item))) :style {:padding-left "0px" :padding-right "5px"}}
                         "עדכון נתונים"
@@ -418,6 +430,8 @@
   (swap! shelters/app-state assoc-in [:current] 
     "Dashboard"
   )
+  (set! (.-title js/document) "רשימה יחידות")
+  (swap! shelters/app-state assoc-in [:view] 8)
 )
 
 (defn OnDoCommand [response] 
@@ -499,59 +513,32 @@
                       (dom/i {:className "fa fa-square-o" :onClick (fn [e] (selectallunits))})
                     )
 
-                    (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-top "10px" :padding-bottom "10px"}}
-                      (dom/div "☰")
+                    (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-top "10px" :padding-bottom "10px" :padding-left "0px" :padding-right "0px"}}
+                      "פעולות"
                     )
                   )
 
 
-                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))})
-                        )
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))})                   
-                        )
-                        
-                      )
-                      (dom/div {:className "col-xs-10" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
-                        (dom/span   "מזהה יחידה")
+                      (dom/div {:className "col-xs-13" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}
+                        "מזהה יחידה"
                       )
                     )
                   )
 
-                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))})
-                        )
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))})                   
-                        )
-                        
-                      )
-                      (dom/div {:className "col-xs-9" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
-                        (dom/span  "שם יחידה")
+                      (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))}
+                        "שם יחידה"
                       )
                     )
                   )
 
-                  (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_upperright.png')" :width "8px" :height "8px" :margin-bottom "-10px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))})
-                        )
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :text-align "left"}}
-                          (dom/button {:className "btn" :style {:background-image "url('/images/if_arrow_sans_lowerright.png')"  :margin-top "-10px" :width "8px" :height "8px" :padding-bottom "0px" :padding-top "0px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))})                   
-                        )
-                        
-                      )
-                      (dom/div {:className "col-xs-10" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :text-align "right"}}
-                        (dom/span "כתובת")
+                      (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))}
+                        "כתובת"
                       )
                     )
                   )

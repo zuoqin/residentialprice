@@ -23,6 +23,8 @@
 
 (enable-console-print!)
 
+(def indicators ["lockState" "doorState" "lastCommunication" "batteryState" "tamper" "communicationStatus"])
+
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 (def custom-formatter2 (tf/formatter "dd/MM/yyyy hh:mm:ss"))
 (def ch (chan (dropping-buffer 2)))
@@ -176,93 +178,6 @@
   (swap! app-state assoc-in [:view] 0)
 )
 
-(defn goUserDetail [e]
-  ;(aset js/window "location" "#/userdetail")
-  (swap! app-state assoc-in [:view] 4)
-)
-
-(defn goContactDetail [e]
-  ;(aset js/window "location" "#/userdetail")
-  (swap! app-state assoc-in [:view] 4)
-)
-
-
-(defn goRoleDetail [e]
-  ;(aset js/window "location" "#/portfolios/0")
-  (swap! app-state assoc-in [:view] 6)
-)
-
-(defn goGroupDetail [e]
-  ;(aset js/window "location" "#/portfolios/0")
-  (swap! app-state assoc-in [:view] 6)
-)
-
-(defn goGroups [e]
-  (aset js/window "location" "#/groups")
-  (set! (.-title js/document) "ניהול קבוצות")
-  (swap! app-state assoc-in [:view] 8)
-)
-
-(defn goMap [e]
-  (aset js/window "location" "#/map")
-  (set! (.-title js/document) "מפה")
-  (swap! app-state assoc :state 1)
-  (swap! app-state assoc-in [:view] 2)
-)
-
-(defn goDashboard [e]
-  (aset js/window "location" "/#/dashboard")
-  (set! (.-title js/document) "Dashboard")
-  (swap! app-state assoc-in [:view] 8)
-)
-
-(defn goDevslist [e]
-  (aset js/window "location" "/#/devslist")
-  (set! (.-title js/document) "רשימה יחידות")
-  (swap! app-state assoc-in [:view] 8)
-)
-
-(defn goUsers [data]
-  (swap! app-state assoc-in [:view] 3)
-  (aset js/window "location" "#/users")
-  (set! (.-title js/document) "משתמשים והרשאות")
-)
-
-(defn goRoles [data]
-  (swap! app-state assoc-in [:view] 3)
-)
-
-(defn goSysSettings [data]
-  ;(aset js/window "location" "#/syssettings")
-  (swap! app-state assoc-in [:view] 5)
-)
-
-(defn goSettings [data]
-  ;;(swap! app-state assoc-in [:view] 5 ) settings/apipath
-  (.open js/window (str settings/apipath "tradeidea/" (:token (:token @app-state))))
-)
-
-(defcomponent notifications-navbar [data owner]
-  (render [_]
-    (dom/ul {:className "dropdown-menu dropdown-alerts"}
-      (map (fn [item]
-        (let []
-          (dom/li
-            (dom/a {:href (str "/#/notedetail/" (:id item)) }
-              (dom/div
-                (dom/i {:className "fa fa-comment fa-fw"})
-                (:text item)
-                (dom/span {:className "pull-right text-muted small"}
-                  "4 minutes ago"
-                )
-              )
-            )
-          )
-        ))
-      (:notifications @app-state))
-    )
-  )
-)
 
 
 (defn OnUpdateNotificationError [response]
@@ -280,7 +195,6 @@
       ;adduser (conj deluser (:selecteduser @app-state))
     ]
     ;(swap! app-state assoc-in [:users] adduser)
-    ;(shelters/goDashboard nil)
     ;(js/window.history.back)
   )
 )
@@ -316,29 +230,29 @@
               (b/button {:className "btn btn-primary" :disabled? (if (= (:status item) "New") false true) :style {:padding-top "0px" :padding-bottom "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seenNotification item))} "ראיתי")
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "5px"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
                 (:id item)
               )
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
                 (:controller unit)
               )
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }                
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
                 (:name unit)
               )
             )
 
             (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:address unit)                
               )
             )
 
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:type item)
               )
             )
@@ -346,13 +260,13 @@
             (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
               (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                 (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :text-align "center"}}
-                  (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+                  (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                     (tf/unparse custom-formatter2 (:open item))
                   )
                 )
 
                 (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
-                  (dom/a {:href (str "/#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "#337ab7" "transparent" )}}
+                  (dom/a {:href (str "#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "#337ab7" "transparent" )}}
                     (tf/unparse custom-formatter2 (:close item))
                   )
                 )
@@ -360,13 +274,13 @@
             )
 
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:status item)               
               )
             )
 
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (str (:firstname user) " " (:lastname user))
               )
             )
@@ -374,30 +288,6 @@
         ))
         (sort (comp comp-alerts) (filter (fn [x] (if (= 1 (:selectedstatus @data)) true (if (= (:status x) (:selectedstatus @data)) true false))) (:notifications @data)))
       )
-    )
-  )
-)
-
-
-(defcomponent alerts-navbar [data owner]
-  (render [_]
-    (dom/ul {:className "dropdown-menu dropdown-alerts"}
-      (map (fn [item]
-        (let []
-          (dom/li
-            (dom/a {:href (str "/#/unitdetail/" (:id item)) }
-              (dom/div
-                (dom/i {:className "fa fa-comment fa-fw"})
-                (:text item)
-                (dom/span {:className "pull-right text-muted small"}
-                  "  4 minutes ago"
-                )
-              )
-            )
-          )
-        ))
-
-      (:alerts @app-state))
     )
   )
 )
@@ -417,47 +307,47 @@
               (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:id item)                
               )
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:controller unit)
               )
             )
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:name unit)                
               )
             )
 
             (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:address unit)                
               )
             )
 
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 "Alert"                
               )
             )
 
             (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (tf/unparse custom-formatter2 (:open item))              
               )
             )
 
             (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (:status item)               
               )
             )
 
             (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "/#/unitdetail/" (:id unit)) }
+              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
                 (str (:firstname user) " " (:lastname user))
               )
             )
@@ -838,344 +728,6 @@
 )
 
 
-(defcomponent users-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      ]
-      (dom/div {:className "navbar navbar-toggleable-md navbar-fixed-top" :role "navigation" :style {:height "70px"}}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
-            ;(dom/span {:id "pageTitle"} "Beeper")
-          )          
-        )
-
-
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
-            (dom/li
-              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
-                (dom/i {:className "fa fa-map-o"})
-                "מפה"
-              )
-            )
-            (dom/li
-              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
-                (dom/i {:className "fa fa-dashboard"})
-                "Dashboard"
-              )
-            )
-
-
-            (dom/li
-              (dom/a {:href "/#/devslist"
-                :onMouseOver (fn [x]
-                  (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none")
-                  (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
-                )
-                :onClick (fn [e] (goDevslist e))}
-                (dom/i {:className "fa fa-building"})
-                "רשימה יחידות"
-              )
-            )
-
-            (dom/li
-              (dom/a {:href "/#/users"}
-                (dom/i {:className "fa fa-key"})
-                "משתמשים והרשאות"
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "ניהול מערכת"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                        (dom/i {:className "fa fa-users"})
-                        "ניהול קבוצות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/devices" :className "menu_item"}
-                        (dom/i {:className "fa fa-hdd-o"})
-                        "מאגר יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/contacts" :className "menu_item"}
-                        (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/polygons" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "ניהול Polygons"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-
-
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "דו״חות"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/reportunits" :className "menu_item"}
-                        (dom/i {:className "fa fa-line-chart"})
-                        "דו״ח זמינות יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        "דו״ח תרגולים"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.notifications" :className "menu_item"}
-                        (dom/i {:className "fa fa-envelope-o"})
-                        "דו״ח דיוור התראות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.senselog" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "דו״ רעידות אדמה"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-      ;;       (dom/li
-      ;;         (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-      ;; (dom/input {:id "search" :type "text" :placeholder "Search by last first login" :style {:height "24px" :margin-top "10px"} :value  (:search @app-state) :onChange (fn [e] (handleChange e))}))
-      ;;       )
-          )        
-        )
-      )
-    )
-  )
-)
-
-
-(defcomponent roledetail-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
-            ;;(dom/span {:id "pageTitle"} "Beeper")
-          )          
-        )
-
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
-            (dom/li
-              (dom/a {:href "/#/map" :onClick (fn [e] (goMap e))}
-                (dom/i {:className "fa fa-map-o"})
-                "מפה"
-              )
-            )
-            (dom/li
-              (dom/a {:href "/#/dashboard" :onClick (fn [e] (goDashboard e))}
-                (dom/i {:className "fa fa-dashboard"})
-                "Dashboard"
-              )
-            )
-
-
-            (dom/li
-              (dom/a {:href "/#/devslist" :onClick (fn [e] (goDevslist e))}
-                (dom/i {:className "fa fa-building"})
-                "רשימה יחידות"
-              )
-            )
-
-            (dom/li
-              (dom/a {:href "/#/users"}
-                (dom/i {:className "fa fa-key"})
-                "משתמשים והרשאות"
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "ניהול מערכת"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                        (dom/i {:className "fa fa-users"})
-                        "ניהול קבוצות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/devices" :className "menu_item"}
-                        (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/contacts" :className "menu_item"}
-                        (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/polygons" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "ניהול Polygons"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-
-
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "דו״חות"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/#/reportunits" :className "menu_item"}
-                        (dom/i {:className "fa fa-line-chart"})
-                        "דו״ח זמינות יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.triggeredAlerts" :className "menu_item"}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        "דו״ח תרגולים"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.notifications" :className "menu_item"}
-                        (dom/i {:className "fa fa-envelope-o"})
-                        "דו״ח דיוור התראות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "/report.senselog" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "דו״ רעידות אדמה"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )        
-        )
-      )
-    )
-  )
-)
 
 (defn handleCheck [e]
   (.stopPropagation e)
@@ -1274,7 +826,7 @@
   )
 )
 
-(defcomponent map-navigation-view [data owner]  
+(defcomponent main-navigation-view [data owner]  
   (did-mount [this]
     (let [
       ;tr1 (.log js/console "did mount")
@@ -1308,20 +860,20 @@
           (dom/ul {:className "nav navbar-nav"}
 
             (dom/li
-              (dom/a {:className "navbara" :href "#/map" :onClick (fn [e] (goMap e))}
+              (dom/a {:className "navbara" :href "#/map"}
                 (dom/i {:className "fa fa-map-o"})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:className "navbara" :href "#/dashboard" :onClick (fn [e] (goDashboard e))}
+              (dom/a {:className "navbara" :href "#/dashboard"}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
             )
 
             (dom/li
-              (dom/a {:className "navbara" :href "#/devslist" :onClick (fn [e] (goDevslist e)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
+              (dom/a {:className "navbara" :href "#/devslist" :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
                 (dom/i {:className "fa fa-building"})
                 "רשימה יחידות"
               )
@@ -1343,7 +895,7 @@
                 (dom/div { :id "navbarulmanage" :className "navbarulmanage" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/groups" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goGroups e))}
+                      (dom/a {:href "#/groups" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                         (dom/i {:className "fa fa-users"})
                         "ניהול קבוצות"
                       )
@@ -1353,7 +905,7 @@
                   (if (not= role settings/dispatcherrole)
                     (dom/div {:className "row"}
                       (dom/div {:className "col-md-12"}
-                        (dom/a {:href "#/users" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goUsers e))}
+                        (dom/a {:href "#/users" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                           (dom/i {:className "fa fa-key"})
                           "משתמשים והרשאות"
                         )
@@ -1371,7 +923,7 @@
                   )
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/roles" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"} :onClick (fn [e] (goRoles e))}
+                      (dom/a {:href "#/roles" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                         (dom/i {:className "fa fa-phone"})
                         "אנשי קשר"
                       )
@@ -1467,469 +1019,6 @@
   )
 )
 
-(defcomponent dashboard-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
-            ;;(dom/span {:id "pageTitle"} "Beeper")
-          )          
-        )
-
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
-            (dom/li
-              (dom/a {:href "#/map" :onClick (fn [e] (goMap e))}
-                (dom/i {:className "fa fa-map-o"})
-                "מפה"
-              )
-            )
-            (dom/li
-              (dom/a {:href "#/dashboard" :onClick (fn [e] (goDashboard e))}
-                (dom/i {:className "fa fa-dashboard"})
-                "Dashboard"
-              )
-            )
-
-
-            (dom/li
-              (dom/a {:href "#/devslist" :onClick (fn [e] (goDevslist e))}
-                (dom/i {:className "fa fa-building"})
-                "רשימה יחידות"
-              )
-            )
-
-            (dom/li
-              (dom/a {:href "#/users"}
-                (dom/i {:className "fa fa-key"})
-                "משתמשים והרשאות"
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "ניהול מערכת"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                        (dom/i {:className "fa fa-users"})
-                        "ניהול קבוצות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/devices" :className "menu_item"}
-                        (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/contacts" :className "menu_item"}
-                        (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-
-
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "דו״חות"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/reportunits" :className "menu_item"}
-                        (dom/i {:className "fa fa-line-chart"})
-                        "דו״ח זמינות יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.triggeredAlerts" :className "menu_item"}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        "דו״ח תרגולים"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.notifications" :className "menu_item"}
-                        (dom/i {:className "fa fa-envelope-o"})
-                        "דו״ח דיוור התראות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.senselog" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "דו״ רעידות אדמה"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-            (dom/li
-              (dom/h5 {:style {:margin-left "5px" :margin-right "5px" :height "32px" :margin-top "1px"}} " "
-              )
-            )
-          )        
-        )
-      )
-    )
-  )
-)
-
-(defcomponent userdetail-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
-            ;;(dom/span {:id "pageTitle"} "Beeper")
-          )          
-        )
-
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
-            (dom/li
-              (dom/a {:href "#/map" :onClick (fn [e] (goMap e))}
-                (dom/i {:className "fa fa-map-o"})
-                "מפה"
-              )
-            )
-            (dom/li
-              (dom/a {:href "#/dashboard" :onClick (fn [e] (goDashboard e))}
-                (dom/i {:className "fa fa-dashboard"})
-                "Dashboard"
-              )
-            )
-
-
-            (dom/li
-              (dom/a {:href "#/devslist" :onClick (fn [e] (goDevslist e))}
-                (dom/i {:className "fa fa-building"})
-                "רשימה יחידות"
-              )
-            )
-
-            (dom/li
-              (dom/a {:href "#/users"}
-                (dom/i {:className "fa fa-key"})
-                "משתמשים והרשאות"
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "ניהול מערכת"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                        (dom/i {:className "fa fa-users"})
-                        "ניהול קבוצות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/devices" :className "menu_item"}
-                        (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/contacts" :className "menu_item"}
-                        (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-
-
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "דו״חות"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/reportunits" :className "menu_item"}
-                        (dom/i {:className "fa fa-line-chart"})
-                        "דו״ח זמינות יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.triggeredAlerts" :className "menu_item"}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        "דו״ח תרגולים"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.notifications" :className "menu_item"}
-                        (dom/i {:className "fa fa-envelope-o"})
-                        "דו״ח דיוור התראות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.senselog" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "דו״ רעידות אדמה"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
-
-
-(defcomponent devdetail-navigation-view [data owner]
-  (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
-      ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
-        (dom/div {:className "navbar-header"}
-          (dom/button {:type "button" :className "navbar-toggle"
-            :data-toggle "collapse" :data-target ".navbar-collapse"}
-            (dom/span {:className "sr-only"} "Toggle navigation")
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-            (dom/span {:className "icon-bar"})
-          )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
-            ;;(dom/span {:id "pageTitle"} "Beeper")
-          )          
-        )
-
-        (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1"}
-          (dom/ul {:className "nav navbar-nav" :style {:margin-top "9px"}}
-            (dom/li
-              (dom/a {:href "#/map" :onClick (fn [e] (goMap e))}
-                (dom/i {:className "fa fa-map-o"})
-                "מפה"
-              )
-            )
-            (dom/li
-              (dom/a {:href "#/dashboard" :onClick (fn [e] (goDashboard e))}
-                (dom/i {:className "fa fa-dashboard"})
-                "Dashboard"
-              )
-            )
-
-
-            (dom/li
-              (dom/a {:href "#/devslist" :onClick (fn [e] (goDevslist e))}
-                (dom/i {:className "fa fa-building"})
-                "רשימה יחידות"
-              )
-            )
-
-            (dom/li
-              (dom/a {:href "#/users"}
-                (dom/i {:className "fa fa-key"})
-                "משתמשים והרשאות"
-              )
-            )
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "ניהול מערכת"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/groups" :className "menu_item" :onClick (fn [e] (goGroups e))}
-                        (dom/i {:className "fa fa-users"})
-                        "ניהול קבוצות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/devices" :className "menu_item"}
-                        (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/contacts" :className "menu_item"}
-                        (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-
-
-
-            (dom/li {:className "dropdown"}
-              (dom/a {:href "#" :className "dropdown-toggle" :data-toggle "dropdown"}
-                (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-archive"})
-                "דו״חות"
-              )
-              (dom/ul {:id "login-dp2" :className "dropdown-menu"}
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/reportunits" :className "menu_item"}
-                        (dom/i {:className "fa fa-line-chart"})
-                        "דו״ח זמינות יחידות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.triggeredAlerts" :className "menu_item"}
-                        (dom/i {:className "fa fa-bullhorn"})
-                        "דו״ח תרגולים"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.notifications" :className "menu_item"}
-                        (dom/i {:className "fa fa-envelope-o"})
-                        "דו״ח דיוור התראות"
-                      )
-                    )
-                  )
-                )
-
-                (dom/li
-                  (dom/div {:className "row"}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/report.senselog" :className "menu_item"}
-                        (dom/i {:className "fa fa-globe"})
-                        "דו״ רעידות אדמה"
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
 
 
 (defmulti website-view
@@ -1951,38 +1040,38 @@
 (defmethod website-view 2
   [data owner] 
   ;(.log js/console "Two is found in view")
-  (map-navigation-view data owner)
+  (main-navigation-view data owner)
 )
 
 (defmethod website-view 3
   [data owner] 
   ;(.log js/console "Two is found in view")
-  (users-navigation-view data owner)
+  (main-navigation-view data owner)
 )
 
 (defmethod website-view 4
   [data owner] 
   ;(.log js/console "One is found in view")
-  (userdetail-navigation-view app-state owner)
+  (main-navigation-view app-state owner)
 )
 
 
 (defmethod website-view 6
   [data owner] 
   ;(.log js/console "One is found in view")
-  (roledetail-navigation-view data owner)
+  (main-navigation-view data owner)
 )
 
 (defmethod website-view 7
   [data owner] 
   ;(.log js/console "One is found in view")
-  (devdetail-navigation-view data owner)
+  (main-navigation-view data owner)
 )
 
 (defmethod website-view 8
   [data owner] 
   ;(.log js/console "One is found in view")
-  (dashboard-navigation-view data owner)
+  (main-navigation-view data owner)
 )
 
 (defn setcontrols [value]

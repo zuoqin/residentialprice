@@ -1,4 +1,4 @@
-(ns shelters.contacts (:use [net.unit8.tower :only [t]])
+(ns shelters.contacts
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -69,18 +69,18 @@
       (map (fn [item]
         (dom/div {:className "row" :style {:border-top "1px solid"}}
           (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-            (dom/a {:className "list-group-item" :href (str "#/contactdetail/" (:id item)) :onClick (fn [e] (shelters/goContactDetail e))}
+            (dom/a {:className "list-group-item" :href (str "#/contactdetail/" (:id item))}
               (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
             )
           )
           (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-            (dom/a {:className "list-group-item" :href (str "#/contactdetail/" (:id item)) :onClick (fn [e] (shelters/goContactDetail e))}
+            (dom/a {:className "list-group-item" :href (str "#/contactdetail/" (:id item))}
               (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:phone item)}} nil)
             )
           )
 
           (dom/div {:className "col-xs-4" :style { :border-left "1px solid"}}
-            (dom/a {:className "list-group-item" :href (str "#/contactdetail/" (:id item)) :onClick (fn [e] (shelters/goContactDetail e))}
+            (dom/a {:className "list-group-item" :href (str "#/contactdetail/" (:id item))}
               (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:email item)}} nil)
             )
           )
@@ -96,6 +96,7 @@
 (defn onMount [data]
   ; (getUsers data)
   (swap! shelters/app-state assoc-in [:current] "Contacts")
+  (swap! shelters/app-state assoc-in [:view] 4)
 )
 
 
@@ -113,7 +114,6 @@
         (dom/div {:className "panel panel-primary"} ;;:onClick (fn [e](println e))        
           (dom/div
             (b/button {:className "btn btn-primary" :onClick (fn [e] (
-              (shelters/goContactDetail e)
               (-> js/document .-location (set! "#/contactdetail"))
 ))} "הוסף איש קשרמ חדש")
           )

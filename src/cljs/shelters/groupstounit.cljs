@@ -1,4 +1,4 @@
-(ns shelters.groupstounit (:use [net.unit8.tower :only [t]])
+(ns shelters.groupstounit
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -138,7 +138,7 @@
 
               )
               (dom/div {:className "col-xs-4" }
-                (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item)) :onClick (fn [e] (shelters/goGroupDetail e))}
+                (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item))}
                   (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
                   ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
                   ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))

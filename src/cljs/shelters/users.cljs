@@ -1,4 +1,4 @@
-(ns shelters.users (:use [net.unit8.tower :only [t]])
+(ns shelters.users
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -299,35 +299,35 @@
               )
             )
           (dom/div {:className "col-xs-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+            (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (:login item)
             )
           )
 
           (dom/div {:className "col-xs-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+            (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (str (:firstname item) " " (:lastname item))
             )
           )
 
           (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+            (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (if (nil? (:name (:role item))) "אדמיניסטרטור" (:name (:role item)))
             )
           )
 
           (dom/div {:className "col-xs-3" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+            (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (if (nil? creator) "Beeper" (str (:firstname creator) " " (:lastname creator)))
             )
           )
 
           (dom/div {:className "col-xs-2" :style { :padding-top "11px" :padding-bottom "11px"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item)) :onClick (fn [e] (shelters/goUserDetail e))}
+            (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (tf/unparse shelters/custom-formatter2 (tc/now))
             )
@@ -377,6 +377,8 @@
 (defn onMount [data]
   ; (getUsers data)
   (swap! shelters/app-state assoc-in [:current] "ניהול משתמשים")
+  (swap! shelters/app-state assoc-in [:view] 3)
+  (set! (.-title js/document) "משתמשים והרשאות")
 )
 
 

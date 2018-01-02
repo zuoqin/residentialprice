@@ -1,4 +1,4 @@
-(ns shelters.login  (:use [net.unit8.tower :only [t]])
+(ns shelters.login
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -111,7 +111,7 @@
 
 (defn map-indication [indication]
   (let [
-    id (str (get indication "indicationId"))
+    id (get indication "indicationId")
     name (get indication "name")
     okicon (get indication "normalIconPath")
     failicon (get indication "failureIconPath")
@@ -127,7 +127,7 @@
 
 (defn OnGetIndications [response]
   (let [
-    indicators (map map-indication response)
+    indicators (filter (fn [x] (if (>= (.indexOf shelters/indicators (:name x)) 0) true false)) (map map-indication response))
     ]
     (swap! shelters/app-state assoc-in [:indications] indicators)
     (ls/set-item! "indicators" (.stringify js/JSON (clj->js indicators)))
@@ -153,7 +153,7 @@
     )
 
     (if (not (nil? tmpindicators))
-      (swap! shelters/app-state assoc-in [:indicators] tmpindicators )
+      (swap! shelters/app-state assoc-in [:indications] tmpindicators )
     )
 
     (swap! app-state assoc-in [:state] 0)
@@ -282,6 +282,7 @@
     phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value")
 
     indications (map map-unitindication (get unit "indications"))
+    indications (if (> (count indications) 0) indications [{:id 1, :isok false, :value "open"} {:id 2, :isok true, :value "closed"} {:id 3, :isok true, :value "closed"} {:id 4, :isok true, :value "idle"} {:id 5, :isok true, :value "enabled"} {:id 6, :isok true, :value "normal"} {:id 7, :isok true, :value "normal"} {:id 8, :isok true, :value "idle"} {:id 9, :isok true, :value ""} {:id 10, :isok true, :value "2017-12-31_18:53:05.224"} {:id 12, :isok true, :value "normal"}])
     ;tr1 (.log js/console (str  "username=" username ))
     result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :indications (if (nil? indications) [] indications) :contacts [{:id "1" :phone "+79175134855" :name "Alexey" :email "zorchenkov@gmail.com"} {:id "2" :phone "+9721112255" :name "yulia" :email "yulia@gmail.com"}]}
     ]
@@ -607,7 +608,7 @@
   )
   (render
     [_]
-    (dom/div {:className "container" :style {:width "100%" :padding-top "10px" :backgroundImage "url(/images/loginbackground.png)" :backgroundSize "224px 105px" :backgroundRepeat "no-repeat" :backgroundPosition "top center"}  }
+    (dom/div {:className "container" :style {:width "100%" :padding-top "10px" :margin-top "100px" :backgroundImage "url(images/loginbackground.png)" :backgroundSize "224px 105px" :backgroundRepeat "no-repeat" :backgroundPosition "top center"}  }
       ;(om/build t5pcore/website-view data {})
       ;(dom/h1 "Login Page")
       ;(dom/img {:src "images/LogonBack.jpg" :className "img-responsive company-logo-logon"})
@@ -722,7 +723,7 @@
 
 (defn setcontrols [value]
   (case value
-    42 (shelters/goMap 0)
+    42 (aset js/window "location" "#/map")
     45 (initsocket)
     
   )

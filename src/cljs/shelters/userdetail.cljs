@@ -1,4 +1,4 @@
-(ns shelters.userdetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.userdetail
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -383,7 +383,7 @@
   (set! (.-title js/document) "פרטי משתמש")
   (getUserDetail)
   (setcontrols 46)
-
+  (swap! shelters/app-state assoc-in [:view] 4)
   (put! ch 47)
 )
 
@@ -492,12 +492,11 @@
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "רמת הרשאה"))
               (dom/div {:className "col-xs-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
-                (omdom/select {:id "roles"
+                (omdom/select #js {:id "roles"
                                :className "selectpicker"
                                :title "בחר אחד מהבאים ..."
                                :data-show-subtext "true"
                                :data-width "172px"
-                               :data-height "34px"
                                :data-live-search "true"
                                :onChange #(handle-change % owner)
                               }

@@ -1,4 +1,4 @@
-(ns shelters.roledetail  (:use [net.unit8.tower :only [t]])
+(ns shelters.roledetail
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -292,6 +292,7 @@
   )
   (getRoleDetail)
   (put! ch 46)
+  (swap! shelters/app-state assoc-in [:view] 6)
 )
 
 
@@ -357,11 +358,7 @@
 
             (b/button {:className "btn btn-info"
               :onClick (fn [e]
-                (shelters/goRoles e)
-                (->
-                  js/document .-location
-                  (set! "#/roles")
-                )
+                (js/window.history.back)
               )} "Cancel"
             )
           )

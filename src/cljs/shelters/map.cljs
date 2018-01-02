@@ -1,4 +1,4 @@
-(ns shelters.map (:use [net.unit8.tower :only [t]])
+(ns shelters.map
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -162,10 +162,10 @@
   ;;(getPortfolios)
   (put! ch 42)
   (put! ch 43)
-  ;;(swap! sbercore/app-state assoc-in [:current] {:name "Portfolios" :text "Portfolios with this security: "} )
 
-  ;;(swap! sbercore/app-state assoc-in [:view] 2)
-  ;;(swap! sbercore/app-state assoc-in [:search] "")
+  (set! (.-title js/document) "מפה")
+  (swap! shelters/app-state assoc :state 1)
+  (swap! shelters/app-state assoc-in [:view] 2)
 )
 
 
@@ -181,7 +181,7 @@
       "</h1>"
       "<div id=\"bodyContent\">"
       "<p><b>Controller: </b>" (:name device) "</p>"
-      "<p>" (:address device) ", <a href=\"/#/devdetail/" (:id device) "\">"
+      "<p>" (:address device) ", <a href=\"#/devdetail/" (:id device) "\">"
       "Go to device</a>"
       "</p>"
       "</div>"
