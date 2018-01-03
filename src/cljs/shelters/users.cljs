@@ -178,14 +178,14 @@
           (dom/h3 (:current @data))
         )
 
-        (dom/div {:className "col-xs-2" :style {:padding-top "15px"}}
+        (dom/div {:className "col-xs-2" :style {:padding-top "15px" :text-align "left"}}
           (b/button {:className "btn btn-primary" :style { :padding-left "5px" :padding-right "5px"} :onClick (fn [e] (-> js/document .-location (set! "#/userdetail")))} "הוסף משתמש חדש"
           )
         )
       )
 
       (dom/div {:className "row" :style {:margin-right "0px"}}
-        (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+        (dom/input {:id "search" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )

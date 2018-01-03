@@ -22,25 +22,6 @@
   (.print js/window)
 )
 
-(def main-tconfig
-  {:dictionary ; Map or named resource containing map
-    {:he 
-      {:indicators
-        {           
-        :lockState              "בריח"
-        :doorState              "דלת"
-        :lastCommunication      "ארון תקשורת"
-        :batteryState           "סוללה"
-        :tamper                 "גלאי"
-        :communicationStatus    "תקשורת"
-        }
-        :missing  "missing"
-      }
-    }
-   :dev-mode? true ; Set to true for auto dictionary reloading
-   :fallback-locale :he
-  }
-)
 
 (defn OnGetUsers [response]
    (swap! app-state assoc :users  (get response "Users")  )
@@ -90,7 +71,7 @@
           indicator (first (filter (fn [x] (if (= (:id x) (:id item)) true false))  (:indications @shelters/app-state)))
 
          icon (case (:isok item) true (:okicon indicator) (if (> (count (:failicon indicator)) 0) (:failicon indicator) "fail"))
-         name (t :he main-tconfig (keyword (str "indicators/" (:name indicator))))
+         name (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator))))
           ]
           (dom/div {:style {:border "solid 1px transparent" :padding "3px" :min-width "108px"}}
             (dom/div {:style {:backgroundColor "white" :text-align "center"}}

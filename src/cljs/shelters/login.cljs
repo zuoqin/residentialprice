@@ -35,7 +35,7 @@
             [om-bootstrap.button :as b]
             [om-bootstrap.panel :as p]
 	    [chord.client :refer [ws-ch]]
-            [cljs.core.async :refer [put! dropping-buffer chan take! <! >!]]
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout]]
   )
   (:import goog.History)
 )
@@ -155,8 +155,6 @@
     (if (not (nil? tmpindicators))
       (swap! shelters/app-state assoc-in [:indications] tmpindicators )
     )
-
-    (swap! app-state assoc-in [:state] 0)
     (put! ch 42)
   )
 )
@@ -239,7 +237,13 @@
 )
 
 
-
+;; (defn updategroup [group]
+;;   (let [
+;;     parents (:parents group)
+;;     ]
+;;     (if (nil? parents) (update group :parents (fn [x] [])) group)
+;;   )
+;; )
 
 (defn reqgroups []
   (let [
@@ -254,7 +258,7 @@
                     :token (str (:token  (:token @shelters/app-state))) }
          })
     (if (not (nil? tmpgroups))
-      (swap! shelters/app-state assoc-in [:group] tmpgroups )
+      (swap! shelters/app-state assoc-in [:group] tmpgroups)
     )
     (reqcommands)
   )
@@ -723,9 +727,12 @@
 
 (defn setcontrols [value]
   (case value
-    42 (aset js/window "location" "#/map")
+    42 (go
+         (<! (timeout 1000))
+         (swap! app-state assoc-in [:state] 0)
+         (aset js/window "location" "#/map")
+       )
     45 (initsocket)
-    
   )
 )
 

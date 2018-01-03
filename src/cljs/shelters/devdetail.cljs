@@ -239,8 +239,11 @@
 
 (defn addplace [place]
   (let [
+    size (js/google.maps.Size. 48 48)
+    image (clj->js {:url (str iconBase "red_point.ico") :scaledSize size})
+
     ;tr1 (.log js/console place)
-    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" (str iconBase "red_point.png") "title" (.. place -name)})
+    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" image "title" (.. place -name)})
 
     marker (js/google.maps.Marker. marker-options)
     ]
@@ -257,16 +260,18 @@
 
 (defn addsearchbox []
   (let [
-
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))) "map" (:map @app-state) "icon" (str iconBase "red_point.png") "title" (:name (:device @app-state))})
+    size (js/google.maps.Size. 48 48)
+    image (clj->js {:url (str iconBase "red_point.ico") :scaledSize size})
+    marker-options (clj->js {"position" (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))) "map" (:map @app-state) "icon" image "title" (:name (:device @app-state))})
 
     marker (js/google.maps.Marker. marker-options)
-
+    
     ;;Create the search box and link it to the UI element.
     input (. js/document (getElementById "pac-input"))
     searchbox (js/google.maps.places.SearchBox. input)
     ;tr1 (.log js/console input)
     ]
+    (swap! app-state assoc-in [:marker] marker)
     (.push (aget (.-controls (:map @app-state)) 1) input)
     (if (not (nil? (:marker @app-state))) (.setMap (:marker @app-state) (:map @app-state)))
     (jquery
@@ -488,12 +493,22 @@
             (-> map
               (.addListener "dblclick"
                 (fn [e]
-                  ;(.log js/console (str "LatLng=" (.. e -latLng)))
+                  (let [
+                    size (js/google.maps.Size. 48 48)
+                    image (clj->js {:url (str iconBase "red_point.ico") :scaledSize size})
 
-                  (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
-                  (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
-                  (.stopPropagation (.. js/window -event))
-                  (.stopImmediatePropagation (.. js/window -event))
+                    marker-options (clj->js {"position" (google.maps.LatLng. (.lat (.. e -latLng)), (.lng (.. e -latLng))) "map" map "icon" image})
+                    marker (js/google.maps.Marker. marker-options)
+                    ]
+                    (if (not (nil? (:marker @app-state))) (.setMap (:marker @app-state) nil))
+                    ;(.log js/console (str "LatLng=" (.. e -latLng)))
+
+                    (swap! app-state assoc-in [:device :lat] (.lat (.. e -latLng)))
+                    (swap! app-state assoc-in [:device :lon] (.lng (.. e -latLng)))
+                    (swap! app-state assoc-in [:marker] marker)
+                    (.stopPropagation (.. js/window -event))
+                    (.stopImmediatePropagation (.. js/window -event))
+                  )
                 )
               )
             )
@@ -586,15 +601,15 @@
               )
             )
 
-            (dom/h5 {:style {:display:inline true}} "Latitude: "
+            (dom/h5 {:style {:display:inline true}} "קו רוחב: "
                (:lat (:device @data))
                ;(dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
             )
-            (dom/h5 {:style {:display:inline true}} "Longitude: "
+            (dom/h5 {:style {:display:inline true}} "קו האורך: "
                (:lon (:device @data))
                ;(dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
             )
-            (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
+            (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
 
             (dom/div {:style {:margin-bottom "10px"}}
               (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (swap! app-state assoc-in [:showmap] (- (:showmap @data))))} (case (:showmap @data) -1 "Show map" "Hide Map"))

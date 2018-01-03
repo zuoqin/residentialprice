@@ -1,4 +1,5 @@
 (ns shelters.map
+  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -41,6 +42,8 @@
 (defn tableheight [count] 
   (+ 100 (* 34 (min count 10)))
 )
+
+
 
 (defn map-dev-node [dev]
   {:text (:name dev) :unitid (:id dev) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
@@ -230,6 +233,24 @@
     tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
     ]
     (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
+  )
+)
+
+(defn uncheckall []
+  (let [
+    selected (js->clj (-> (jquery "#tree" ) (.treeview "getSelected")))
+    ]
+    (doall (map (fn [x]
+      (let [
+        nodeid (get x "nodeId")
+        options (clj->js [nodeid {:silent true}])
+        tr1 (.log js/console (str "nodeId=" nodeid))
+        ]
+        (-> (jquery "#tree" )
+          (.treeview "unselectNode" options)
+        )
+      )
+    ) selected))
   )
 )
 
@@ -453,10 +474,10 @@
                 (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 175) 0 ) "px") (str (+ (- (.. js/document -body -clientHeight) 175) 0) "px")) }})
                 (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px"}}
                   (dom/div {:className "col-xs-6" :style {:padding-left "5px" :padding-right "5px"}}
-                    (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} (:name (first (:commands @data))))
+                    (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))
                   )
                   (dom/div {:className "col-xs-6" :style {:padding-right "5px" :padding-left "5px"}}
-                    (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} "בטל בחירה")
+                    (b/button {:className "btn btn-primary" :onClick (fn [e] (uncheckall)) :style {:margin-bottom "5px" :width "100%"}} "בטל בחירה")
                   )
                 )
               )
@@ -465,7 +486,7 @@
 
           )
           
-          (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "Search Box" })
+          (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
           (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
         )
 

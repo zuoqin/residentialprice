@@ -2,6 +2,21 @@
   height: 100%;
 }
 
+
+.navbaraexit{
+  color: #337ab7!important; /*;*/
+}
+
+.navbaraexit:hover {
+  color: #3195C1!important;
+  border-bottom: 1px solid #3195C1!important;
+}
+
+.navbaraexit:hover~.navbarulexit {
+  display: block;
+}
+
+
 .navbarasysmanage{
   color: #337ab7!important; /*;*/
 }

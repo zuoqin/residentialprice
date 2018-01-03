@@ -1,4 +1,5 @@
 (ns shelters.devslist
+  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -456,26 +457,32 @@
     (dom/div
 
       (dom/div {:className "row" :style {:padding-top "60px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
-        (dom/div {:className "col-xs-9" :style { :text-align "right" }}
+        (dom/div {:className "col-xs-8" :style { :text-align "right" }}
           (dom/h3 "רשימת יחידות")
         )
 
-        (dom/div {:className "col-xs-1" :style {:padding-top "15px"}}
-          (b/button {:className "btn btn-primary" :style { :padding-left "5px" :padding-right "5px"} :onClick (fn [e]
-                                                                       (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה"
+        (dom/div {:className "col-xs-4" :style {:margin-top "15px" :text-align "left"}}
+          (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+          (b/button {:className "btn btn-primary" :style { :padding-left "5px" :padding-right "5px" :margin-left "10px"} :onClick (fn [e] (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה"
           )
-        )
 
-        (dom/div {:className "col-xs-2" :style {:margin-right "0px" :padding-top "15px" :text-align "left"}}
           (b/button {:className "btn btn-primary"  :style { :padding-left "5px" :padding-right "5px"}
             :disabled? (= (count (:selectedunits @data)) 0)
-            :onClick (fn [e] (sendcommand1))} (str (:name (nth (:commands @data) 0)) " (" (count (:selectedunits @data)) ") יחידות")
+            :onClick (fn [e] (sendcommand1))} (str (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))) " (" (count (:selectedunits @data)) ") יחידות")
+          )
           )
         )
+        ;; (dom/div {:className "col-xs-1" :style {:padding-top "15px"}}
+
+        ;; )
+
+        ;; (dom/div {:className "col-xs-2" :style {:margin-right "0px" :padding-top "15px" :text-align "left"}}
+
+        ;; )
       )
 
       (dom/div {:className "row" :style {:margin-right "0px"}}
-        (dom/input {:id "search" :type "text" :placeholder "Search" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+        (dom/input {:id "search" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )

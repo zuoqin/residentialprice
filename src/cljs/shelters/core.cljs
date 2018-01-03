@@ -32,6 +32,30 @@
   (+ 14 (* 34 (min count 10)))
 )
 
+(def main-tconfig
+  {:dictionary ; Map or named resource containing map
+    {:he 
+      {
+        :indicators
+        {           
+          :lockState              "בריח"
+          :doorState              "דלת"
+          :lastCommunication      "ארון תקשורת"
+          :batteryState           "סוללה"
+          :tamper                 "גלאי"
+          :communicationStatus    "תקשורת"
+        }
+        :commands
+        {           
+          :unlock                 "פתח את הדלת"
+        }
+        :missing  "missing"
+      }
+    }
+   :dev-mode? true ; Set to true for auto dictionary reloading
+   :fallback-locale :he
+  }
+)
 
 ;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
@@ -835,10 +859,11 @@
     )    
   )
   (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
-      stylehome {:style {:margin-top "10px"} }
+    (let [
+      user (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))
       ;tr1 (.log js/console (str "in map navigation"))
-      role (:id (:role (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))))
+      role (:id (:role user))
+      fullname (str (:firstname user) " " (:lastname user))
       ]
       (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
         (dom/div {:className "navbar-header"}
@@ -1010,8 +1035,29 @@
 
           (dom/ul {:className "nav navbar-nav navbar-left"}
 
-            (dom/li (dom/h5 {:style {:padding-top "10px" :color "blue"}} "שירות לקוחות 03-123-456-789"))
-            (dom/li (dom/a {:href "#/login" :style {:padding-top "18px"}} "יְצִיאָה"))
+            (dom/li {:style {:max-width "100px" :text-align "center"}} (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "שירות לקוחות 03-123-456-789"))
+            (dom/li {:className "dropdown"}
+              (dom/a { :href "#" :className "navbaraexit"
+                :onMouseOver (fn [x]
+                  (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "block")
+                )
+                ;:onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))
+                }
+                (dom/span {:className "caret"})
+                (dom/i {:className "fa fa-user-circle"})
+                fullname
+              )
+              (dom/div { :id "navbarulexit" :className "navbarulexit" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-md-12"}
+                    (dom/a {:href "#/login" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                      (dom/i {:className "fa fa-sign-out"})
+                      "יציאה"
+                    )
+                  )
+                )
+              )
+            )
           )
         )
       )
