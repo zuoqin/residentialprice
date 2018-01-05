@@ -509,7 +509,7 @@
   (
     let [
       ;response1 (js->clj response)
-      tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
+      ;tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
       newdata {:token (get response "token") :userid (get response "userId" ) }
     ]
     ;(swap! app-state assoc-in [:state] 0)
@@ -636,12 +636,13 @@
     status (get notification "status")
     type (get notification "notificationType")
     id (get notification "notificationId")
+    indicatorid (get notification "indicationId")
     ;tr1 (.log js/console (subs (get notification "openTime") 0 19))
     open (tf/parse shelters/custom-formatter2 (subs (get notification "openTime") 0 19))
     
     open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
 
-
+        
     close (tf/parse shelters/custom-formatter2 (subs (get notification "closeTime") 0 19))
     close (if (= (subs (get notification "closeTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) close)
 
@@ -651,11 +652,16 @@
 
 
     ;tr1 (.log js/console (str "unitid in Notification: " unitid))
-    marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @app-state)))
+    marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @shelters/app-state)))
 
-    newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state))
+    indstatus (case status "Closed" true false)
     
-    tr1 (if (not (nil? marker)) (swap! shelters/app-state assoc-in [:devices] newunits))
+    newindications (map (fn [ind] (if (= (:id ind) indicatorid) (assoc ind :isok indstatus :value "") ind)) (:indications (first (filter (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state)))))
+
+
+    newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :indications newindications) x)) (:devices @shelters/app-state))
+    
+    tr1 (swap! shelters/app-state assoc-in [:devices] newunits)
 
     tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type})))
 

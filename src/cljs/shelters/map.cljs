@@ -25,7 +25,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:markers []}))
+(defonce app-state (atom  {:selectedstatus 1}))
 
 (def jquery (js* "$"))
 
@@ -40,9 +40,18 @@
 (def iconBase "images/")
 
 (defn tableheight [count] 
-  (+ 100 (* 34 (min count 10)))
+  (+ 100 (* 27 (min count 10)))
 )
 
+
+;; (defn onDropDownChange [id value]
+;;   (let [
+;;     ;sattus (first (filter (fn [x] (if (= value (:id x)) true false)) (:roles @shelters/app-state)))
+;;     ]
+;;     (swap! app-state assoc-in [:selectedstatus] id)
+;;   )
+;;   ;(.log js/console e)
+;; )
 
 
 (defn map-dev-node [dev]
@@ -209,7 +218,7 @@
         )
       )
     )
-    (swap! app-state assoc-in [:markers] (conj (:markers @app-state) marker))
+    (swap! shelters/app-state assoc-in [:markers] (conj (:markers @shelters/app-state) marker))
   )
 )
 
@@ -306,7 +315,7 @@
 
 (defn addMarkers []
   (let[
-       tr1 (swap! app-state assoc-in [:markers] [])
+       tr1 (swap! shelters/app-state assoc-in [:markers] [])
     ]
     (doall (map addMarker (:devices @shelters/app-state)))
     (go
@@ -438,10 +447,58 @@
         (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
       )
     )
-    [{:id 1 :name "הכל"} {:id 2 :name  "בטיפול"} {:id 3 :name "פתוח"} {:id 4 :name  "סגור"} ] 
+    (:statuses @data) 
   )
 )
 
+(defcomponent notifications-view [data owner]
+  (render [_]
+          (dom/div {:className "row" :style {:padding-top "0px" :bottom "0px" :width "100%"}}
+            ;(dom/div  {:className "col-3 col-sm-3 tree"})
+            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "0px" :padding-bottom "15px" :padding-left "16px"}}
+                 (if (:isnotification  @data) "טבלת התראות" "טבלת תקלות")
+              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px" :margin-left "15px"}}
+                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
+                  (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
+
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
+
+
+                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם יחידה")
+
+                    (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מיקום יחידה")
+
+                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
+
+                    (dom/div {:className "col-md-3" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "תאריך וזמן אירוע")
+
+                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
+                      (omdom/select #js {:id "statuses"
+                                         :className "selectpicker"
+                                         :data-width "100px"
+                                         :data-style "btn-primary"
+                                         :data-show-subtext "false"
+                                         :data-live-search "true"
+                                         :onChange #(handle-change % owner)
+                                         }                
+                        (buildStatusesList data owner)
+                      )
+                    )
+
+                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}}  "אירוע טופל ע''י")
+
+                  )
+                )
+              )
+              (om/build shelters/notifications-table data {})
+            )
+          )
+  )
+)
 
 (defcomponent map-view [data owner]
 
@@ -490,111 +547,8 @@
           (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
         )
 
-
-
-
-        (if (:isalert @data)
-          (dom/div {:className "row" :style {:padding-top "0px" :bottom "0px" :width "100%"}}
-            ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px" :padding-bottom "30px" :padding-left "15px"}}
-              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px"}}
-                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
-                  (dom/div {:className "row" :style {:margin-left "17px" :margin-right "0px"}}
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
-
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם יחידה")
-
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מיקום יחידה")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
-
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "תאריך וזמן אירוע")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
-                      (omdom/select #js {:id "statuses"
-                                         :className "selectpicker"
-                                         :data-width "100px"
-                                         :data-style "btn-primary"
-                                         :data-show-subtext "false"
-                                         :data-live-search "true"
-                                         :onChange #(handle-change % owner)
-                                         }                
-                        (buildStatusesList data owner)
-                      )
-                    )
-
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "אירוע טופל ע''י")
-
-                  )
-                )
-              )
-              (om/build shelters/alerts-table data {})
-            )
-          )
-        )
-
-        (if (:isnotification @data)
-          (dom/div {:className "row" :style { :padding-top "0px" :bottom "0px" :width "100%"}}
-            ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "5px"  :padding-bottom "10px" :padding-left "15px"}}
-              (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                "טבלת התראות"
-              )
-              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px" :margin-left "17px"}}
-                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
-                  (dom/div {:className "row" :style {:margin-left "-1px" :margin-right "-1px"}}
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid"  :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם יחידה")
-
-                    (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מיקום יחידה")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
-
-                    (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
-                      (dom/div {:className "row"}
-                        (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                          "תאריך פתיחה"
-                        )
-
-                        (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                          "זמן סגירה"
-                        )
-                      )
-                    )
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
-                      (omdom/select #js {:id "statuses"
-                                         :className "selectpicker"
-                                         :data-width "100px"
-                                         :data-style "btn-primary"
-                                         :data-show-subtext "false"
-                                         :data-live-search "true"
-                                         :onChange #(handle-change % owner)
-                                         }                
-                        (buildStatusesList data owner)
-                      )
-                    )
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}}  "אירוע טופל ע''י")
-
-                  )
-                )
-              )
-              (om/build shelters/notifications-table data {})
-            )
-          )          
+        (if (or (:isnotification @data) (:isalert @data))
+          (om/build notifications-view data {})
         )
       ) 
     )

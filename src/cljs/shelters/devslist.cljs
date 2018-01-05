@@ -246,19 +246,22 @@
   (set! (.-title js/document) (str "יחידה:" devid) )
 )
 
+(defn comp-indications [ind1 ind2]
+  (if (< (:id ind1) (:id ind2)) true false)
+)
+
 (defcomponent showstatuses [data owner]
   (render
     [_]
-    (dom/td
+    (dom/div {:className "row"}
       (map (fn [item]
         (let []
-          (dom/i {:className (case (:isok item) false "fa fa-bullhorn" "fa fa-bullhorn") :style {:color (case (:isok item) false "#dd0000" "#00dd00") :font-size "18px"}})
-          ;(dom/i {:className (case (:isok item) false "fa fa-bullhorn" "fa fa-battery-three-quarters") :style {:color (case (:isok item) false "#dd0000" "#00dd00") :font-size "24px"}})
-          
+          (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+            (dom/i {:id (str "status_" (:id item)) :className (case (:isok item) true "fa-toggle-on fa" "fa-toggle-off fa") :style {:color (case (:isok item) true "#00dd00" "#dd0000") :font-size "24px"}})
+          )
         )
         )
-        
-      (:indications data))
+      (sort (comp comp-indications) (filter (fn [x] (if (> (count (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))) 0) true false)) (:indications data))))
     )
   )
 )
@@ -266,7 +269,7 @@
 (defcomponent showdevices-view [data owner]
   (render
     [_]
-    (dom/div {:style {:border-left "1px solid" :border-right "1px solid"}}
+    (dom/div {:style {:border-left "1px solid transparent" :border-right "1px solid"}}
       (map (fn [item]
         (let [
           isselected (if (= (.indexOf (:selectedunits @data) (:id item)) -1) false true)
@@ -353,41 +356,8 @@
 
 
             (dom/div {:className "col-md-4"}
-              (dom/div {:className "row"}
-                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
-                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-                  ;(case (:status item) 3 "Inactive" "Active")
-                )
-
-                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
-                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-                  ;(case (:status item) 3 "Inactive" "Active")
-                )
-
-                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
-                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-                  ;(case (:status item) 3 "Inactive" "Active")
-                )
-
-                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
-                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-                  ;(case (:status item) 3 "Inactive" "Active")
-                )
-
-                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
-                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style { :color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-                  ;(case (:status item) 3 "Inactive" "Active")
-                )
-
-                (dom/div {:className "col-md-2" :style {:text-align "center" :border-right-width "1px" :padding-top "8px" :padding-bottom "8px"}}
-                  (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
-                  ;(case (:status item) 3 "Inactive" "Active")
-                )
-              )
+              (om/build showstatuses item {})
             )
-
-
-            ;(om/build showstatuses item {})
           )
           )
         ) (sort (comp comp-devs) (filter (fn [x] (if (or (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:controller x)) (str/upper-case (:search @data)))) true false)) (:devices @data )))
@@ -561,28 +531,36 @@
                   )
                   (dom/div {:className "col-xs-4 col-md-4"}
                     (dom/div {:className "row"}
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
-                        (dom/div {:className "row"} "דלת")               
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
+                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 0))))))
+                        )
                       )
 
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
-                        (dom/div {:className "row"} "בריח")
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
+                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 1))))))
+                        )
                       )
 
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px"}}
-                        (dom/div {:className "row"} "ארון") (dom/div {:className "row"} "תקשורת")
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :display "table" :height "40px"}}
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 2))))))
+                        )
                       )
 
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
-                        (dom/div {:className "row"} "גלאי")
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 3))))))
+                        )
                       )
 
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px"}}
-                        (dom/div {:className "row"} "תקשורת")
+                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 4))))))
+                        )
                       )
 
-                      (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-top "10px" :padding-bottom "10px"}}
-                        (dom/div {:className "row"} " סוללה")
+                      (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "0px" :display "table" :height "40px"}}
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 5))))))
+                        )
                       )
                     )
                   )

@@ -1,4 +1,5 @@
 (ns shelters.core
+  (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
@@ -28,14 +29,22 @@
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 (def custom-formatter2 (tf/formatter "dd/MM/yyyy hh:mm:ss"))
 (def ch (chan (dropping-buffer 2)))
+
 (defn tableheight [count] 
-  (+ 14 (* 34 (min count 10)))
+  (+ 4 (* 27 (min count 10)))
 )
 
 (def main-tconfig
   {:dictionary ; Map or named resource containing map
     {:he 
       {
+        :alerts
+        {
+          :Alert                  "התרא"
+          :New                    "פתוח"
+          :Closed                 "סגור"
+          :Accepted               "בטיפול"
+        }
         :indicators
         {           
           :lockState              "בריח"
@@ -57,9 +66,10 @@
   }
 )
 
-;;{:id "1602323" :city 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
+;;{:id "1602323" :bcity 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:selectedusers [] :selectedstatus 1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
+(defonce app-state (atom {:selectedusers [] :markers [] :selectedstatus 1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.7683 :lon 35.2137}, :contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
+:statuses [{:id 1 :name "הכל" :eng "All"} {:id 2 :name "בטיפול" :eng "Accepted"} {:id 3 :name "פתוח" :eng "New"} {:id 4 :name  "סגור" :eng "Closed"}]
 :alerts [] ;; [{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
 
            ;;  {:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
@@ -242,75 +252,80 @@
 
 (defcomponent notifications-table [data owner]
   (render [_]
-    (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :height (str (tableheight (count (:notifications @data))) "px") :overflow-y "scroll"}}
-      (map (fn [item]
-        (let [
-          unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
+    (let [
+      ;tr1 (.log js/console (str "notifications " (count (:notifications @data))))
+      ]
 
-          user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
-          ]
-          (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
-              (b/button {:className "btn btn-primary" :disabled? (if (= (:status item) "New") false true) :style {:padding-top "0px" :padding-bottom "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seenNotification item))} "ראיתי")
-            )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "5px"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
-                (:id item)
-              )
-            )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
-                (:controller unit)
-              )
-            )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
-                (:name unit)
-              )
-            )
+      (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :height (str (tableheight (count (:notifications @data))) "px") :overflow-y "scroll"}}
+        (map (fn [item]
+          (let [
+            unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @data)))
 
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:address unit)                
+            user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @data)))
+            ]
+            (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
+              (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
+                (b/button {:className "btn btn-primary" :disabled? (if (= (:status item) "New") false true) :style {:padding-top "0px" :padding-bottom "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seenNotification item))} "ראיתי")
               )
-            )
-
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:type item)
-              )
-            )
-
-            (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
-              (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :text-align "center"}}
-                  (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                    (tf/unparse custom-formatter2 (:open item))
-                  )
-                )
-
-                (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
-                  (dom/a {:href (str "#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "#337ab7" "transparent" )}}
-                    (tf/unparse custom-formatter2 (:close item))
-                  )
+              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "5px"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
+                  (:id item)
                 )
               )
-            )
+              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
+                  (:controller unit)
+                )
+              )
+              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
+                  (:name unit)
+                )
+              )
 
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:status item)               
+              (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }
+                  (:address unit)                
+                )
+              )
+
+              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }
+                  (str (t :he main-tconfig (keyword (str "alerts/" (:type item)))))
+                )
+              )
+
+              (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                  (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :text-align "center"}}
+                    (dom/a {:href (str "#/unitdetail/" (:id unit)) }
+                      (tf/unparse custom-formatter2 (:open item))
+                    )
+                  )
+
+                  (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
+                    (dom/a {:href (str "#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "#337ab7" "transparent" )}}
+                      (tf/unparse custom-formatter2 (:close item))
+                    )
+                  )
+                )
+              )
+
+              (dom/div {:className "col-md-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }
+                  (str (t :he main-tconfig (keyword (str "alerts/" (:status item)))))
+                )
+              )
+
+              (dom/div {:className "col-md-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/a {:href (str "#/unitdetail/" (:id unit)) }
+                  (str (:firstname user) " " (:lastname user))
+                )
               )
             )
-
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (str (:firstname user) " " (:lastname user))
-              )
-            )
-          )
-        ))
-        (sort (comp comp-alerts) (filter (fn [x] (if (= 1 (:selectedstatus @data)) true (if (= (:status x) (:selectedstatus @data)) true false))) (:notifications @data)))
+          ))
+          (sort (comp comp-alerts) (filter (fn [x] (if (= 1 (:selectedstatus @data)) true (if (= (:id (first (filter (fn [y] (if (= (:eng y) (:status x)) true false)) (:statuses @data)))) (:selectedstatus @data)) true false))) (if (:isalert @data) (:alerts @data) (:notifications @data)) ))
+        )
       )
     )
   )
@@ -741,7 +756,7 @@
 )
 
 (defn onMount [data]
-  (.log js/console "Mount core happened")
+  ;(.log js/console "Mount core happened")
 
   (if (or (:isalert @app-state) (:isnotification @app-state))
     (go
@@ -782,7 +797,7 @@
 
 (defn onDropDownChange [id value]
   (let [
-        tr1 (.log js/console "id=" id " value=" value)
+        ;tr1 (.log js/console "id=" id " value=" value)
     ]
     (if (= id "statuses")
       (swap! app-state assoc-in [:selectedstatus] (js/parseInt value))
@@ -822,11 +837,12 @@
 (defn notificationsclick []
   (let [
     oldstate (get @app-state :isnotification)
-    newstate (if (= true oldstate) false true)
-    tr1 (.log js/console (str "old state= " oldstate "; new state = " newstate))
+    newstate (if (= true oldstate) (if (> (.indexOf (.-href (.-location js/window)) "#/map") 0) false true) true)
+    ;tr1 (.log js/console (str "old state= " oldstate "; new state = " newstate))
     tr1 (swap! app-state assoc-in [:isnotification] newstate)
-    tr1 (swap! app-state assoc-in [:isalert] false)
     ]
+    (swap! app-state assoc-in [:isalert] false)
+    (aset js/window "location" "#/map")
     (go
       (<! (timeout 100))
       (js/google.maps.event.trigger (:map @app-state) "resize")
@@ -891,18 +907,20 @@
               )
             )
             (dom/li
-              (dom/a {:className "navbara" :href "#/dashboard"}
+              (dom/a {:className "navbara" :href "#/dashboard" :onMouseOver (fn [x]
+                      (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
+                      (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/i {:className "fa fa-dashboard"})
                 "Dashboard"
               )
             )
 
-            (dom/li
-              (dom/a {:className "navbara" :href "#/devslist" :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
-                (dom/i {:className "fa fa-building"})
-                "רשימה יחידות"
-              )
-            )
+            ;; (dom/li
+            ;;   (dom/a {:className "navbara" :href "#/devslist" :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
+            ;;     (dom/i {:className "fa fa-building"})
+            ;;     "רשימה יחידות"
+            ;;   )
+            ;; )
 
             (if (not= role settings/dispatcherrole)
               (dom/li {:className "dropdown" :style {:min-width "170px"}}
@@ -1032,9 +1050,9 @@
               ;(om/build alerts-navbar data {})
             )
 
-            (dom/li {:style {:margin-right "10px" :text-align "center"} :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
-              (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "שירות לקוחות")
-              (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "03-123-456-789")
+            (dom/li {:style {:margin-right "15px" :margin-top "10px" :text-align "center"} :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
+              (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} (str "שירות לקוחות" " " "03-123-456-789"))
+              ;(dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "03-123-456-789")
             )
           )
 

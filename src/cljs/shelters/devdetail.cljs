@@ -184,7 +184,7 @@
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "contact1" :value (:id (nth (:contacts (:device @app-state)) 0))} {:key "contact2" :value (:id (nth (:contacts (:device @app-state)) 0))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :indications [{:id 1, :isok true, :value "closed"} {:id 2, :isok true, :value "closed"} {:id 3, :isok true, :value "closed"} {:id 4, :isok true, :value "idle"} {:id 5, :isok true, :value "enabled"} {:id 6, :isok true, :value "normal"} {:id 7, :isok true, :value "normal"} {:id 8, :isok true, :value "idle"} {:id 9, :isok true, :value ""} {:id 10, :isok true, :value "2017-12-31_18:53:05.224"} {:id 12, :isok true, :value "normal"}] :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "contact1" :value (:id (nth (:contacts (:device @app-state)) 0))} {:key "contact2" :value (:id (nth (:contacts (:device @app-state)) 0))}]}})
 )
 
 
@@ -661,7 +661,7 @@
 (sec/defroute devdetail-page "/devdetail/:devid" [devid]
   (let[
       dev (first (filter (fn [x] (if (= (str devid) (:id x)) true false)) (:devices @shelters/app-state)))       
-      tr2 (.log js/console "hjkhkh")
+      ;tr2 (.log js/console "hjkhkh")
     ]
     (swap! app-state assoc-in [:showmap] 1)
     (swap! app-state assoc-in [:device] dev )
