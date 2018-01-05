@@ -37,7 +37,7 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(def iconBase "/images/")
+(def iconBase "images/")
 
 (defn tableheight [count] 
   (+ 100 (* 34 (min count 10)))

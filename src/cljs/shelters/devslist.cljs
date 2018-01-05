@@ -273,7 +273,7 @@
           ;tr1 (.log js/console (str item))
           ]
           (dom/div {:className "row tablerow":style {:border-bottom "1px solid" :padding-top "0px" :margin-right "0px" :margin-left "0px"}}
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid"}}
+            (dom/div {:className "col-md-1" :style {:border-left "1px solid"}}
               (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-left "15px" :padding-right "0px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid"}}
                 (dom/input { :id (str "checksel" (:id item)) :type "checkbox" :className "device_checkbox" :checked isselected :onChange (fn [e] (handle-chkbsend-change e))})
               )
@@ -312,72 +312,74 @@
               )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
+            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :height "42px" :line-height "42px" :padding-left "0px" :padding-right "0px" :text-align "center" :overflow "hidden"}}
+              (dom/a {:href (str "#/unitdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o"})
                 (:controller item)
               )
             )
 
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id item)) :onClick (fn [e] (goDevice (:id item)))}
+            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden" :line-height "42px"}}
+              (dom/a {:href (str "#/unitdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o"})
                 (:name item)
               )
             )
 
-            (dom/div {:className "col-xs-3 col-md-3" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (:address item)
+            (dom/div {:className "col-md-3" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden"}}
+              (dom/div {:style {:line-height "42px"}}
+                (:address item)
+              )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center"}}
-              (dom/div {:className "row"}
+            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px" :overflow "hidden"}}
+              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
                 (str (:name (nth (:contacts item) 0)))
               )
-              (dom/div {:className "row"}
+              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
                 (str (:phone (nth (:contacts item) 0)))
               )
             )
 
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center"}}
-              (dom/div {:className "row"}
+            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px"}}
+              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
                 (str (:name (nth (:contacts item) 1)))
               )
-              (dom/div {:className "row"}
+              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
                 (str (:phone (nth (:contacts item) 1)))
               )
             )
 
 
-            (dom/div {:className "col-xs-4 col-md-4"}
+            (dom/div {:className "col-md-4"}
               (dom/div {:className "row"}
-                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
                   (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
                   ;(case (:status item) 3 "Inactive" "Active")
                 )
 
-                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
                   (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
                   ;(case (:status item) 3 "Inactive" "Active")
                 )
 
-                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
                   (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
                   ;(case (:status item) 3 "Inactive" "Active")
                 )
 
-                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
                   (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
                   ;(case (:status item) 3 "Inactive" "Active")
                 )
 
-                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+                (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
                   (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style { :color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
                   ;(case (:status item) 3 "Inactive" "Active")
                 )
 
-                (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :border-right-width "1px" :padding-top "8px" :padding-bottom "8px"}}
+                (dom/div {:className "col-md-2" :style {:text-align "center" :border-right-width "1px" :padding-top "8px" :padding-bottom "8px"}}
                   (dom/i {:id (str "status_" (:id item)) :className (case (:status item) 3 "fa-toggle-off fa" "fa-toggle-on fa") :style {:color (case (:status item) 3 "#dd0000" "#00dd00") :font-size "24px"}})
                   ;(case (:status item) 3 "Inactive" "Active")
                 )

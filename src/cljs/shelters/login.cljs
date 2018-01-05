@@ -728,7 +728,7 @@
 (defn setcontrols [value]
   (case value
     42 (go
-         (<! (timeout 1000))
+         (<! (timeout 1500))
          (swap! app-state assoc-in [:state] 0)
          (aset js/window "location" "#/map")
        )

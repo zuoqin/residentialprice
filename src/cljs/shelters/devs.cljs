@@ -65,7 +65,7 @@
 
 (defcomponent showindications-view [unit]
   (render [_]
-    (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
+    (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%" :margin-top "0px"}}
       (map (fn [item]
         (let [
           indicator (first (filter (fn [x] (if (= (:id x) (:id item)) true false))  (:indications @shelters/app-state)))
@@ -73,13 +73,13 @@
          icon (case (:isok item) true (:okicon indicator) (if (> (count (:failicon indicator)) 0) (:failicon indicator) "fail"))
          name (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator))))
           ]
-          (dom/div {:style {:border "solid 1px transparent" :padding "3px" :min-width "108px"}}
-            (dom/div {:style {:backgroundColor "white" :text-align "center"}}
+          (dom/div {:style {:border "1px solid rgba(0,0,0,.125)" :border-radius ".25rem" :padding "0px" :min-width "92px" :margin-top "10px" :display "table"}}
+            (dom/div {:style {:backgroundColor "white" :text-align "center" :display "table-row"}}
               (dom/a {:href (str "#/devdetail/" (:id item)) }
-                (dom/img {:src (str "images/" icon ".png") :style {:margin-top "5px" :margin-bottom "5px" :height "70px" :min-height "70px" :font-size "xx-large" :color "green"}})
+                (dom/img {:src (str "images/" icon ".png") :style {:margin-top "0px" :margin-bottom "5px" :min-width "90px" :max-width "90px" :font-size "xx-large" :color "green"}})
               )
             )
-            (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+            (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :display "table-cell" :background-color "rgba(0,0,0,.03)"}}
                name
             )
           )
@@ -97,8 +97,8 @@
     (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
          (map (fn [item]
            (let []
-             (dom/div { :className "panel panel-primary" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "290px" :margin-bottom "0px" :backgroundColor "lightgrey"}}
-               (dom/div {:className "panel-heading"}
+             (dom/div { :className "panel panel-primary" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "330px" :margin-bottom "0px" :backgroundColor "white"}}
+               (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}}
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
                    (dom/div {:style {:white-space "normal"}} (str "מזהה יחידה: " (if (or (nil? (:controller item)) (< (count (:controller item)) 1)) "empty" (:controller item))))
                  )
@@ -116,17 +116,17 @@
 
 
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :padding-bottom "0px"}}
-                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
-                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "55px" :padding-top "10px"}}
+                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (set! (.-title js/document) "פתח מנעול"))} "פתח מנעול")
+                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (set! (.-title js/document) "פתח מנעול"))} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))))
                      )
                    )
                  )
 
-                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "75px" :padding-top "10px"}}
-                   (dom/div {:style {:border "solid 1px lightgrey" :padding "3px"}}
+                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "55px" :padding-top "10px"}}
+                   (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
                        (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] (set! (.-title js/document) "בדיקת תקשורת"))} "בדיקת תקשורת")

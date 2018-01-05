@@ -27,7 +27,7 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(def iconBase "/images/")
+(def iconBase "images/")
 
 (defonce app-state (atom  {:device {} :showmap 1 :marker nil :isinsert false :view 1 :current "Device Detail"} ))
 
@@ -444,8 +444,8 @@
         (dom/div
           (dom/div {:className "row":style {:margin-top "5px"}}
             ;(dom/div {:className "col-xs-5"})
-            (dom/div {:className "col-xs-3"} (dom/h5 (str "Contact " (+ num 1) ":")))
-            (dom/div {:className "col-xs-3"}
+            (dom/div {:className "col-xs-3"} (dom/h5 (str "איש קשר " (+ num 1) ":")))
+            (dom/div {:className "col-md-3" :style {:padding-top "7px"}}
               (omdom/select #js {:id (str "contact" num)
                                  :className "selectpicker"
                                  :data-show-subtext "true"
@@ -532,8 +532,8 @@
         (dom/h3 {:style {:text-align "center"}}
           (dom/i {:className "fa fa-cube"})
           (if (:isinsert @data)
-            (str "Insert Device")
-            (str "Device Info - " (:controller (:device @app-state)) )
+            (str "הוספת יחידה חדשה")
+            (str "פרטי היחידה - " (:controller (:device @app-state)) )
           )
         )
         
@@ -542,29 +542,28 @@
 
             (if (:isinsert @data)
               (dom/div {:className "row"}
-                (dom/div {:className "col-xs-3"} (dom/h5 "Controller Id:"))
-                (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                  (dom/input {:id "controller" :type "text" :readOnly (if (:isinsert @data) false true) :style {:width "100%"} :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))}
+                (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                  (dom/h5 "מזהה יחידה:"))
+
+                (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                  (dom/input {:id "controller" :type "text" :readOnly (if (:isinsert @data) false true) :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:controller (:device @data))}
                   )
                 )
-                (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+                (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
                   (dom/span {:className "asterisk"} "*")
                 )
               )
             )
 
 
-            ;; (dom/h5 {:style {:display:inline true}} "Status: "
-            ;;   (dom/i {:className "fa fa-toggle-off" :style {:color "#ff0000"}})
-            ;; )
-
-
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 "Name:"))
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "name" :type "text" :onChange (fn [e] (handleChange e)) :value (:name (:device @data))})
+              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 "שם יחידה:")
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "name" :type "text" :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:name (:device @data))})
+              )
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
@@ -572,31 +571,37 @@
 
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 (str "Address: ")))
-              (dom/div {:className "col-xs-8" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "address" :style {:width "100%"} :type "text" :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 (str "כתובת: "))
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+              (dom/div {:className "col-md-8" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "address" :style {:width "100%"} :type "text" :required true :onChange (fn [e] (handleChange e)) :value (:address (:device @data))})
+              )
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 (str "IP address: ")))
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "ip" :style {:width "100%"} :type "text" :onChange (fn [e] (handleChange e)) :value (:ip (:device @data))})
+              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 (str "כתובת ה - IP:"))
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "ip" :style {:width "100%"} :type "text" :required true :onChange (fn [e] (handleChange e)) :value (:ip (:device @data))})
+              )
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3"} (dom/h5 (str "Port number: ")))
-              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "port" :style {:width "100%"} :type "number" :step "1" :onChange (fn [e] (handleChange e)) :value (:port (:device @data))})
+              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 (str "מספר יציאת IP:"))
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}       
+              (dom/div {:className "col-md-2" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "port" :style {:width "100%"} :type "number" :step "1" :onChange (fn [e] (handleChange e)) :required true :value (:port (:device @data))})
+              )
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
@@ -619,7 +624,7 @@
               ;(b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (addMarkers))} "Add marker")
             )
             (dom/h4
-              (dom/i {:className "fa fa-phone"} "Contacts:")
+              (dom/i {:className "fa fa-phone"} "אנשים קשר")
             )
             (om/build showcontacts-view data {})
 

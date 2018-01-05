@@ -437,7 +437,7 @@
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "שם משתמש"))
               (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
-                (dom/input {:id "login" :type "text" :placeholder "שם משתמש" :onChange (fn [e] (handleChange e)) :value (:login (:user @app-state))}
+                (dom/input {:id "login" :type "text" :placeholder "שם משתמש" :onChange (fn [e] (handleChange e)) :required true :value (:login (:user @app-state))}
                 )
               )
               (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}
@@ -449,7 +449,8 @@
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "שם פרטי"))
-              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "firstname" :type "text" :placeholder "שם פרטי" :onChange (fn [e] (handleChange e)) :value (:firstname (:user @app-state))}))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
+                (dom/input {:id "firstname" :type "text" :placeholder "שם פרטי" :onChange (fn [e] (handleChange e)) :required true :value (:firstname (:user @app-state))}))
 
               (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}
                 (dom/span {:className "asterisk"} "*")
@@ -460,7 +461,8 @@
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "שם משפחה"))
-              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :value (:lastname (:user @app-state))}))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
+                (dom/input {:id "lastname" :type "text" :onChange (fn [e] (handleChange e)) :required true :value (:lastname (:user @app-state))}))
 
               (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                 (dom/span {:className "asterisk"} "*")
@@ -470,7 +472,9 @@
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
               (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "כתובת דוא''ל"))
-              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "email" :type "text" :placeholder "כתובת דוא''ל" :onChange (fn [e] (handleChange e)) :value (:email (:user @app-state))}))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
+                (dom/input {:id "email" :type "email" :placeholder "כתובת דוא''ל" :required true :onChange (fn [e] (handleChange e)) :value (:email (:user @app-state))})
+              )
 
               (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                 (dom/span {:className "asterisk"} "*")
@@ -480,8 +484,10 @@
             (if (:isinsert @app-state)
               (dom/div {:className "row"}
                 (dom/div {:className "col-xs-5"})
-                (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "סיסמא"))
-                (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value password}))
+                (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}}
+                  (dom/h5 "סיסמא")
+                )
+                (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "password" :type "password" :required true :onChange (fn [e] (handleChange e)) :value password}))
                 (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                   (dom/span {:className "asterisk"} "*")
                 )
@@ -502,6 +508,9 @@
                               }
                   (buildRolesList data owner)
                 )
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
+                (dom/span {:className "asterisk"} "*")
               )
             )
 
@@ -554,7 +563,7 @@
                 (dom/div {:className "row"}
                   (dom/div {:className "col-xs-5"})
                   (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "סיסמא"))
-                  (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "password" :type "password" :onChange (fn [e] (handleChange e)) :value password}))
+                  (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}} (dom/input {:id "password" :type "password" :required true :onChange (fn [e] (handleChange e)) :value password}))
                   (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
                     (dom/span {:className "asterisk"} "*")
                   )
@@ -564,7 +573,7 @@
                   (dom/div {:className "col-xs-5"})
                   (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "אימות סיסמא"))
                   (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
-                    (dom/input {:id "newpassword" :type "password"
+                    (dom/input {:id "newpassword" :type "password" :required true
                       :onChange (fn [e] (handleChange e))
                       :value newpassword})
                   )

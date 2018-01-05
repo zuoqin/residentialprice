@@ -47,7 +47,7 @@
         }
         :commands
         {           
-          :unlock                 "פתח את הדלת"
+          :unlock                 "פתח מנעל"
         }
         :missing  "missing"
       }
@@ -932,7 +932,7 @@
                       (dom/div {:className "col-md-12"}
                         (dom/a {:href "#/users" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                           (dom/i {:className "fa fa-key"})
-                          "משתמשים והרשאות"
+                          "ניהול משתמשים"
                         )
                       )
                     )
@@ -940,9 +940,9 @@
 
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/devices" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                      (dom/a {:href "#/devslist" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                         (dom/i {:className "fa fa-hdd-o"})
-                        " מאגר יחידות"
+                        "ניהול יחידות"
                       )
                     )
                   )
@@ -950,7 +950,7 @@
                     (dom/div {:className "col-md-12"}
                       (dom/a {:href "#/roles" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                         (dom/i {:className "fa fa-phone"})
-                        "אנשי קשר"
+                        "ניהול אנשי קשר"
                       )
                     )
                   )
@@ -1031,11 +1031,14 @@
               )
               ;(om/build alerts-navbar data {})
             )
+
+            (dom/li {:style {:margin-right "10px" :text-align "center"} :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
+              (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "שירות לקוחות")
+              (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "03-123-456-789")
+            )
           )
 
           (dom/ul {:className "nav navbar-nav navbar-left"}
-
-            (dom/li {:style {:max-width "100px" :text-align "center"}} (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "שירות לקוחות 03-123-456-789"))
             (dom/li {:className "dropdown"}
               (dom/a { :href "#" :className "navbaraexit"
                 :onMouseOver (fn [x]
