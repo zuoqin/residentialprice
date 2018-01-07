@@ -63,8 +63,8 @@
 
                 :compiler {:main shelters.login
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled2/shelters.js"
-                           :output-dir "resources/public/js/compiled2/out"
+                           :output-to "resources/public/js/compiled/shelters.js"
+                           :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true
                            :optimizations :none
                            :pretty-print true}}
@@ -101,8 +101,8 @@
                 :jar true
                 :compiler {:main shelters.login
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/shelters.js"
-                           :output-dir "resources/public/js/compiled/out"
+                           :output-to "resources/public/js/compiled2/shelters.js"
+                           :output-dir "resources/public/js/compiled2/out"
                            :source-map-timestamp false
                            :optimizations :simple
                            :closure-warnings {:externs-validation :off}

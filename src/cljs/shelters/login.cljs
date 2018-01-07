@@ -21,9 +21,10 @@
             [shelters.contactdetail :as contactdetail]
             [shelters.userdetail :as userdetail]
 
-
             [cljs-time.format :as tf]
-            [cljs-time.coerce :as tc]
+            [cljs-time.core :as tc]
+            [cljs-time.coerce :as te]
+
             [shelters.groupstounit :as groupstounit]
             [shelters.groupstouser :as groupstouser]
             [shelters.reportunits :as reportunits]
@@ -109,6 +110,63 @@
 )
 
 
+(defn map-notification [notification]
+  (let [
+    id (get notification "notificationId")
+    accept (tf/parse shelters/custom-formatter2 (get notification "acceptanceTime"))
+    close (tf/parse shelters/custom-formatter2 (get notification "closeTime"))
+    indicatorid (get notification "indicationId")
+    type (get notification "notificationType")
+    open (tf/parse shelters/custom-formatter2 (get notification "openTime"))
+    status (get notification "status")
+    unitid (get notification "unitId")
+    userid (get notification "userId")
+    ;tr1 (.log js/console (str  "username=" username ))
+
+    ]
+    ;
+    {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type}
+  )
+)
+
+(defn OnGetNotifications [response]
+  (let [
+    notifications (map map-notification response)
+    ]
+    (swap! shelters/app-state assoc-in [:notifications] (filter (fn [x] (if (= (:type x) "Alert") true false)) notifications))
+    (swap! shelters/app-state assoc-in [:alerts] (filter (fn [x] (if (or (= (:type x) "Failure") (= (:type x) "Unknown")) true false)) notifications) )
+    ;(swap! shelters/app-state assoc-in [:notifications1] notifications)
+    (ls/set-item! "notifications" (.stringify js/JSON (clj->js notifications)))
+  )
+)
+
+
+(defn reqnotifications []
+  (let [
+    notificationsstr (ls/get-item "notifications")
+    tmpnotifications (js->clj (.parse js/JSON notificationsstr))
+    ;tr1 (.log js/console (str (first tmpindicators)))
+    ]
+
+    (GET (str settings/apipath "getNotifications")
+      {:handler OnGetNotifications
+       :error-handler error-handler
+       :headers {
+         :content-type "application/json"
+         :token (str (:token  (:token @shelters/app-state)))
+         }
+      }
+    )
+
+    (if (not (nil? tmpnotifications))
+      (swap! shelters/app-state assoc-in [:notifications] (filter (fn [x] (if (= (:type x) "Alert") true false)) tmpnotifications))
+      (swap! shelters/app-state assoc-in [:alerts] (filter (fn [x] (if (or (= (:type x) "Failure") (= (:type x) "Unknown")) true false)) tmpnotifications) )
+    )
+    (put! ch 42)
+  )
+)
+
+
 (defn map-indication [indication]
   (let [
     id (get indication "indicationId")
@@ -155,7 +213,7 @@
     (if (not (nil? tmpindicators))
       (swap! shelters/app-state assoc-in [:indications] tmpindicators )
     )
-    (put! ch 42)
+    (reqnotifications)
   )
 )
 
@@ -265,7 +323,11 @@
 )
 
 (defn map-unitindication [indication]
-  {:id (get indication "indicationId") :isok (get indication "isOk") :value (get indication "value")}
+  (let [
+    tr1 (.log js/console (str "update=" (get indication "lastUpdateTime")))
+    ]
+    {:id (get indication "indicationId") :isok (get indication "isOk") :value (get indication "value") :lastupdate (tf/parse shelters/custom-formatter3 (get indication "lastUpdateTime"))}
+  )
 )
 
 (defn map-unit [unit]
@@ -315,7 +377,7 @@
   (let [
     unitsstr (ls/get-item "devices")
     tmpunits (js->clj (.parse js/JSON unitsstr))
-    tr1 (.log js/console (str (first tmpunits)))
+    ;tr1 (.log js/console (str (first tmpunits)))
     ]
     (GET (str settings/apipath "getUnits" ;"?userId="(:userid  (:token @shelters/app-state))
          )
@@ -334,66 +396,15 @@
   )
 )
 
-(defn map-role [role]
-  (let [
-    id (get role "roleId")
-    level (get role "roleLevel")
-    description (get role "roleDescription")
-    rolename (get role "roleName")
-    ;tr1 (.log js/console (str  "username=" username ))
-    result {:id id :name rolename :level level :description description}
-    ]
-    ;
-    result
-  )
-)
-
-
-(defn OnGetRoles [response]
-  (let [
-    roles (map map-role response)
-    ]
-    (swap! shelters/app-state assoc-in [:roles] roles)
-    (ls/set-item! "roles" (.stringify js/JSON (clj->js roles)))
-  )
-  
-  ;(requnits)
-)
-
-
-
-
-(defn reqroles []
-  (let [
-    rolesstr (ls/get-item "roles")
-    tmproles (js->clj (.parse js/JSON rolesstr))
-    ;tr1 (.log js/console (str (first tmproles)))
-    ]
-    (GET (str settings/apipath "getRoles")
-         {:handler OnGetRoles
-          :error-handler error-handler
-          :headers {:content-type "application/json"
-                    :token (str (:token  (:token @shelters/app-state))) }
-         })
-
-    (if (not (nil? tmproles))
-      (swap! shelters/app-state assoc-in [:roles] tmproles )
-    )
-    (requnits)
-  )
-)
-
-
 
 (defn map-user [user]
   (let [
-
-
-    ;tr1 (.log js/console "In map user")
     username (get user "userName")
     groups (get user "childEntities")
     userid (get user "userId")
     role (first (filter (fn [x] (if (= (:id x) (get (get user "role") "roleId")) true false)) (:roles @shelters/app-state)))
+
+    ;tr1 (.log js/console (str "In map user roleid=" (get (get user "role") "roleId") "; role=" role "; count=" (count (:roles @shelters/app-state))))
 
     firstname (get (first (filter (fn [x] (let [
           ;tr1 (.log js/console (str x))
@@ -468,10 +479,62 @@
     (if (not (nil? tmpusers))
       (swap! shelters/app-state assoc-in [:devices] tmpusers )
     )
-    (reqroles)
+    (requnits)
   )
 )
 
+
+(defn map-role [role]
+  (let [
+    id (get role "roleId")
+    level (get role "roleLevel")
+    description (get role "roleDescription")
+    rolename (get role "roleName")
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id id :name rolename :level level :description description}
+    ]
+    ;
+    result
+  )
+)
+
+
+(defn OnGetRoles [response]
+  (let [
+    roles (map map-role response)
+    ]
+    (swap! shelters/app-state assoc-in [:roles] roles)
+    (ls/set-item! "roles" (.stringify js/JSON (clj->js roles)))
+  )
+  
+  ;(requnits)
+)
+
+
+
+
+(defn reqroles []
+  (let [
+    rolesstr (ls/get-item "roles")
+    tmproles (js->clj (.parse js/JSON rolesstr))
+    ;tr1 (.log js/console (str (first tmproles)))
+    ]
+    (GET (str settings/apipath "getRoles")
+         {:handler OnGetRoles
+          :error-handler error-handler
+          :headers {:content-type "application/json"
+                    :token (str (:token  (:token @shelters/app-state))) }
+         })
+
+    (if (not (nil? tmproles))
+      (swap! shelters/app-state assoc-in [:roles] tmproles )
+    )
+    (go
+      (<! (timeout 300))
+      (requsers)
+    )
+  )
+)
 
 
 (defn setUser [theUser]
@@ -517,7 +580,7 @@
     (swap! shelters/app-state assoc-in [:token] newdata )
     (swap! shelters/app-state assoc-in [:view] 2 )
     (swap! shelters/app-state assoc-in [:users] [] )
-    (requsers)
+    (reqroles)
     ;;(requser {:token newdata})
     ;;(put! ch 43)
   )
@@ -567,7 +630,7 @@
     (.stopPropagation (.. e -nativeEvent))
     (.stopImmediatePropagation (.. e -nativeEvent))
     ;(aset js/window "location" "http://localhost:3449/#/something")
-    (.log js/console (str "user=" theusername " password=" thepassword))
+    ;(.log js/console (str "user=" theusername " password=" thepassword))
     (dologin (str theusername) (str thepassword)) 
   )
 )
@@ -603,7 +666,7 @@
 
 (defcomponent login-page-view [data owner]
   (did-update [this prev-props prev-state]
-    (.log js/console "starting login screen" ) 
+    ;(.log js/console "starting login screen" ) 
     
   )
   (did-mount [_]
@@ -638,17 +701,17 @@
     id (get notification "notificationId")
     indicatorid (get notification "indicationId")
     ;tr1 (.log js/console (subs (get notification "openTime") 0 19))
-    open (tf/parse shelters/custom-formatter2 (subs (get notification "openTime") 0 19))
+    open (tf/parse shelters/custom-formatter2 (get notification "openTime"))
     
-    open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
+    ;open (if (= (subs (get notification "openTime") 20) "PM") (tc/from-long (+ (tc/to-long open) (* 1000 12 3600))) open)
 
         
-    close (tf/parse shelters/custom-formatter2 (subs (get notification "closeTime") 0 19))
-    close (if (= (subs (get notification "closeTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) close)
+    close (tf/parse shelters/custom-formatter2 (get notification "closeTime"))
+    ;close (if (= (subs (get notification "closeTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) close)
 
 
-    accept (tf/parse shelters/custom-formatter2 (subs (get notification "acceptanceTime") 0 19))
-    accept (if (= (subs (get notification "acceptanceTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) accept)
+    accept (tf/parse shelters/custom-formatter2 (get notification "acceptanceTime"))
+    ;accept (if (= (subs (get notification "acceptanceTime") 20) "PM") (tc/from-long (+ (tc/to-long close) (* 1000 12 3600))) accept)
 
 
     ;tr1 (.log js/console (str "unitid in Notification: " unitid))
@@ -656,14 +719,22 @@
 
     indstatus (case status "Closed" true false)
     
-    newindications (map (fn [ind] (if (= (:id ind) indicatorid) (assoc ind :isok indstatus :value "") ind)) (:indications (first (filter (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state)))))
+    newindications (map (fn [ind] (if (= (:id ind) indicatorid) (assoc ind :isok indstatus :value "" :lastupdate (tc/now)) ind)) (:indications (first (filter (fn [x] (if (= (:id x) unitid) (assoc x :status status) x)) (:devices @shelters/app-state)))))
 
 
     newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :indications newindications) x)) (:devices @shelters/app-state))
     
     tr1 (swap! shelters/app-state assoc-in [:devices] newunits)
 
-    tr1 (case type "Failure" (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type})))
+    tr1 (if (or (= type "Failure") (= type "Unknown"))
+        (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:alerts @shelters/app-state)))) (swap! shelters/app-state assoc-in [:alerts] (conj (:alerts @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type}))
+          (let [
+              delalert (filter (fn [x] (if (= (:id x) id) false true)) (:alerts @shelters/app-state))
+              newalerts (conj delalert {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type})
+            ]
+            (swap! shelters/app-state assoc-in [:alerts] newalerts)
+          )
+        )
 
         (if (= 0 (count (filter (fn [x] (if (= (:id x) id) true false)) (:notifications @shelters/app-state)))) (swap! shelters/app-state assoc-in [:notifications] (conj (:notifications @shelters/app-state) {:unitid unitid :userid userid :status status :id id :open open :close close :accept accept :type type}))
           (let [
@@ -698,18 +769,17 @@
 )
 
 
-(defn receivesocketmsg []
+(defn receivesocketmsg [ws_channel]
   (go
     (let [
-        {:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
-        {:keys [message error]} (<! ws-channel)
-        
+        ;{:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
+        {:keys [message error]} (<! ws_channel)
       ]
       (if error
         (js/console.log "Uh oh:" error)
         (processNotification message)      
       )
-      (receivesocketmsg)
+      (receivesocketmsg ws_channel)
     )
   )
 )
@@ -718,15 +788,17 @@
   (go
     (let [
         {:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
+
         ;{:keys [message error]} (<! ws-channel)
         
       ]
-      (.log js/console (str "token to send in socket: " (:token (:token @shelters/app-state))))
+      ;(swap! app-state assoc-in [:ws_ch] ws-channel)
+      ;(.log js/console (str "token to send in socket: " (:token (:token @shelters/app-state))))
       (if-not error
         (>! ws-channel (:token (:token @shelters/app-state)))
         (js/console.log "Error:" (pr-str error))
       )
-      (receivesocketmsg)
+      (receivesocketmsg ws-channel)
     )
   )
 )
@@ -734,7 +806,7 @@
 (defn setcontrols [value]
   (case value
     42 (go
-         (<! (timeout 1500))
+         (<! (timeout 2500))
          (swap! app-state assoc-in [:state] 0)
          (aset js/window "location" "#/map")
        )

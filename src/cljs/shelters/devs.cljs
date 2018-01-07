@@ -6,7 +6,8 @@
             [secretary.core :as sec :include-macros true]
             [shelters.core :as shelters]
             [ajax.core :refer [GET POST]]
- 
+            [cljs-time.core :as tc]
+            [cljs-time.format :as tf] 
             [om-bootstrap.button :as b]
             [clojure.string :as str]
             [shelters.settings :as settings]
@@ -70,17 +71,40 @@
         (let [
           indicator (first (filter (fn [x] (if (= (:id x) (:id item)) true false))  (:indications @shelters/app-state)))
 
+         ;;tr1 (.log js/console (str "lastupdate=" (:lastupdate indicator)))
          icon (case (:isok item) true (:okicon indicator) (if (> (count (:failicon indicator)) 0) (:failicon indicator) "fail"))
          name (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator))))
+
+         status (case (:isok item) true (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "fail")))))
+         time (tf/unparse shelters/custom-formatter1 (:lastupdate item))
           ]
           (dom/div {:style {:border "1px solid rgba(0,0,0,.125)" :border-radius ".25rem" :padding "0px" :min-width "92px" :margin-top "10px" :display "table"}}
+            (dom/div { :style { :display "table-row" :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "rgba(0,0,0,.03)"}}
+               (dom/div {:style {:display "table-cell" :padding-bottom "5px" :padding-top "5px"}}
+                 name
+               )
+            )
             (dom/div {:style {:backgroundColor "white" :text-align "center" :display "table-row"}}
               (dom/a {:href (str "#/devdetail/" (:id item)) }
                 (dom/img {:src (str "images/" icon ".png") :style {:margin-top "0px" :margin-bottom "5px" :min-width "90px" :max-width "90px" :font-size "xx-large" :color "green"}})
               )
             )
-            (dom/div {:className "row" :style {:backgroundColor "white" :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :display "table-cell" :background-color "rgba(0,0,0,.03)"}}
-               name
+            (dom/div { :style { :display "table-row" :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "white"}}
+               (dom/div {:style {:display "table-cell" :padding-bottom "5px"}}
+                 ;(str "סטטוס:" status)
+                 (str status)
+               )
+            )
+            (dom/div { :style { :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "white" :padding-bottom "5px" :padding-top "5px"}}
+               (dom/div {:style {:display "table-cell" :max-width "90" :white-space "normal" :word-break "break-word"}}
+                 ;; (dom/div {:className "row"}
+                 ;;   (str "תאריך:")
+                 ;; )
+                 (str time)
+                 ;; (dom/div {:style {:padding-bottom "5px"}}
+                   
+                 ;; )
+               )
             )
           )
         )

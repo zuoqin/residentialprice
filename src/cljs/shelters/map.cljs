@@ -31,7 +31,7 @@
 
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 
-(def custom-formatter2 (tf/formatter "MM/dd/yyyy hh:mm:ss"))
+;(def custom-formatter2 (tf/formatter "MM/dd/yyyy hh:mm:ss"))
 
 (def custom-formatter1 (tf/formatter "MMM dd yyyy hh:mm:ss"))
 
@@ -457,9 +457,9 @@
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
             (dom/div {:className "col-12 col-sm-12" :style {:padding-top "0px" :padding-bottom "15px" :padding-left "16px"}}
                  (if (:isnotification  @data) "טבלת התראות" "טבלת תקלות")
-              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "10px" :margin-bottom "0px" :margin-left "15px"}}
-                (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "0px"}}
-                  (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "5px" :margin-bottom "0px" :margin-left "15px" :border "none"}}
+                (dom/div {:className "panel-heading" :style {:margin-left "-15px" :padding-top "0px" :padding-bottom "0px" :margin-top "0px"}}
+                  (dom/div {:className "row" :style {:margin-left "0px" :margin-right "-15px"}}
 
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
 
@@ -505,7 +505,7 @@
   (did-mount [_]
     (let [
       map-canvas (. js/document (getElementById "map"))
-      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @data)) :lng (:lon (:selectedcenter @data))} "zoom" 12})
+      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @data)) :lng (:lon (:selectedcenter @data))} "zoom" 15})
       map (js/google.maps.Map. map-canvas map-options)
 
       

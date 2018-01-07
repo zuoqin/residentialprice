@@ -27,7 +27,9 @@
 (def indicators ["lockState" "doorState" "lastCommunication" "batteryState" "tamper" "communicationStatus"])
 
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
-(def custom-formatter2 (tf/formatter "dd/MM/yyyy hh:mm:ss"))
+(def custom-formatter1 (tf/formatter "dd/MM/yyyy HH:mm:ss"))
+(def custom-formatter2 (tf/formatter "MM/dd/yyyy HH:mm:ss"))
+(def custom-formatter3 (tf/formatter "yyyy-MM-dd HH:mm:ss"))
 (def ch (chan (dropping-buffer 2)))
 
 (defn tableheight [count] 
@@ -40,19 +42,39 @@
       {
         :alerts
         {
-          :Alert                  "התרא"
-          :New                    "פתוח"
-          :Closed                 "סגור"
-          :Accepted               "בטיפול"
+          :Alert                    "התרא"
+          :Failure                  "תקלת"
+          :Unknown                  "תקלת"
+          :New                      "פתוח"
+          :Closed                   "סגור"
+          :Accepted                 "בטיפול"
         }
         :indicators
         {           
-          :lockState              "בריח"
-          :doorState              "דלת"
-          :lastCommunication      "ארון תקשורת"
-          :batteryState           "סוללה"
-          :tamper                 "גלאי"
-          :communicationStatus    "תקשורת"
+          :lockState                "בריח"
+          :lockStateok              "סגו"
+          :lockStatefail            "פתוח"
+
+          :doorState                "דלת"
+          :doorStateok              "סגו"
+          :doorStatefail            "פתוח"
+
+          :lastCommunication        "ארון תקשורת"
+          :lastCommunicationok      "כן"
+          :lastCommunicationfail    "לא"
+
+          :batteryState             "סוללה"
+          :batteryStateok           "ok"
+          :batteryStatefail         "fail"
+
+          :tamper                   "גלאי"
+          :tamperok                 "אין אירוע"
+          :tamperfail               "יש אירוע"
+
+          :communicationStatus      "תקשורת"
+          :communicationStatusok    "יש תקשור"
+          :communicationStatusfail  "אין תקשור"
+
         }
         :commands
         {           
@@ -234,11 +256,12 @@
 )
 
 
-(defn seenNotification [item]
+(defn seennotification [item e]
   (let [
     ;tr1 (swap! app-state assoc-in [:user :addedby] (:userid (:token @shelters/app-state)))
       accept (tf/unparse custom-formatter2 (tc/now))
     ]
+    (set! (.-disabled (.. e -target)) true)
     (PUT (str settings/apipath  "updateNotification") {
       :handler OnUpdateNotificationSuccess
       :error-handler OnUpdateNotificationError
@@ -265,7 +288,7 @@
             ]
             (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
               (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
-                (b/button {:className "btn btn-primary" :disabled? (if (= (:status item) "New") false true) :style {:padding-top "0px" :padding-bottom "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seenNotification item))} "ראיתי")
+                (b/button {:className "btn btn-primary" :disabled? (if (= (:status item) "New") false true) :style {:padding-top "0px" :padding-bottom "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seennotification item e))} "ראיתי")
               )
               (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "5px"}}
                 (dom/a {:href (str "#/unitdetail/" (:id unit)) }                
@@ -299,13 +322,13 @@
                 (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                   (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :text-align "center"}}
                     (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                      (tf/unparse custom-formatter2 (:open item))
+                      (tf/unparse custom-formatter1 (:open item))
                     )
                   )
 
                   (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
                     (dom/a {:href (str "#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "#337ab7" "transparent" )}}
-                      (tf/unparse custom-formatter2 (:close item))
+                      (tf/unparse custom-formatter1 (:close item))
                     )
                   )
                 )
@@ -332,70 +355,6 @@
 )
 
 
-(defcomponent alerts-table [data owner]
-  (render [_]
-    (dom/div {:className "panel-body" :style {:padding-top "0px" :padding-left "0px" :padding-right "0px" :padding-bottom "0px" :height (str (tableheight (count (:alerts @data))) "px") :overflow-y "scroll"}}
-      (map (fn [item]
-        (let [
-          unit (first (filter (fn [x] (if (= (:id x) (:unitid item)) true false)) (:devices @app-state)))
-
-          user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @app-state)))
-          ]
-          (dom/div {:className "row" :style {:border-bottom "1px solid" :border-right "1px solid" :display "flex" :margin-left "0px" :margin-right "0px"}}
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid"}}
-              (b/button {:className "btn btn-primary" :onClick (fn [e])} "ראיתי")
-            )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:id item)                
-              )
-            )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:controller unit)
-              )
-            )
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:name unit)                
-              )
-            )
-
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:address unit)                
-              )
-            )
-
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                "Alert"                
-              )
-            )
-
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (tf/unparse custom-formatter2 (:open item))              
-              )
-            )
-
-            (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (:status item)               
-              )
-            )
-
-            (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-              (dom/a {:href (str "#/unitdetail/" (:id unit)) }
-                (str (:firstname user) " " (:lastname user))
-              )
-            )
-          )
-        ))
-      (sort (comp comp-alerts) (filter (fn [x] (if (= 1 (:selectedstatus @data)) true (if (= (:status x) (:selectedstatus @data)) true false))) (:alerts @data)) ))
-    )
-  )
-)
 
  
 (defcomponent logout-view [_ _]
@@ -855,7 +814,7 @@
   (let []
                                                                                    (swap! app-state assoc :isalert (if (:isalert @app-state) false true))
                                                                                    (swap! app-state assoc :isnotification false)
-     
+    (aset js/window "location" "#/map")
     (go
       (<! (timeout 100))
       (js/google.maps.event.trigger (:map @app-state) "resize")
@@ -880,8 +839,12 @@
       ;tr1 (.log js/console (str "in map navigation"))
       role (:id (:role user))
       fullname (str (:firstname user) " " (:lastname user))
+      role (:name (:role (first (filter (fn[x] (if (= (:userid (:token @data)) (:userid x)) true false)) (:users @data)))))
+
+      ;tr1 (.log js/console (str "role=" role))
+
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px" :margin-left "15px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -923,7 +886,7 @@
             ;; )
 
             (if (not= role settings/dispatcherrole)
-              (dom/li {:className "dropdown" :style {:min-width "170px"}}
+              (dom/li {:className "dropdown" :style {:min-width "120px"}}
                 (dom/a { :href "#" :className "navbarasysmanage" :style {:padding-left "0px" :padding-right "0px"}
                     :onMouseOver (fn [x]
                       (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "block")
@@ -978,7 +941,7 @@
 
 
 
-            (dom/li {:className "dropdown" :style {:min-width "170px"}}
+            (dom/li {:className "dropdown" :style {:min-width "130px"}}
               (dom/a { :href "#" :className "navbarareports"
                 :onMouseOver (fn [x]
                   (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "block")
@@ -1031,7 +994,7 @@
             (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (filter (fn [x] (if (= "New" (:status x)) true false)) (:notifications @data)))))
+                  (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (filter (fn [x] (if (= "Closed" (:status x)) false true)) (:notifications @data)))))
                   (dom/span {:style {:cursor "pointer" :color "white"}} "התראות")
                   (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})
                 )
@@ -1042,8 +1005,8 @@
             (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px"  :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (alertsclick))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
-                  (b/button {:className "btn btn-danger" :style {:padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px" :border-radius "25px" :margin-top "-25px"}} (str (count (:alerts @data))))
-                  (dom/span {:style {:cursor "pointer" :color "white"}} " תקלות ")
+                  (b/button {:className "btn btn-danger" :style {:padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px" :border-radius "25px" :margin-top "-25px"}} (str (count (filter (fn [x] (if (= "Closed" (:status x)) false true)) (:alerts @data)))))
+                  (dom/span {:style {:cursor "pointer" :color "white"}} "תקלות")
                   (dom/i {:className "fa fa-exclamation-circle fa-fw" :style {:color "red" :font-size "24px"}})
                 )
               )
@@ -1058,20 +1021,21 @@
 
           (dom/ul {:className "nav navbar-nav navbar-left"}
             (dom/li {:className "dropdown"}
-              (dom/a { :href "#" :className "navbaraexit"
+              (dom/a { :href "#" :className "navbaraexit" :style {:padding-left "10px" :padding-right "0px" :max-width "150px" :text-align "left"}
                 :onMouseOver (fn [x]
                   (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "block")
                 )
                 ;:onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))
                 }
                 (dom/span {:className "caret"})
-                (dom/i {:className "fa fa-user-circle"})
-                fullname
+                (dom/i {:className "fa fa-user-circle" :style {:margin-left "3px" :margin-right "3px"}})
+                (str fullname " " role)
               )
-              (dom/div { :id "navbarulexit" :className "navbarulexit" :style {:display "none" :background-color "#f9f9f9"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
+
+              (dom/div { :id "navbarulexit" :className "navbarulexit" :style {:display "none" :background-color "#f9f9f9" :text-align "left"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
                 (dom/div {:className "row"}
                   (dom/div {:className "col-md-12"}
-                    (dom/a {:href "#/login" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                    (dom/a {:href "#/login" :className "menu_item" :style {:padding-left "10px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-sign-out"})
                       "יציאה"
                     )
