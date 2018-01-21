@@ -24,9 +24,8 @@
 )
 
 
-(defn OnGetUsers [response]
-   (swap! app-state assoc :users  (get response "Users")  )
-   (.log js/console (:users @app-state)) 
+(defn OnSendCommand [response]
+   (.log js/console (str response)) 
 
 )
 
@@ -44,13 +43,15 @@
 )
 
 
-(defn getUsers [data] 
-  (GET (str settings/apipath "api/user") {
-    :handler OnGetUsers
+(defn sendCommand [data] 
+  (POST (str settings/apipath "doCommand") {
+    :handler OnSendCommand
     :error-handler error-handler
     :headers {
-      :content-type "application/json"
-      :Authorization (str "Bearer "  (:token  (first (:token @shelters/app-state)))) }
+      :token (str (:token (:token @shelters/app-state)))
+    }
+    :format :json
+    :params {:commandId (:id data) :units (:units data)}
   })
 )
 
@@ -79,24 +80,24 @@
          time (tf/unparse shelters/custom-formatter1 (:lastupdate item))
           ]
           (dom/div {:style {:border "1px solid rgba(0,0,0,.125)" :border-radius ".25rem" :padding "0px" :min-width "92px" :margin-top "10px" :display "table"}}
-            (dom/div { :style { :display "table-row" :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "rgba(0,0,0,.03)"}}
-               (dom/div {:style {:display "table-cell" :padding-bottom "5px" :padding-top "5px"}}
+            (dom/div { :style { :text-align "center" :margin-left "0px" :margin-right "0px" :border-bottom "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "rgba(0,0,0,.03)"}}
+               (dom/div {:style {:display "table-cell" :max-width "90px" :height "26px" :vertical-align "middle" :white-space "normal" :word-break "break-word" :padding-bottom "3px" :padding-top "3px" :width "90px"}}
                  name
                )
             )
             (dom/div {:style {:backgroundColor "white" :text-align "center" :display "table-row"}}
               (dom/a {:href (str "#/devdetail/" (:id item)) }
-                (dom/img {:src (str "images/" icon ".png") :style {:margin-top "0px" :margin-bottom "5px" :min-width "90px" :max-width "90px" :font-size "xx-large" :color "green"}})
+                (dom/img {:src (str "images/" icon ".png") :style {:margin-top "3px" :margin-bottom "3px" :min-width "50px" :max-width "50px"}})
               )
             )
             (dom/div { :style { :display "table-row" :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "white"}}
-               (dom/div {:style {:display "table-cell" :padding-bottom "5px"}}
+               (dom/div {:style {:display "table-cell" :padding-bottom "2px"}}
                  ;(str "סטטוס:" status)
                  (str status)
                )
             )
-            (dom/div { :style { :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "white" :padding-bottom "5px" :padding-top "5px"}}
-               (dom/div {:style {:display "table-cell" :max-width "90" :white-space "normal" :word-break "break-word"}}
+            (dom/div { :style { :text-align "center" :margin-left "0px" :margin-right "0px" :border-top "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "white" :padding-bottom "2px" :padding-top "5px"}}
+               (dom/div {:style {:display "table-cell" :max-width "90px" :white-space "normal" :word-break "break-word"}}
                  ;; (dom/div {:className "row"}
                  ;;   (str "תאריך:")
                  ;; )
@@ -121,7 +122,7 @@
     (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
          (map (fn [item]
            (let []
-             (dom/div { :className "panel panel-primary" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "330px" :margin-bottom "0px" :backgroundColor "white"}}
+             (dom/div { :className "panel panel-primary device" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "330px" :margin-bottom "0px" :backgroundColor "white"}}
                (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}}
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
                    (dom/div {:style {:white-space "normal"}} (str "מזהה יחידה: " (if (or (nil? (:controller item)) (< (count (:controller item)) 1)) "empty" (:controller item))))
@@ -140,20 +141,20 @@
 
 
                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :padding-bottom "0px"}}
-                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "55px" :padding-top "10px"}}
+                 (dom/div {:className "col-md-6" :style { :text-align "center" :height "55px" :padding-top "10px" :padding-left "0px" :padding-right "0px"}}
                    (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (set! (.-title js/document) "פתח מנעול"))} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))))
+                       (b/button {:className "btn btn-block btn-primary" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (sendCommand {:id (:id (nth (:commands @data) 0)) :units [(:id item)]}))} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))))
                      )
                    )
                  )
 
-                 (dom/div {:className "col-xs-6" :style { :text-align "center" :height "55px" :padding-top "10px"}}
+                 (dom/div {:className "col-md-6" :style { :text-align "center" :height "55px" :padding-top "10px" :padding-left "0px" :padding-right "0px"}}
                    (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       (b/button {:className "btn btn-block btn-info" :style {:margin-top "0px" :font-size "12px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] (set! (.-title js/document) "בדיקת תקשורת"))} "בדיקת תקשורת")
+                       (b/button {:className "btn btn-block btn-primary" :style {:margin-top "0px" :font-size "12px" :padding-left "0px" :padding-right "0px"} :onClick (fn [e] (sendCommand {:id (:id (nth (:commands @data) 1)) :units [(:id item)]}))} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 1))))))
                      )
                    )
                  )
@@ -190,13 +191,17 @@
       (dom/div
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
-          (dom/div {:className "row" :style {:margin-top "70px" :margin-left "30px" :margin-right "15px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
+          (dom/div {:className "row" :style {:margin-top "60px" :margin-left "30px" :margin-right "15px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
             (dom/div {:className "col-xs-9" :style {:text-align "right"  :padding-top "5px"}}
-              (dom/h2 "תמונת מצב")
+              (dom/h3 "תמונת מצב")
             )
             (dom/div {:className "col-xs-3" :style {:margin-top "20px" :text-align "left"}}
                ;(b/button {:className "btn btn-primary" :onClick (fn [e] (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה")
             )
+          )
+
+          (dom/div {:className "row" :style {:margin-right "0px"}}
+            (dom/input {:id "search" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
           )
           (om/build showdevices-view  data {})
         )

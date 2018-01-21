@@ -59,8 +59,8 @@
 
 
 (defn handleChange [e]
-  (.log js/console (.. e -nativeEvent -target)  )  
-  (.log js/console (.. e -nativeEvent -target -step))
+  ;(.log js/console (.. e -nativeEvent -target)  )  
+  ;(.log js/console (.. e -nativeEvent -target -step))
   (swap! app-state assoc-in [:device (keyword (.. e -nativeEvent -target -id))] (if (= "" (.. e -nativeEvent -target -step)) (.. e -nativeEvent -target -value) (js/parseFloat (.. e -nativeEvent -target -value))))
 )
 
@@ -126,7 +126,7 @@
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "phone" :value (:tel (first (:contacts (:device @app-state))))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))} {:key "contact1" :value (nth (:contacts (:device @app-state)) 0)}  {:key "contact2" :value (nth (:contacts (:device @app-state)) 1)}]}})
 )
 
 
@@ -137,6 +137,14 @@
   )
   ;; TO-DO: Delete Trip from Core
   ;;(.log js/console (str  (get (first response)  "Title") ))
+)
+
+(defn map-unitindication [indication]
+  (let [
+    ;tr1 (.log js/console (str "update=" (get indication "lastUpdateTime")))
+    ]
+    {:id (get indication "indicationId") :isok (get indication "isOk") :value (get indication "value") :lastupdate (tf/parse shelters/custom-formatter3 (get indication "lastUpdateTime"))}
+  )
 )
 
 (defn map-unit [unit]
@@ -157,8 +165,13 @@
 
     contact1 (get (first (filter (fn [x] (if (= (get x "key") "contact1") true false)) (get unit "details"))) "value")
     contact2 (get (first (filter (fn [x] (if (= (get x "key") "contact2") true false)) (get unit "details"))) "value")
+
+
+    indications (map map-unitindication (get unit "indications"))
+    indications (if (> (count indications) 0) indications [{:id 1, :isok false, :value "open"} {:id 2, :isok true, :value "closed"} {:id 3, :isok true, :value "closed"} {:id 4, :isok true, :value "idle"} {:id 5, :isok true, :value "enabled"} {:id 6, :isok true, :value "normal"} {:id 7, :isok true, :value "normal"} {:id 8, :isok true, :value "idle"} {:id 9, :isok true, :value ""} {:id 10, :isok true, :value "2017-12-31_18:53:05.224"} {:id 12, :isok true, :value "normal"}])
+
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :contacts [(first (filter (fn [x] (if (= contact1 (:id x)) true false)) (:contacts @shelters/app-state))) (first (filter (fn [x] (if (= contact1 (:id x)) true false)) (:contacts @shelters/app-state)))]}
+    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :indications (if (nil? indications) [] indications) :contacts [(first (filter (fn [x] (if (= contact1 (:id x)) true false)) (:contacts @shelters/app-state))) (first (filter (fn [x] (if (= contact1 (:id x)) true false)) (:contacts @shelters/app-state)))]}
     ]
     ;
     result
@@ -184,7 +197,7 @@
     :headers {
       :token (str (:token (:token @shelters/app-state)))}
     :format :json
-    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :indications [{:id 1, :isok true, :value "closed"} {:id 2, :isok true, :value "closed"} {:id 3, :isok true, :value "closed"} {:id 4, :isok true, :value "idle"} {:id 5, :isok true, :value "enabled"} {:id 6, :isok true, :value "normal"} {:id 7, :isok true, :value "normal"} {:id 8, :isok true, :value "idle"} {:id 9, :isok true, :value ""} {:id 10, :isok true, :value "2017-12-31_18:53:05.224"} {:id 12, :isok true, :value "normal"}] :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "contact1" :value (:id (nth (:contacts (:device @app-state)) 0))} {:key "contact2" :value (:id (nth (:contacts (:device @app-state)) 0))}]}})
+    :params {:unitId (:id (:device @app-state)) :controllerId (:controller (:device @app-state)) :indications (:indications (:device @app-state)) :name (:name (:device @app-state)) :parentGroups (:groups (:device @app-state)) :owners [] :responsibleUser (:userid (:token @shelters/app-state)) :unitType 1 :ip (:ip (:device @app-state)) :port (:port (:device @app-state)) :latitude (:lat (:device @app-state)) :longitude (:lon (:device @app-state)) :details [{:key "address" :value (:address (:device @app-state))}  {:key "contact1" :value (nth (:contacts (:device @app-state)) 0)} {:key "contact2" :value (nth (:contacts (:device @app-state)) 1)}]}})
 )
 
 
@@ -193,10 +206,10 @@
     newid (js/parseInt (subs id 7))
 
 
-    addcontact (first (filter (fn [x] (if (= (:id x) value) true false)) (:contacts @shelters/app-state)))
+    ;addcontact (first (filter (fn [x] (if (= x value) true false)) (:contacts @shelters/app-state)))
 
-    ;tr1 (.log js/console (str "id=" id " newid=" newid " value=" value " add=" addcontact))
-    newcontacts (conj (take newid (:contacts (:device @app-state))) addcontact)
+    tr1 (.log js/console (str "id=" id " newid=" newid " value=" value))
+    newcontacts (conj (take newid (:contacts (:device @app-state))) value)
 
     newcontacts (flatten (if (> (count (:contacts (:device @app-state))) (+ newid 1)) (reverse (conj newcontacts (drop (+ newid 1) (:contacts (:device @app-state))))) (reverse newcontacts)))
     ]
@@ -208,7 +221,7 @@
 
 (defn setContactsDropDown []
   (doall
-    (map (fn [item num]
+    (map (fn [num]
       (let []
         (jquery
           (fn []
@@ -220,7 +233,7 @@
         (jquery
           (fn []
             (-> (jquery (str "#contact" num))
-              (.selectpicker "val" (:id (first (filter (fn [x] (if (= (:id x) (:id item)) true false)) (:contacts @shelters/app-state)))))
+              (.selectpicker "val" (nth (:contacts (:device @app-state)) num))
               (.on "change"
                 (fn [e]
                   (
@@ -232,7 +245,7 @@
           )
         )
       ))
-      (:contacts @shelters/app-state) (range)
+      (range 2) 
     )
   ) 
 )
@@ -240,7 +253,7 @@
 (defn addplace [place]
   (let [
     size (js/google.maps.Size. 48 48)
-    image (clj->js {:url (str iconBase "red_point.ico") :scaledSize size})
+    image (clj->js {:url (str iconBase "green_point.ico") :scaledSize size})
 
     ;tr1 (.log js/console place)
     marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @app-state) "icon" image "title" (.. place -name)})
@@ -261,7 +274,7 @@
 (defn addsearchbox []
   (let [
     size (js/google.maps.Size. 48 48)
-    image (clj->js {:url (str iconBase "red_point.ico") :scaledSize size})
+    image (clj->js {:url (str iconBase "green_point.ico") :scaledSize size})
     marker-options (clj->js {"position" (google.maps.LatLng. (:lat (:device @app-state)), (:lon (:device @app-state))) "map" (:map @app-state) "icon" image "title" (:name (:device @app-state))})
 
     marker (js/google.maps.Marker. marker-options)
@@ -378,7 +391,7 @@
 
 (defn handleFromChange [e]
   ;;(.log js/console e  )  
-  (.log js/console "The change ....")
+  ;(.log js/console "The change ....")
 
 )
 
@@ -397,7 +410,7 @@
 
 
 (defn handle-change [e owner]
-  (.log js/console e)
+  ;(.log js/console e)
   (swap! app-state assoc-in [:form (keyword (.. e -target -id))] 
     (.. e -target -value)
   )
@@ -407,10 +420,10 @@
 (defn buildContactList [data owner]
   (map
     (fn [text]
-      (dom/option {:key (:id text) :value (:id text)
-                    :onChange #(handle-change % owner)} (:name text))
+      (dom/option {:key (:userid text) :data-subtext (str (:firstname text) " " (:lastname text)) :value (:userid text)
+                    :onChange #(handle-change % owner)} (:login text))
     )
-    (:contacts @shelters/app-state )
+    (:users @shelters/app-state )
   )
 )
 
@@ -466,6 +479,7 @@
     )
   )
 )
+
 (defn createMap []
   (let [
       map-canvas (. js/document (getElementById "map"))
@@ -495,7 +509,7 @@
                 (fn [e]
                   (let [
                     size (js/google.maps.Size. 48 48)
-                    image (clj->js {:url (str iconBase "red_point.ico") :scaledSize size})
+                    image (clj->js {:url (str iconBase "green_point.ico") :scaledSize size})
 
                     marker-options (clj->js {"position" (google.maps.LatLng. (.lat (.. e -latLng)), (.lng (.. e -latLng))) "map" map "icon" image})
                     marker (js/google.maps.Marker. marker-options)
@@ -518,7 +532,7 @@
     )
   )
   (did-update [this prev-props prev-state]
-    (.log js/console "Update happened") 
+    ;(.log js/console "Update happened") 
 
     ;(put! ch 46)
   )
@@ -638,10 +652,10 @@
               (b/button {:className "btn btn-default" :style {:margin "5px"} :disabled? (or (and (:isinsert @app-state) (> (count (filter (fn [x] (if (= (:controller x) (:controller (:device @data))) true false)) (:devices @shelters/app-state))) 0)) (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
               (b/button {:className "btn btn-danger" :style {:display (if (:isinsert @app-state) "none" "inline") :margin "5px"} :onClick (fn [e] (deleteUnit))} "Delete")
 
-              (b/button {:className "btn btn-info" :margin "5px" :onClick (fn [e]
-                ;(shelters/goDashboard e)
-                (js/window.history.back)
-                )  } "Cancel"
+              (b/button {:className "btn btn-info" :style {:margin "5px"} :onClick (fn [e]
+                                        ;(shelters/goDashboard e)
+                                                                                      (js/window.history.back)
+                                                                                      )  } "Cancel"
               )
             )
 
@@ -677,7 +691,7 @@
 
 (sec/defroute devdetail-new-page "/devdetail" {}
   ( let []
-    (swap! app-state assoc-in [:device]  {:id "" :ip "1.1.1.1" :port 5050 :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)]} ) 
+    (swap! app-state assoc-in [:device]  {:id "" :ip "1.1.1.1" :port 5050 :lat (:lat (:selectedcenter @shelters/app-state)) :lon (:lon (:selectedcenter @shelters/app-state)) :contacts [(nth (:contacts @shelters/app-state) 0) (nth (:contacts @shelters/app-state) 1)] :indications [{:id 1, :isok true, :value "closed"} {:id 2, :isok true, :value "closed"} {:id 3, :isok true, :value "closed"} {:id 4, :isok true, :value "idle"} {:id 5, :isok true, :value "enabled"} {:id 6, :isok true, :value "normal"} {:id 7, :isok true, :value "normal"} {:id 8, :isok true, :value "idle"} {:id 9, :isok true, :value ""} {:id 10, :isok true, :value "2017-12-31_18:53:05.224"} {:id 12, :isok true, :value "normal"}]})
     (swap! app-state assoc-in [:isinsert]  true )
     (swap! shelters/app-state assoc-in [:view] 7) 
     (swap! app-state assoc-in [:showmap] 1)

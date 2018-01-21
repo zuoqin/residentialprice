@@ -253,7 +253,7 @@
   (let [     
       newdata { :error (get (:response response)  "error") }
     ]
-    (.log js/console (str  response )) 
+    ;(.log js/console (str  response )) 
     
   )
   
@@ -275,7 +275,7 @@
 
 (defn handleFromChange [e]
   ;;(.log js/console e  )  
-  (.log js/console "The change ....")
+  ;(.log js/console "The change ....")
 
 )
 
@@ -292,7 +292,7 @@
 
 
 (defn handle-change [e owner]
-  (.log js/console e)
+  ;(.log js/console e)
   (swap! app-state assoc-in [:form (keyword (.. e -target -id))] 
     (.. e -target -value)
   )
@@ -416,7 +416,7 @@
     )
   )
   (did-update [this prev-props prev-state]
-    (.log js/console "Update happened") 
+    ;(.log js/console "Update happened") 
 
     ;(put! ch 46)
   )

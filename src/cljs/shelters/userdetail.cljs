@@ -84,7 +84,7 @@
   (let [
       users (:users @shelters/app-state)  
       deluser (remove (fn [user] (if (= (:userid user) (:userid (:user @app-state))) true false  )) users)
-      adduser (into [] (conj deluser {:login (:login (:user @app-state)) :role (:role (:user @app-state)) :userid (:userid (:user @app-state)) :firstname (:firstname (:user @app-state)) :lastname (:lastname (:user @app-state)) :email (:email (:user @app-state)) :addedby (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state))) :islocked (:islocked (:user @app-state)) :iscommand (:iscommand (:user @app-state))}))
+      adduser (into [] (conj deluser {:login (:login (:user @app-state)) :role (:role (:user @app-state)) :userid (:userid (:user @app-state)) :firstname (:firstname (:user @app-state)) :lastname (:lastname (:user @app-state)) :email (:email (:user @app-state)) :phone (:phone (:user @app-state)) :addedby (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state))) :islocked (:islocked (:user @app-state)) :iscommand (:iscommand (:user @app-state))}))
     ]
     (swap! shelters/app-state assoc-in [:users] adduser)
     (js/window.history.back)
@@ -124,7 +124,7 @@
         :token (str (:token (:token @shelters/app-state)))
       }
       :format :json
-      :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)} {:key "iscommand" :value (if (:iscommand (:user @app-state)) 1 0)}] }})
+      :params { :userName (:login (:user @app-state)) :userId (:userid (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "phone" :value (:phone (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)} {:key "iscommand" :value (if (:iscommand (:user @app-state)) 1 0)}] }})
   )
 )
 
@@ -149,7 +149,7 @@
 
   )
   ;; TO-DO: Delete Trip from Core
-  (.log js/console (str response))
+  ;(.log js/console (str response))
 )
 
 ;; (defn map-user [user]
@@ -187,7 +187,7 @@
       :headers {
         :token (str (:token (:token @shelters/app-state)) )}
       :format :json
-      :params { :credentials {:userName (:login (:user @app-state)) :password (:password (:user @app-state))} :profile {:userId "" :userName (:login (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)} {:key "iscommand" :value (if (:iscommand (:user @app-state)) 1 0)}]}  }})
+      :params { :credentials {:userName (:login (:user @app-state)) :password (:password (:user @app-state))} :profile {:userId "" :userName (:login (:user @app-state)) :token (:token (:token @shelters/app-state)) :role {:roleId (:id (:role (:user @app-state))) :roleName (:name (:role (:user @app-state))) :roleLevel (:level (:role (:user @app-state))) :roleDescription (:description (:role (:user @app-state)))} :details [{:key "firstName" :value (:firstname (:user @app-state))} {:key "lastName" :value (:lastname (:user @app-state))} {:key "email" :value (:email (:user @app-state))} {:key "phone" :value (:phone (:user @app-state))} {:key "addedby" :value (if (= (count (:addedby (:user @app-state))) 0) (:userid (:token @shelters/app-state)) (:addedby (:user @app-state)))} {:key "islocked" :value (if (:islocked (:user @app-state)) 1 0)} {:key "iscommand" :value (if (:iscommand (:user @app-state)) 1 0)}]}  }})
   )
 )
 
@@ -218,7 +218,7 @@
            (fn [e]
              (
                (onDropDownChange (.. e -target -id) (.. e -target -value))
-               (.log js/console e)
+               ;(.log js/console e)
              )
            )
          )
@@ -351,7 +351,7 @@
   (let [     
       newdata { :error (get (:response response)  "error") }
     ]
-    (.log js/console (str  response )) 
+    ;(.log js/console (str  response )) 
     
   )
   
@@ -373,7 +373,7 @@
 
 (defn handleFromChange [e]
   ;;(.log js/console e  )  
-  (.log js/console "The change ....")
+  ;(.log js/console "The change ....")
 
 )
 
@@ -389,7 +389,7 @@
 
 
 (defn handle-change [e owner]
-  (.log js/console e)
+  ;(.log js/console e)
   (swap! app-state assoc-in [:user (keyword (.. e -target -id))] 
     (.. e -target -value)
   )
@@ -481,6 +481,18 @@
               )
             )
 
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-5"})
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "כתובת דוא''ל"))
+              (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
+                (dom/input {:id "phone" :type "text" :placeholder "מספר טלפון" :required true :onChange (fn [e] (handleChange e)) :value (:phone (:user @app-state))})
+              )
+
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
             (if (:isinsert @app-state)
               (dom/div {:className "row"}
                 (dom/div {:className "col-xs-5"})
@@ -547,7 +559,7 @@
         )
         (dom/nav {:className "navbar navbar-default" :role "navigation"}
           (dom/div {:className "navbar-header"}
-            (b/button {:className "btn btn-default" :disabled? (or (< (count (:login (:user @data))) 1) (< (count (:firstname (:user @data))) 1) (< (count (:lastname (:user @data))) 1) (< (count (:email (:user @data))) 1) (if (:isinsert @data) (< (count password) 1) false) (< (count (:id (:role (:user @data)))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "הוסף" "עדכון"))
+            (b/button {:className "btn btn-default" :disabled? (or (< (count (:login (:user @data))) 1) (< (count (:firstname (:user @data))) 1) (< (count (:lastname (:user @data))) 1) (< (count (:email (:user @data))) 1) (< (count (:phone (:user @data))) 1) (if (:isinsert @data) (< (count password) 1) false) (< (count (:id (:role (:user @data)))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUser) (updateUser)) )} (if (:isinsert @app-state) "הוסף" "עדכון"))
             (b/button {:className "btn btn-danger" :style {:visibility (if (= (:isinsert @app-state) true) "hidden" "visible")} :onClick (fn [e] (deleteUser (:login @app-state)))} "Delete")
 
             (b/button {:className "btn btn-info" :onClick
@@ -617,7 +629,7 @@
 (sec/defroute userdetail-new-page "/userdetail" {}
   (
     let [
-       emptyuser {:userid "" :password "" :login "" :firstname "" :lastname "" :email "" :role {:id "" :name "" :description "" :addedby (:userid (:token @shelters/app-state)) :islocked false :iscommand false}}
+       emptyuser {:userid "" :password "" :login "" :firstname "" :lastname "" :email "" :phone "" :role {:id "" :name "" :description "" :addedby (:userid (:token @shelters/app-state)) :islocked false :iscommand false}}
     ]
     (swap! app-state assoc-in [:user] emptyuser)
     (swap! app-state assoc-in [:isinsert]  true)

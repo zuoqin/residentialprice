@@ -25,7 +25,7 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:selectedstatus 1}))
+(defonce app-state (atom  {}))
 
 (def jquery (js* "$"))
 
@@ -55,7 +55,7 @@
 
 
 (defn map-dev-node [dev]
-  {:text (:name dev) :unitid (:id dev) :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
+  {:text (:name dev) :unitid (:id dev) :icon "fa fa-hdd-o" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
 )
 
 
@@ -111,7 +111,8 @@
     minlat (if (= (count units) 0) (:lat (:selectedcenter @shelters/app-state)) (apply min (map (fn [x] (:lat x)) units))) 
     maxlat (if (= (count units) 0) (:lat (:selectedcenter @shelters/app-state)) (apply max (map (fn [x] (:lat x)) units)))
 
-    ;tr1 (.log js/console (str "first unit=" (first units)))
+    tr1 (.log js/console (str "first unit=" (first units) " ;2nd=" (nth units 1)))
+
     lat (/ (+ minlat maxlat) 2)
 
     minlon (if (= (count units) 0) (:lon (:selectedcenter @shelters/app-state)) (apply min (map (fn [x] (:lon x)) units)))
@@ -135,7 +136,7 @@
       let [
         childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
         ]
-        (if (> (count childs) 0) {:text (:name x) :groupid (:id x) :icon "glyphicon glyphicon-user" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes childs} {:text (:name x) :groupid (:id x) :icon "glyphicon glyphicon-user" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false}})
+        (if (> (count childs) 0) {:text (:name x) :groupid (:id x) :icon "fa fa-users" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes childs} {:text (:name x) :groupid (:id x) :icon "glyphicon glyphicon-user" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false}})
       ) ) children))
     ;tr1 (.log js/console nodes)
     ]
@@ -144,8 +145,9 @@
 )
 
 (defn buildTreeGroups []
+  ;(.log js/console (str "groups=" (count (:groups @shelters/app-state)) "; units=" (count (:devices @shelters/app-state))))
   (swap! shelters/app-state assoc-in [:selectedunits] [])
-  (do (clj->js {:multiSelect true :searchResultBackColor "#0000FF" :searchResultColor "#FFFFFF" :data [{:text "כל ישראל" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
+  (do (clj->js {:multiSelect true :searchResultBackColor "#0000FF" :searchResultColor "#FFFFFF" :data [{:text "כל ישראל" :icon "fa-flag-israel" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
 )
 
 
@@ -181,29 +183,87 @@
 )
 
 
+(defn add-marker-indications [device]
+  (reduce (fn [x y]
+    (let [
+      indicator (first (filter (fn [z] (if (= (:id z) (:id y)) true false)) (:indications @shelters/app-state) ))
+      ;tr1 (.log js/console indicator)
+      name (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator))))
+
+      val (case (:isok y) true (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "fail"))))) 
+      ]
+      (if (nil? indicator) x
+        (str x
+          "<tr>"
+            "<td style=\"padding-left: 5px; text-align: center; border: 1px solid\">"
+                name
+             "</td>"
+             "<td style=\"text-align: center; border: 1px solid\">"
+                val
+            "</td>"
+          "</tr>"
+        )
+      )
+    )
+  )
+  (str
+    "<tr>"
+      "<th style=\"text-align: center; border: 1px solid; background-color: lightgrey\">"
+        "חיישן"
+      "</th>"
+
+      "<th style=\"text-align: center; border: 1px solid; background-color: lightgrey\">"
+        "מצב"
+      "</th>"
+    "</tr>"
+  )
+
+  (:indications device))
+)
+
 (defn addMarker [device]
   (let [
-    ;tr1 (.log js/console (str "tran: " tran ))
-
+    ;tr1 (.log js/console (str "token: " (:token (:token @shelters/app-state)) ))
+    ;tr1 (.log js/console (str "command1= " (:name (nth (:commands @shelters/app-state) 1))))
     wnd1  (str "<div id=\"content\">"
-      "<div id=\"siteNotice\">"
-      "</div>"
-      "<h1 id=\"firstHeading\" class=\"firstHeading\">"
-      (:name device)
-      "</h1>"
-      "<div id=\"bodyContent\">"
-      "<p><b>Controller: </b>" (:name device) "</p>"
-      "<p>" (:address device) ", <a href=\"#/devdetail/" (:id device) "\">"
-      "Go to device</a>"
-      "</p>"
-      "</div>"
+      "<h5 style=\"text-align: center\">" (:name device) "</h5>"
+      "<h5 style=\"text-align: center\">" (:address device) "</h5>"
+      "<table style=\"width: 100%; margin-bottom: 5px;\">"
+      (add-marker-indications device)
+      "</table>"
+
+      "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 5px; \" onclick=\"sendcommand('"
+        settings/apipath "', '"
+        (:token (:token @shelters/app-state))
+        "', '"
+        (:id device)
+        "', "
+        (:id (nth (:commands @shelters/app-state) 0))
+        ")\">"
+        (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @shelters/app-state) 0)))))
+      "</button>"
+
+
+      "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 5px; \" onclick=\"sendcommand('"
+        settings/apipath "', '"
+        (:token (:token @shelters/app-state))
+        "', '"
+        (:id device)
+        "', "
+        (:id (nth (:commands @shelters/app-state) 1))
+        ")\">"
+        (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @shelters/app-state) 1)))))
+      "</button>"
+
       "</div>")
 
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
     ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
     size (js/google.maps.Size. 48 48)
-    image (clj->js {:url (str iconBase (case (:status device) 3 "red_point.ico" "green_point.png")) :scaledSize size})
+
+    status (:isok (first (filter (fn [x] (if (= (:id x) 12) true false)) (:indications device))))
+    image (clj->js {:url (str iconBase (case status true "green_point.ico" "red_point.ico")) :scaledSize size})
     marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" image "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
     ]
@@ -253,13 +313,17 @@
       (let [
         nodeid (get x "nodeId")
         options (clj->js [nodeid {:silent true}])
-        tr1 (.log js/console (str "nodeId=" nodeid))
+        ;tr1 (.log js/console (str "nodeId=" nodeid))
         ]
         (-> (jquery "#tree" )
           (.treeview "unselectNode" options)
         )
       )
     ) selected))
+
+    (-> (jquery "#tree" )
+      (.treeview "clearSearch")
+    )
   )
 )
 
@@ -325,14 +389,30 @@
   )
 )
 
+(defn addtoselected [unitid]
+  ;(.log js/console (str "unitid=" unitid))
+  (if (= (.indexOf (:selectedunits @shelters/app-state) unitid) -1)
+    (swap! shelters/app-state assoc-in [:selectedunits] (conj (:selectedunits @shelters/app-state) unitid))
+  )
+)
+
+(defn add-group-to-selected [city]
+  (let [
+    units (map (fn [x] (:unitid x)) (getChildUnits city []))
+    ]
+    (doall (map addtoselected units))
+    ;(.log js/console (str "total in group:" (count units)))
+  )
+)
+
 (defn setcenterbycity [city]
   (let [
     thecity (first (filter (fn [x] (if (= (:id x) city) true false)) (:groups @shelters/app-state)))
 
     latlon (calcGroupLatLon (:id thecity)) ;{:lat 32.08088 :lon 34.78057}
-    tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
-    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) }  )
+    ;tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
     ]
+    (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) })
     (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat latlon), (:lon latlon)))
   )
 )
@@ -356,8 +436,10 @@
              (.log js/console (str "unitid=" unitid))
              ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
              (if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
-             (if (= (.indexOf (:selectedunits @shelters/app-state) unitid) -1)
-               (swap! shelters/app-state assoc-in [:selectedunits] (conj (:selectedunits @shelters/app-state) unitid))
+
+             (if (nil? unitid)
+               (add-group-to-selected (get res "groupid"))
+               (addtoselected unitid)
              )
              ;(gotoSelection (first res)) 
             )
@@ -390,7 +472,10 @@
 
 (defn setcontrols [value]
   (case value
-    42 (setTreeControl)
+    42 (go
+         (<! (timeout 500))
+         (setTreeControl)
+       )
     43 (addMarkers)
   )
   
@@ -439,58 +524,85 @@
 
 
 (defn buildStatusesList [data owner]
-  (map
-    (fn [text]
-      (let [
-        ;tr1 (.log js/console (str  "name=" (:name text) ))
-        ]
-        (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
+  (dom/optgroup {:label (if (:isnotification  @data) "סטטוס התראה" "סטטוס תקלה")}
+    (map
+      (fn [text]
+        (let [
+          ;tr1 (.log js/console (str  "name=" (:name text) ))
+          ]
+          (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
+        )
       )
+      (:statuses @data) 
     )
-    (:statuses @data) 
   )
 )
 
 (defcomponent notifications-view [data owner]
   (render [_]
-          (dom/div {:className "row" :style {:padding-top "0px" :bottom "0px" :width "100%"}}
+          (dom/div {:className "row" :style {:padding-top "5px" :bottom "5px" :width "100%" :padding-right "15px" :padding-left "15px" :position "absolute" :background-color "white"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
-            (dom/div {:className "col-12 col-sm-12" :style {:padding-top "0px" :padding-bottom "15px" :padding-left "16px"}}
-                 (if (:isnotification  @data) "טבלת התראות" "טבלת תקלות")
-              (dom/div {:className "panel panel-primary" :style {:padding "0px" :margin-top "5px" :margin-bottom "0px" :margin-left "15px" :border "none"}}
-                (dom/div {:className "panel-heading" :style {:margin-left "-15px" :padding-top "0px" :padding-bottom "0px" :margin-top "0px"}}
-                  (dom/div {:className "row" :style {:margin-left "0px" :margin-right "-15px"}}
+            (dom/div {:className "col-md-12" :style {:padding-top "0px" :padding-bottom "10px" :padding-left "10px" :padding-right "10px" :border "1px solid lightgrey"}}
+              (dom/div {:className "panel panel-default" :style {:margin-left "0px" :margin-right "0px" :margin-top "0px" :margin-bottom "0px" :padding-bottom "10px" :border "none"}}
+                (dom/div {:className "panel-heading" :style {:text-align "right" :padding-top "0px" :padding-bottom "0px" :background-image "linear-gradient(to bottom,#337ab7 0,#265a88 100%)" :font-size "large" :color "white"}}
+                  (dom/div {:className "row"}
+                    (dom/div {:className "col-md-11" :style {:padding-top "5px" :padding-bottom "5px"}}
+                      (if (:isnotification  @data) "טבלת התראות" "טבלת תקלות")
+                    ) 
+                    (dom/div {:className "col-md-1" :style {:text-align "left" :padding-top "5px" :padding-bottom "5px"}}
+                      (dom/span {:className "glyphicon glyphicon-remove" :style {:margin-left "5px" :cursor "pointer"} :onClick (fn [e] (shelters/notificationsclick 0))})
+                    )
+                  )
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}} "ראיתי")
+                )
+              )
+              (dom/div {:className "panel panel-default" :style {:padding "0px" :margin-top "0px" :margin-bottom "0px" :margin-left "15px" :border "none"}}
+                (dom/div {:className "panel-heading" :style {:margin-left "-15px" :padding-top "0px" :padding-bottom "0px" :margin-top "0px" :background-color "transparent" :background-image "none" :font-weight "600" :border "1px solid lightgray" :padding-left "0px"}}
+                  (dom/div {:className "row" :style {:margin-left "17px" :margin-right "-14px"}}
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px"}}  "מספר אירוע")
-
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מזהה יחידה")
-
-
-                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם יחידה")
-
-                    (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "מיקום יחידה")
-
-                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "שם אירוע")
-
-                    (dom/div {:className "col-md-3" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px"}}  "תאריך וזמן אירוע")
-
-                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
-                      (omdom/select #js {:id "statuses"
-                                         :className "selectpicker"
-                                         :data-width "100px"
-                                         :data-style "btn-primary"
-                                         :data-show-subtext "false"
-                                         :data-live-search "true"
-                                         :onChange #(handle-change % owner)
-                                         }                
-                        (buildStatusesList data owner)
+                    (dom/div {:className "col-xs-1 col-md-1" :style {}}
+                      (dom/div {:className "row"}
+                        (dom/div {:className "col-md-4" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}} "ראיתי")
+                      (dom/div {:className "col-md-8" :style {:line-height "17px" :text-align "center" :border-left "1px solid" :padding-left "5px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :background-image (case (:sort-alerts @shelters/app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 1 2 1)) (shelters/doswaps)))}
+                        (dom/p {:style {:margin "0px"}} "מספר") (dom/p {:style {:margin "0px"}} "אירוע"))
                       )
                     )
 
-                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}}  "אירוע טופל ע''י")
+                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :line-height "17px" :background-image (case (:sort-alerts @shelters/app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 3 4 3)) (shelters/doswaps)))}
+                    (dom/p {:style {:margin "0px"}} "מזהה") (dom/p {:style {:margin "0px"}} "יחידה"))
 
+
+                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 5 6 5)) (shelters/doswaps)))}  "שם יחידה")
+
+                    (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 7 8 7)) (shelters/doswaps)))}  "מיקום יחידה")
+
+                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 9 "url(images/sort_asc.png" 10 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 9 10 9)) (shelters/doswaps)))}  "שם אירוע")
+
+                    (dom/div {:className "col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px"}}
+                      (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 11 "url(images/sort_asc.png" 12 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 11 12 11)) (shelters/doswaps)))}
+                        "זמן פתיחה"
+                      )
+                      (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 13 "url(images/sort_asc.png" 14 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 13 14 13)) (shelters/doswaps)))}
+                        "זמן סגירה"
+                      )
+                    )
+
+                    (dom/div {:className "col-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                      (dom/div {:className "col-md-6" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "5px" :background-image (case (:sort-alerts @shelters/app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps)))}
+                        (omdom/select #js {:id "statuses"
+                                           :title (if (:isnotification  @data) "סטטוס התראה" "סטטוס תקלה")
+                                           :data-width "75%"
+                                           ;:data-style "btn-default"
+                                           :data-show-subtext "false"
+                                           :data-live-search "true"
+                                           :onChange #(handle-change % owner)
+                                           }                
+                          (buildStatusesList data owner)
+                        )
+                      )
+
+                      (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 15 "url(images/sort_asc.png" 16 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 15 16 15)) (shelters/doswaps)))}  "אירוע טופל ע''י")
+                    )
                   )
                 )
               )
@@ -519,17 +631,21 @@
   )
   (render [_]
     (let [
-      ;tr1 (.log js/console (str (- (.. js/document -body -clientHeight) tableheight 0) "px"))
+      tbl (if (or (:isalert @data) (:isnotification @data)) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)
+      screen (.. js/document -body -clientHeight)
+
+      treeheight (if (< (- screen tbl 175) 0) 0 (- screen tbl 175))
+      pnlheight (if (< (- screen tbl 175) 0) 0 (- screen tbl 75))
       ]
       (dom/div {:style { :padding-right "15px"}}
         (om/build shelters/website-view data {})
         (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)) "px") "100%")}}
           (dom/div  {:className "col-3 col-sm-3" :style {:height "100%" :padding-left "5px"}}
-            (dom/div {:className "panel-default" :style {:border "1px solid darkgrey"}}
-              (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}} "בחר קבוצה/יחידה")
-              (dom/div {:className "panel-body" :style {:margin-top "0px" :padding-bottom "5px" :margin-left "0px" :margin-right "0px"}}
-                (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 175) 0 ) "px") (str (+ (- (.. js/document -body -clientHeight) 175) 0) "px")) }})
-                (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px"}}
+            (dom/div {:className "panel-primary" :style {:border "1px solid darkgrey" :overflow-y "hidden" :max-height (str pnlheight "px")}}
+              (dom/div {:className "panel-heading" :style {:margin-top "3px" :padding-top "3px" :padding-bottom "3px" :margin-left "15px" :margin-right "15px"}} "בחר קבוצה/יחידה")
+              (dom/div {:className "panel-body" :style {:margin-top "0px" :padding-top "5px" :padding-bottom "5px" :margin-left "0px" :margin-right "0px"}}
+                (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (str treeheight "px") }})
+                (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px" :bottom "0px"}}
                   (dom/div {:className "col-xs-6" :style {:padding-left "5px" :padding-right "5px"}}
                     (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))
                   )

@@ -273,7 +273,11 @@
       (map (fn [item]
         (let [
           isselected (if (= (.indexOf (:selectedunits @data) (:id item)) -1) false true)
-          ;tr1 (.log js/console (str item))
+          contact1 (first (filter (fn [x] (if (= (:userid x) (nth (:contacts item) 0)) true false)) (:users @data)))
+
+          contact2 (first (filter (fn [x] (if (= (:userid x) (nth (:contacts item) 1)) true false)) (:users @data)))
+          ;tr1 (.log js/console (str "id=" (nth (:contacts item) 0) contact1))
+;          tr1 (.log js/console (str ) contact2)
           ]
           (dom/div {:className "row tablerow":style {:border-bottom "1px solid" :padding-top "0px" :margin-right "0px" :margin-left "0px"}}
             (dom/div {:className "col-md-1" :style {:border-left "1px solid"}}
@@ -330,32 +334,32 @@
               )
             )
 
-            (dom/div {:className "col-md-3" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden"}}
+            (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden"}}
               (dom/div {:style {:line-height "42px"}}
                 (:address item)
               )
             )
 
-            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px" :overflow "hidden"}}
+            (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px" :overflow "hidden"}}
               (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:name (nth (:contacts item) 0)))
+                (str (:firstname contact1) " " (:lastname contact1) " " (:phone contact1))
               )
               (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:phone (nth (:contacts item) 0)))
-              )
-            )
-
-            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px"}}
-              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:name (nth (:contacts item) 1)))
-              )
-              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:phone (nth (:contacts item) 1)))
+                (str (:email contact1))
               )
             )
 
+            (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px"}}
+              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
+                (str (:firstname contact2) " " (:lastname contact2) " " (:phone contact2))
+              )
+              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
+                (str (:email contact2))
+              )
+            )
 
-            (dom/div {:className "col-md-4"}
+
+            (dom/div {:className "col-md-3"}
               (om/build showstatuses item {})
             )
           )
@@ -474,7 +478,8 @@
     (onMount data)
   )
   (render [_]
-    (let [style {:style {:margin "10px" :padding-bottom "0px"}}
+    (let [
+      ;style {:style {:margin "10px" :padding-bottom "0px"}}
       ;tr1 (.log js/console (:name (first (:commands @data))))
       ]
       (dom/div
@@ -514,7 +519,7 @@
                     )
                   )
 
-                  (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                       (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))}
                         "כתובת"
@@ -522,14 +527,14 @@
                     )
                   )
 
-                  (dom/div {:className "col-xs-1" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid" :text-align "center"}}
+                  (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid" :text-align "center"}}
                     "איש קשר 1"
                   )
 
-                  (dom/div {:className "col-xs-1" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :text-align "center" :border-left "1px solid"}}
+                  (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :text-align "center" :border-left "1px solid"}}
                     "איש קשר 2"
                   )
-                  (dom/div {:className "col-xs-4 col-md-4"}
+                  (dom/div {:className "col-md-3"}
                     (dom/div {:className "row"}
                       (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
                         (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
@@ -558,7 +563,7 @@
                         )
                       )
 
-                      (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "10px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
                         (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 5))))))
                         )
                       )
