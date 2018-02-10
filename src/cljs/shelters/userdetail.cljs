@@ -483,7 +483,7 @@
 
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-5"})
-              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "כתובת דוא''ל"))
+              (dom/div {:className "col-xs-1" :style {:text-align "left" :padding-left "0px" :padding-right "0px"}} (dom/h5 "מספר טלפון"))
               (dom/div {:className "col-xs-2" :style {:margin-top "4px" :margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left"}}
                 (dom/input {:id "phone" :type "text" :placeholder "מספר טלפון" :required true :onChange (fn [e] (handleChange e)) :value (:phone (:user @app-state))})
               )

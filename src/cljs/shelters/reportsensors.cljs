@@ -1,4 +1,4 @@
-(ns shelters.reportunits
+(ns shelters.reportsensors
   (:use [net.unit8.tower :only [t]])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
@@ -10,6 +10,7 @@
             [cljsjs.chartjs]
             [om.dom :as omdom :include-macros true]
             [cljs-time.core :as tc]
+            [cljs-time.local :as tl]
             [cljs-time.coerce :as te]
             [cljs-time.format :as tf]
             [clojure.string :as str]
@@ -22,10 +23,10 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom  {:data [] :state 0 :filter {:controller "" :statuses "1" :fault "0" :status 1 :fromdate (tf/parse (tf/formatter "yyyy-mm-dd HH:mm:ss") (str (tf/unparse (tf/formatter "yyyy-mm-dd") (tc/now)) " 00:00:00")) :todate (te/from-long (- (+ (te/to-long (tf/parse (tf/formatter "yyyy-mm-dd HH:mm:ss") (str (tf/unparse (tf/formatter "yyyy-mm-dd") (tc/now)) " 00:00:00"))) (* 24 3600 1000)) (* 1 1 1) 1))
+(defonce app-state (atom  {:data [] :state 0 :filter {:controller "" :statuses "1" :indication "0" :status 1 :fromdate (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") (str (tf/unparse (tf/formatter "yyyy-MM-dd") (tl/local-now)) " 00:00:00")) :todate (te/from-long (- (+ (te/to-long (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") (str (tf/unparse (tf/formatter "yyyy-MM-dd") (tl/local-now)) " 00:00:00"))) (* 24 3600 1000)) (* 1 1 1) 1))
 
 
-;(tf/parse (tf/formatter "yyyy-mm-dd") (tf/unparse (tf/formatter "yyyy-mm-dd") (+ (te/to-long (tc/now)) (* 24 3600 1000))))
+;(tf/parse (tf/formatter "yyyy-mm-dd") (tf/unparse (tf/formatter "yyyy-mm-dd") (+ (te/to-long (tl/local-now)) (* 24 3600 1000))))
                                              }}))
 
 (def jquery (js* "$"))
@@ -55,15 +56,7 @@
 
   (jquery
      (fn []
-       (-> (jquery "#statuses")
-         (.selectpicker {})
-       )
-     )
-   )
-
-  (jquery
-     (fn []
-       (-> (jquery "#fault")
+       (-> (jquery "#indication")
          (.selectpicker {})
        )
      )
@@ -72,8 +65,8 @@
 
    (jquery
      (fn [])
-       (-> (jquery "#fault")
-         (.selectpicker "val" (:fault (:filter @app-state)))
+       (-> (jquery "#indication")
+         (.selectpicker "val" (:indication (:filter @app-state)))
          (.on "change"
            (fn [e]
              (onDropDownChange (.. e -target -id) (.. e -target -value))
@@ -87,20 +80,6 @@
      (fn []
        (-> (jquery "#controller")
          (.selectpicker "val" (:controller (:filter @app-state)))
-         (.on "change"
-           (fn [e]
-             (onDropDownChange (.. e -target -id) (.. e -target -value))
-               ;(.log js/console e)
-           )
-         )
-       )
-     )
-   )
-
-   (jquery
-     (fn []
-       (-> (jquery "#statuses")
-         (.selectpicker "val" (:status (:filter @app-state)))
          (.on "change"
            (fn [e]
              (onDropDownChange (.. e -target -id) (.. e -target -value))
@@ -151,7 +130,7 @@
 
              dtstring (if (= (count (.. e -dates) ) 0)
                     nil
-                    (te/from-long (- (+ (te/to-long (tf/parse (tf/formatter "yyyy-mm-dd HH:mm:ss") (str (.format e 0 "yyyy-mm-dd") " 00:00:00"))) (* (case field "fromdate" 0 24) 3600 1000)) (case field "fromdate" 0 1)))
+                    (te/from-long (- (+ (te/to-long (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") (str (.format e 0 "yyyy-mm-dd") " 00:00:00"))) (* (case field "fromdate" 0 24) 3600 1000)) (case field "fromdate" 0 1)))
                 )
               ]
              ;(.log js/console (str (.. e -date)  ) )
@@ -191,17 +170,14 @@
             ;(.log js/console (str "vals=" vals "; key=" key "; val=" val "; res=" result))
             (recur 
               (case key
-                "NotificationId" (assoc result :id val)
-                "OpenTime" (assoc result :open (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
-                "AcceptanceTime" (assoc result :accept (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
-                "CloseTime" (assoc result :close (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
-                "ResponsibleUser" (assoc result :user val)
-                "NotificationType" (assoc result :type (str (t :he shelters/main-tconfig (keyword (str "alerts/" val)))))
+                "Id" (assoc result :id val)
+                "ChangeTime" (assoc result :change (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
                 "ControllerId" (assoc result :controller val)
+                "IndicationName" (assoc result :indication val)
+                "OldValue" (assoc result :oldval val)
+                "NewValue" (assoc result :newval val)
                 "UnitAddress" (assoc result :address val)
                 "UnitDescription" (assoc result :name val)
-                "FaultName" (assoc result :sensor val)
-                "Status" (assoc result :status (str (t :he shelters/main-tconfig (keyword (str "alerts/" val)))))
               )
               (rest data)
             )
@@ -238,7 +214,7 @@
 (defn createReport []
   (let [
     status (js/parseInt (:statuses (:filter @app-state)))
-    fault (js/parseInt (:fault (:filter @app-state)))
+    indication (js/parseInt (:indication (:filter @app-state)))
     ]
     (swap! app-state assoc-in [:state] 1)
     (POST (str settings/apipath "createReport") {
@@ -247,7 +223,7 @@
       :headers {
         :token (str (:token (:token @shelters/app-state))) }
       :format :json
-      :params {:reportId 1 :filter [{:column "OpenTime" :minValue (tf/unparse shelters/custom-formatter2 (:fromdate (:filter @app-state))) :maxValue (tf/unparse shelters/custom-formatter2 (:todate (:filter @app-state)))} {:column "ControllerId" :likeValue (:controller (:filter @app-state))} {:column "FaultName" :likeValue (if (= 0 fault) "" (nth shelters/indicators fault))} {:column "Status" :likeValue (if (= 1 status) "" (str/lower-case (:eng (first (filter (fn [x] (if (= (:id x) status) true false)) (:statuses @shelters/app-state))))))}] }
+      :params {:reportId 3 :filter [{:column "ChangeTime" :minValue (tf/unparse shelters/custom-formatter2 (:fromdate (:filter @app-state))) :maxValue (tf/unparse shelters/custom-formatter2 (:todate (:filter @app-state)))} {:column "ControllerId" :likeValue (:controller (:filter @app-state))} {:column "IndicationName" :likeValue (if (= 0 indication) "" (nth shelters/indicators (- indication 1)))}] }
     })
   )
 )
@@ -277,12 +253,12 @@
         false
       )
 
-    5 (if (> (compare (:name item1) (:name item2)) 0)
+    5 (if (> (compare (:indication item1) (:indication item2)) 0)
         false
         true
       )
 
-    6 (if (> (compare (:name item1) (:name item2)) 0)
+    6 (if (> (compare (:indication item1) (:indication item2)) 0)
         true
         false
       )
@@ -308,8 +284,8 @@
 
 
 (defn onMount [data]
-  (set! (.-title js/document) (str "דו''ח תקלות") )
-  (swap! shelters/app-state assoc-in [:current] "Report #1")
+  (set! (.-title js/document) (str "דו''ח חיווים") )
+  (swap! shelters/app-state assoc-in [:current] "Report #3")
   (put! ch 46)
   (put! ch 47)
 )
@@ -350,20 +326,8 @@
 )
 
 
-(defn buildStatusesList [data owner]
-  (map
-    (fn [text]
-      (let [
-        ;tr1 (.log js/console (str  "name=" (:name text) ))
-        ]
-        (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
-      )
-    )
-    (:statuses @data) 
-  )
-)
 
-(defn buildFaultsList [data owner]
+(defn buildIndicationsList [data owner]
   (map
     (fn [text num]
       (let [
@@ -372,7 +336,7 @@
         (dom/option {:key num :data-width "100px" :value num :onChange #(handle-change % owner)} text)
       )
     )
-    (flatten (conj ["All"] shelters/indicators)) (range 0 7 1)
+    (flatten (conj ["הכל"] (map (fn [x] ((keyword x) (:words @shelters/app-state))) shelters/indicators))) (range 0 7 1)
   )
 )
 
@@ -393,50 +357,43 @@
       (dom/div {:className "panel-body" :style {:flex 1 :overflow-y "scroll" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px"}}
         (map (fn [item]
           (let [
-              ;tr1 (.log js/console (str "status=" (:status item) "; type=" (:type item)))
+              
+              tr1 (.log js/console (str "indication=" (:indication item) "; newval=" (:newval item)))
             ]
             (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :border-bottom "1px solid" :border-right "1px solid"}}
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
+              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px"}}
                 (:id item)
               )
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
+              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px"}}
                 (:controller item)
               )
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
+              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px"}}
                 (:name item)
               )
-              (dom/div {:className "col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
+              (dom/div {:className "col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :max-height "26px" :overflow-y "hidden" :border-left "1px solid" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px"}}
                 (:address item)
               )
 
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
-                (:sensor item)
+              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px" :height "26px"}}
+                ((keyword (:indication item)) (:words @shelters/app-state))
               )
 
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
-                (dom/div {:className "col-md-6"}
-                  (:type item)
+              (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px" :height "26px"}}
+                  ((keyword (:oldval item)) (:words @shelters/app-state))
                 )
-                (dom/div {:className "col-md-6"}
-                  (:status item)
+                (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px" :height "26px"}}
+                  ((keyword (:newval item)) (:words @shelters/app-state))
                 )
               )
 
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
-                (:user item)
-              )
 
-              (dom/div {:className "col-md-4" :style {:padding-left "0px" :padding-right "0px"}}
-                (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
-                  (tf/unparse shelters/custom-formatter1 (:open item))
-                )
-                (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
-                  (if (nil? (:accept item)) "" (tf/unparse shelters/custom-formatter1 (:accept item)))
+
+              (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "col-md-12" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid transparent" :overflow-x "hidden"}}
+                  (tf/unparse shelters/custom-formatter1 (:change item))
                 )
 
-                (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid" :overflow-x "hidden"}}
-                  (if (nil? (:close item)) "" (tf/unparse shelters/custom-formatter1 (:close item)))
-                )
               )
             )
           ))
@@ -478,7 +435,7 @@
           (dom/div {:className "col-md-2" :style {:padding-right "15px" :padding-left "0px"}}
             (dom/div {:className "col-md-2" :style {:text-align "left" :padding-left "0px" :padding-right "0px" :margin-top "2px"}} (dom/h5 "From"))
             (dom/div {:className "col-md-9" :style {:margin-left "0px" :padding-left "0px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
-              (dom/input {:id "fromdate" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :width "100%"}})
+              (dom/input {:id "fromdate" :data-date-start-date "-14d" :data-date-end-date "0d" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :width "100%"}})
             )
             (dom/div {:className "col-md-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
               (dom/span {:className "asterisk"} "*")
@@ -489,38 +446,18 @@
           (dom/div {:className "col-md-2" :style {:padding-right "5px"}}
             (dom/div {:className "col-md-2" :style {:text-align "right" :padding-left "0px" :padding-right "0px" :margin-top "2px"}} (dom/h5 "To"))
             (dom/div {:className "col-md-9" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
-              (dom/input {:id "todate" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px" :width "100%"}} )
+              (dom/input {:id "todate" :data-date-start-date "-14d" :data-date-end-date "0d" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px" :width "100%"}} )
             )
             (dom/div {:className "col-md-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
               (dom/span {:className "asterisk"} "*")
             )
           )
 
+          (dom/div {:className "col-md-4" :style {:padding-right "5px"}}
+            (dom/div {:className "col-md-4" :style {:text-align "left" :padding-left "10px" :padding-right "0px" :margin-top "5px"}} (dom/h5 "Indication"))
 
-          (dom/div {:className "col-md-2" :style {:padding-right "5px"}}
-            (dom/div {:className "col-md-4" :style {:text-align "left" :padding-left "5px" :padding-right "0px" :margin-top "5px"}} (dom/h5 "Status:"))
             (dom/div {:className "col-md-7" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
-              (omdom/select #js {:id "statuses"
-                                 :className "selectpicker"
-                                 :data-width "100%"
-                                 :data-style "btn-primary"
-                                 :data-show-subtext "false"
-                                 :data-live-search "true"
-                                 :onChange #(handle-change % owner)
-                                 }                
-                (buildStatusesList shelters/app-state owner)
-              )
-            )
-            (dom/div {:className "col-md-1" :style {:margin-top "4px" :text-align "right" :padding-right "0px"}}       
-              (dom/span {:className "asterisk"} "*")
-            )
-          )
-
-          (dom/div {:className "col-md-2" :style {:padding-right "5px"}}
-            (dom/div {:className "col-md-2" :style {:text-align "right" :padding-left "0px" :padding-right "0px" :margin-top "5px"}} (dom/h5 "Fault"))
-
-            (dom/div {:className "col-md-9" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
-              (omdom/select #js {:id "fault"
+              (omdom/select #js {:id "indication"
                              :className "selectpicker"
                              :title "בחר אחד מהבאים ..."
                              :data-show-subtext "true"
@@ -528,7 +465,7 @@
                              :data-live-search "true"
                              :onChange #(handle-change % owner)
                             }
-                (buildFaultsList data owner)
+                (buildIndicationsList data owner)
               )
             )
             ;; (dom/div {:className "col-md-9" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
@@ -582,32 +519,19 @@
                   )
 
                   (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 9 "url(images/sort_asc.png" 10 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 9 10 9)) (shelters/doswaps)))}
-                    "שם אירוע"
+                    "Indication"
                   )
 
-                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
+                  (dom/div {:className "col-md-4" :style {:text-align "center" :border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
                     (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "0px" :height "100%" :padding-top "5px" :padding-bottom "5px" :border-left "1px solid" :background-image (case (:sort-list @app-state) 11 "url(images/sort_asc.png" 12 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 11 12 11)) (shelters/doswaps)))}
-                      "type"
+                      "oldValue"
                     )
                     (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "0px" :height "100%" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 13 "url(images/sort_asc.png" 14 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 13 14 13)) (shelters/doswaps)))}
-                      "status"
+                      "newValue"
                     )                    
                   )
-                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-list @app-state) 15 "url(images/sort_asc.png" 16 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 15 16 15)) (shelters/doswaps)))}
-                    "אירוע טופל ע''י"
-                  )
-                  (dom/div {:className "col-md-4" :style {:text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
-                    (dom/div {:className "col-md-4" :style {:border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 17 18 17)) (shelters/doswaps)))}
-                      "זמן פתיחה"
-                    )
-
-                    (dom/div {:className "col-md-4" :style {:border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 19 "url(images/sort_asc.png" 20 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 19 20 19)) (shelters/doswaps)))}
-                      "זמן סגירה"
-                    )
-
-                    (dom/div {:className "col-md-4" :style { :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 21 "url(images/sort_asc.png" 22 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 21 22 21)) (shelters/doswaps)))}
-                      "זמן סגירה2"
-                    )
+                  (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-list @app-state) 15 "url(images/sort_asc.png" 16 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 15 16 15)) (shelters/doswaps)))}
+                    "Change Time"
                   )
                 )
               )
@@ -623,7 +547,7 @@
 
 
 
-(sec/defroute reportunits-page "/reportunits" []
+(sec/defroute reportsensors-page "/reportsensors" []
   (om/root report-view
            app-state
            {:target (. js/document (getElementById "app"))}

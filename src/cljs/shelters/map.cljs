@@ -54,76 +54,11 @@
 ;; )
 
 
-(defn map-dev-node [dev]
-  {:text (:name dev) :unitid (:id dev) :icon "fa fa-hdd-o" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
-)
 
 
-(defn buildUnits [id]
-  (let [
-    devices (if (> (count (:devices @shelters/app-state)) 0) (filter (fn [x] (if (and (not (nil? (:groups x))) (> (.indexOf (:groups x) id) -1))  true false)) (:devices @shelters/app-state)) []) 
-    nodes (into [] (map map-dev-node devices))
-    ;tr1 (.log js/console nodes)
-    ]
-    nodes
-  )
-)
 
 
-(defn getChildUnits [id children]
-  (let [
-    childgroups (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @shelters/app-state))
-    ;(filter (fn [x] (if (> (.indexOf (:parents x) id) -1) true false)) (:groups @shelters/app-state))
 
-    
-    childs (concat children (buildUnits id))
-        
-    childdevs (
-      loop [result [] groups childgroups]
-        (if (seq groups)
-          (let [
-            thegroup (first groups)
-            tr1 (.log js/console (str "Current group: " (:name thegroup)))
-            ]
-            (recur (conj result (getChildUnits (:id thegroup) [])) (rest groups))
-          )
-          result
-        )
-    )
-    ;; childdevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) childs)
-
-    ;; nextchildunits (distinct (flatten (map (fn [x] (buildUnits (:id x))) childgroups)))
-
-    ;; nextchilddevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @shelters/app-state)))) nextchildunits)
-    ]
-
-    (distinct (flatten (concat childs childdevs)))
-    ;childgroups
-    ;(if (> (count childgroups) 0) (concat ))
-  )
-)
-
-(defn calcGroupLatLon [id]
-  (let [
-    ;tr1 (.log js/console (str "id in calcGroupLatLon=" id))
-    units (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:unitid x)) true false)) (:devices @shelters/app-state)))) (getChildUnits id [])) 
- 
-    minlat (if (= (count units) 0) (:lat (:selectedcenter @shelters/app-state)) (apply min (map (fn [x] (:lat x)) units))) 
-    maxlat (if (= (count units) 0) (:lat (:selectedcenter @shelters/app-state)) (apply max (map (fn [x] (:lat x)) units)))
-
-    tr1 (.log js/console (str "first unit=" (first units) " ;2nd=" (nth units 1)))
-
-    lat (/ (+ minlat maxlat) 2)
-
-    minlon (if (= (count units) 0) (:lon (:selectedcenter @shelters/app-state)) (apply min (map (fn [x] (:lon x)) units)))
-    maxlon (if (= (count units) 0) (:lon (:selectedcenter @shelters/app-state)) (apply max (map (fn [x] (:lon x)) units)))
-
-
-    lon (/ (+ minlon maxlon) 2)
-    ]
-    {:lat lat :lon lon}
-  )
-)
 
 ;; (defn map-city-node [city]
 ;;   {:text (:id city)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes (into [] (concat (buildCities (:id city)) (buildUnits (:id city)))) }
@@ -134,7 +69,7 @@
     children (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @shelters/app-state))
     nodes (into [] (map (fn [x] (
       let [
-        childs (into [] (concat (buildCities (:id x)) (buildUnits (:id x))))
+        childs (into [] (concat (buildCities (:id x)) (shelters/buildUnits (:id x))))
         ]
         (if (> (count childs) 0) {:text (:name x) :groupid (:id x) :icon "fa fa-users" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes childs} {:text (:name x) :groupid (:id x) :icon "glyphicon glyphicon-user" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false}})
       ) ) children))
@@ -147,7 +82,7 @@
 (defn buildTreeGroups []
   ;(.log js/console (str "groups=" (count (:groups @shelters/app-state)) "; units=" (count (:devices @shelters/app-state))))
   (swap! shelters/app-state assoc-in [:selectedunits] [])
-  (do (clj->js {:multiSelect true :searchResultBackColor "#0000FF" :searchResultColor "#FFFFFF" :data [{:text "כל ישראל" :icon "fa-flag-israel" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (buildUnits nil)))}]}))
+  (do (clj->js {:multiSelect true :searchResultBackColor "#337ab7" :searchResultColor "#FFFFFF" :data [{:text "כל ישראל" :icon "fa-flag-israel" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (shelters/buildUnits nil)))}]}))
 )
 
 
@@ -183,78 +118,47 @@
 )
 
 
-(defn add-marker-indications [device]
-  (reduce (fn [x y]
-    (let [
-      indicator (first (filter (fn [z] (if (= (:id z) (:id y)) true false)) (:indications @shelters/app-state) ))
-      ;tr1 (.log js/console indicator)
-      name (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator))))
 
-      val (case (:isok y) true (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "fail"))))) 
-      ]
-      (if (nil? indicator) x
-        (str x
-          "<tr>"
-            "<td style=\"padding-left: 5px; text-align: center; border: 1px solid\">"
-                name
-             "</td>"
-             "<td style=\"text-align: center; border: 1px solid\">"
-                val
-            "</td>"
-          "</tr>"
-        )
-      )
-    )
-  )
-  (str
-    "<tr>"
-      "<th style=\"text-align: center; border: 1px solid; background-color: lightgrey\">"
-        "חיישן"
-      "</th>"
-
-      "<th style=\"text-align: center; border: 1px solid; background-color: lightgrey\">"
-        "מצב"
-      "</th>"
-    "</tr>"
-  )
-
-  (:indications device))
+(defn markerinfo [device]
+  (dom/h3 {:id (str "mark" (:id device))} "jhgjhjg")
 )
 
 (defn addMarker [device]
   (let [
     ;tr1 (.log js/console (str "token: " (:token (:token @shelters/app-state)) ))
     ;tr1 (.log js/console (str "command1= " (:name (nth (:commands @shelters/app-state) 1))))
-    wnd1  (str "<div id=\"content\">"
+    wnd1  (str "<div id=\"content\" style=\" width: 200px;  \" >"
       "<h5 style=\"text-align: center\">" (:name device) "</h5>"
-      "<h5 style=\"text-align: center\">" (:address device) "</h5>"
-      "<table style=\"width: 100%; margin-bottom: 5px;\">"
-      (add-marker-indications device)
-      "</table>"
+      "<h5 style=\"text-align: center; margin-bottom: 0px; margin-top: 5px  \">" (:address device) "</h5>"
 
-      "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 5px; \" onclick=\"sendcommand('"
-        settings/apipath "', '"
-        (:token (:token @shelters/app-state))
-        "', '"
-        (:id device)
-        "', "
-        (:id (nth (:commands @shelters/app-state) 0))
-        ")\">"
-        (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @shelters/app-state) 0)))))
-      "</button>"
+      "<div style=\"justify-content: space-evenly; text-align: justify; display: flex; flex-wrap: wrap; width: 100%; margin-top: 0px;\">"
+      (shelters/add-marker-indications device)
+      "</div>"
+
+      "<div class=\"row\" style=\"text-align: center; margin-top: 5px; margin-bottom: 10px; margin-left: 0px; margin-right: 0px \">"
+        "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 10px; padding-left: 0px; padding-right: 0px; width: 86.31px \" onclick=\"sendcommand('"
+          settings/apipath "', '"
+          (:token (:token @shelters/app-state))
+          "', '"
+          (:id device)
+          "', "
+          (:id (nth (:commands @shelters/app-state) 0))
+          ")\">"
+          (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @shelters/app-state) 0)))))
+        "</button>"
 
 
-      "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 5px; \" onclick=\"sendcommand('"
-        settings/apipath "', '"
-        (:token (:token @shelters/app-state))
-        "', '"
-        (:id device)
-        "', "
-        (:id (nth (:commands @shelters/app-state) 1))
-        ")\">"
-        (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @shelters/app-state) 1)))))
-      "</button>"
-
+        "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 5px; padding-left: 0px; padding-right: 0px; \" onclick=\"sendcommand('"
+          settings/apipath "', '"
+          (:token (:token @shelters/app-state))
+          "', '"
+          (:id device)
+          "', "
+          (:id (nth (:commands @shelters/app-state) 1))
+          ")\">"
+          (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @shelters/app-state) 1)))))
+        "</button>"
+      "</div>"
       "</div>")
 
     window-options (clj->js {"content" wnd1})
@@ -266,6 +170,11 @@
     image (clj->js {:url (str iconBase (case status true "green_point.ico" "red_point.ico")) :scaledSize size})
     marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" image "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
+
+    infownds (map (fn [x] (if (= (:id x) (:id device)) (assoc x :info infownd) x)) (:infownds @shelters/app-state))
+
+    ;tr1 (.log js/console (str "info counts = " (count (filter (fn[x] (if (= (:id device) (:id x)) true false)) (:infownds @shelters/app-state)))))
+    infownds (if (> (count (filter (fn[x] (if (= (:id device) (:id x)) true false)) (:infownds @shelters/app-state))) 0) infownds (conj infownds {:id (:id device) :info infownd}))
     ]
     (jquery
       (fn []
@@ -279,6 +188,8 @@
       )
     )
     (swap! shelters/app-state assoc-in [:markers] (conj (:markers @shelters/app-state) marker))
+
+    (swap! shelters/app-state assoc-in [:infownds] infownds)
   )
 )
 
@@ -398,7 +309,7 @@
 
 (defn add-group-to-selected [city]
   (let [
-    units (map (fn [x] (:unitid x)) (getChildUnits city []))
+    units (map (fn [x] (:unitid x)) (shelters/getChildUnits city []))
     ]
     (doall (map addtoselected units))
     ;(.log js/console (str "total in group:" (count units)))
@@ -409,7 +320,7 @@
   (let [
     thecity (first (filter (fn [x] (if (= (:id x) city) true false)) (:groups @shelters/app-state)))
 
-    latlon (calcGroupLatLon (:id thecity)) ;{:lat 32.08088 :lon 34.78057}
+    latlon (shelters/calcGroupLatLon (:id thecity)) ;{:lat 32.08088 :lon 34.78057}
     ;tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
     ]
     (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) })
@@ -423,48 +334,8 @@
   ;(.log js/console (count (:employees @app-state)))
   (jquery
     (fn []
-      (-> (jquery "#tree" )
-        (.treeview (buildTreeGroups) ) ;;js-object        
-        (.on "nodeSelected"
-          (fn [event data] (
-             let [
-               ;table (-> (jquery "#dataTables-example") (.DataTable) )
-               ;res (.data (.row table (.. e -currentTarget)) )
-               res (js->clj data)
-               unitid (get res "unitid")
-             ]
-             (.log js/console (str "unitid=" unitid))
-             ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
-             (if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
-
-             (if (nil? unitid)
-               (add-group-to-selected (get res "groupid"))
-               (addtoselected unitid)
-             )
-             ;(gotoSelection (first res)) 
-            )
-          )
-        )
-
-
-        (.on "nodeUnselected"
-          (fn [event data] (
-             let [
-               ;table (-> (jquery "#dataTables-example") (.DataTable) )
-               ;res (.data (.row table (.. e -currentTarget)) )
-               res (js->clj data)
-               unitid (get res "unitid")
-             ]
-             (.log js/console (str "unitid=" unitid))
-             ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
-             ;(if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
-             (if (> (.indexOf (:selectedunits @shelters/app-state) unitid) -1) 
-               (swap! shelters/app-state assoc-in [:selectedunits] (remove (fn [x] (if (= unitid x) true false)) (:selectedunits @shelters/app-state)))
-             )
-             ;(gotoSelection (first res))
-            )
-          )
-        )
+      (-> (jquery "#treeview" )
+        (.shieldTreeView)
       )      
     )
   )
@@ -540,7 +411,7 @@
 
 (defcomponent notifications-view [data owner]
   (render [_]
-          (dom/div {:className "row" :style {:padding-top "5px" :bottom "5px" :width "100%" :padding-right "15px" :padding-left "15px" :position "absolute" :background-color "white"}}
+          (dom/div {:className "row" :style {:padding-top "5px" :bottom "5px" :width "100%" :padding-right "15px" :padding-left "15px" :position "absolute" :background-color "white" :margin-left "0px" :margin-right "0px"}}
             ;(dom/div  {:className "col-3 col-sm-3 tree"})
             (dom/div {:className "col-md-12" :style {:padding-top "0px" :padding-bottom "10px" :padding-left "10px" :padding-right "10px" :border "1px solid lightgrey"}}
               (dom/div {:className "panel panel-default" :style {:margin-left "0px" :margin-right "0px" :margin-top "0px" :margin-bottom "0px" :padding-bottom "10px" :border "none"}}
@@ -560,10 +431,10 @@
                 (dom/div {:className "panel-heading" :style {:margin-left "-15px" :padding-top "0px" :padding-bottom "0px" :margin-top "0px" :background-color "transparent" :background-image "none" :font-weight "600" :border "1px solid lightgray" :padding-left "0px"}}
                   (dom/div {:className "row" :style {:margin-left "17px" :margin-right "-14px"}}
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {}}
+                    (dom/div {:className "col-md-1" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/div {:className "row"}
-                        (dom/div {:className "col-md-4" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}} "ראיתי")
-                      (dom/div {:className "col-md-8" :style {:line-height "17px" :text-align "center" :border-left "1px solid" :padding-left "5px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :background-image (case (:sort-alerts @shelters/app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 1 2 1)) (shelters/doswaps)))}
+                        (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px"}} "ראיתי")
+                      (dom/div {:className "col-md-6" :style {:line-height "17px" :text-align "center" :border-left "1px solid" :padding-left "5px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :background-image (case (:sort-alerts @shelters/app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 1 2 1)) (shelters/doswaps)))}
                         (dom/p {:style {:margin "0px"}} "מספר") (dom/p {:style {:margin "0px"}} "אירוע"))
                       )
                     )
@@ -588,7 +459,7 @@
                     )
 
                     (dom/div {:className "col-md-3" :style {:padding-left "0px" :padding-right "0px"}}
-                      (dom/div {:className "col-md-6" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "5px" :background-image (case (:sort-alerts @shelters/app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps)))}
+                      (dom/div {:className "col-md-6" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps)))}
                         (omdom/select #js {:id "statuses"
                                            :title (if (:isnotification  @data) "סטטוס התראה" "סטטוס תקלה")
                                            :data-width "75%"
@@ -609,6 +480,57 @@
               (om/build shelters/notifications-table data {})
             )
           )
+  )
+)
+
+(defcomponent group-view [group owner]
+  (render [_]
+    (let [
+      
+      ]
+      (dom/ul
+        (map (fn [item]
+          (dom/li
+            (dom/b (:name item))
+            (om/build group-view item {})
+            (map (fn [unit]
+              (let [
+                theunit (first (filter (fn [x] (if (= (:id x) unit) true false)) (:devices @shelters/app-state)))
+                ]
+                (dom/li (:name theunit))
+              )
+            ) (:childs item))
+          )
+        ) (filter (fn [x] (if (> (.indexOf (:parents x) (:id group)) -1) true false)) (:groups @app-state)))
+
+        (map (fn [unit]
+          (let [
+            theunit (first (filter (fn [x] (if (= (:id x) unit) true false)) (:devices @shelters/app-state)))
+            ]
+            (dom/li (:name theunit))
+          )
+        ) (:childs group))
+      )
+    )
+  )
+)
+
+(defcomponent tree-view [data owner]
+  (render [_]
+    (let []
+      (dom/ul {:id "treeview"}
+        (map (fn [group]
+          (let []
+            (dom/li {:data-icon-cls "fa fa-inbox" :data-expanded "true"}
+              (om/build group-view group {})
+              (:name group)
+            )
+          )
+
+        ) (filter (fn [x] (if (nil? (:parents x)) true false)) (:groups @shelters/app-state)))
+      )
+    )
+    
   )
 )
 
@@ -637,14 +559,15 @@
       treeheight (if (< (- screen tbl 175) 0) 0 (- screen tbl 175))
       pnlheight (if (< (- screen tbl 175) 0) 0 (- screen tbl 75))
       ]
-      (dom/div {:style { :padding-right "15px"}}
+      (dom/div {:style { :padding-right "0px"}}
         (om/build shelters/website-view data {})
-        (dom/div {:className "row maprow" :style {:max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)) "px") "100%")}}
+        (dom/div {:className "row maprow" :style {:margin-left "15px" :margin-right "0px" :max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)) "px") "100%")}}
           (dom/div  {:className "col-3 col-sm-3" :style {:height "100%" :padding-left "5px"}}
             (dom/div {:className "panel-primary" :style {:border "1px solid darkgrey" :overflow-y "hidden" :max-height (str pnlheight "px")}}
               (dom/div {:className "panel-heading" :style {:margin-top "3px" :padding-top "3px" :padding-bottom "3px" :margin-left "15px" :margin-right "15px"}} "בחר קבוצה/יחידה")
               (dom/div {:className "panel-body" :style {:margin-top "0px" :padding-top "5px" :padding-bottom "5px" :margin-left "0px" :margin-right "0px"}}
-                (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (str treeheight "px") }})
+                ;(dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (str treeheight "px") }})
+                (om/build tree-view data {})
                 (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px" :bottom "0px"}}
                   (dom/div {:className "col-xs-6" :style {:padding-left "5px" :padding-right "5px"}}
                     (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))

@@ -255,13 +255,26 @@
     [_]
     (dom/div {:className "row"}
       (map (fn [item]
-        (let []
-          (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "8px" :padding-bottom "8px"}}
+        (let [
+
+          ]
+          (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "3px" :padding-bottom "3px"}}
             (dom/i {:id (str "status_" (:id item)) :className (case (:isok item) true "fa-toggle-on fa" "fa-toggle-off fa") :style {:color (case (:isok item) true "#00dd00" "#dd0000") :font-size "24px"}})
+            (dom/p {:style {:margin "0px" :line-height "10px"}}
+              (case (:isok item) true "פועל" "כבוי")
+            )
           )
         )
         )
-      (sort (comp comp-indications) (filter (fn [x] (if (> (count (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))) 0) true false)) (:indications data))))
+        (sort (comp comp-indications) (filter
+          (fn [x] (let [
+            name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))))
+            ]
+            (if (>= (.indexOf shelters/indicators name) 0)  true false)
+          )) (:indications data))
+        )
+      )
+;(filter (fn [x] (if (> (count (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))) 0) true false)) (:indications data))
     )
   )
 )
@@ -320,16 +333,16 @@
             )
 
             (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :height "42px" :line-height "42px" :padding-left "0px" :padding-right "0px" :text-align "center" :overflow "hidden"}}
-              (dom/a {:href (str "#/unitdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
-                (dom/i {:className "fa fa-hdd-o"})
+              (dom/a {:href (str "#/devdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
+                (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}} )
                 (:controller item)
               )
             )
 
 
             (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden" :line-height "42px"}}
-              (dom/a {:href (str "#/unitdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
-                (dom/i {:className "fa fa-hdd-o"})
+              (dom/a {:href (str "#/devdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
+                (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}})
                 (:name item)
               )
             )
@@ -364,7 +377,7 @@
             )
           )
           )
-        ) (sort (comp comp-devs) (filter (fn [x] (if (or (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:controller x)) (str/upper-case (:search @data)))) true false)) (:devices @data )))
+        ) (sort (comp comp-devs) (filter (fn [x] (if (or (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:controller x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:address x)) (str/upper-case (:search @data)))) true false)) (:devices @data )))
       )
     )
   )
@@ -481,6 +494,13 @@
     (let [
       ;style {:style {:margin "10px" :padding-bottom "0px"}}
       ;tr1 (.log js/console (:name (first (:commands @data))))
+      indications (sort (comp comp-indications) (filter
+          (fn [x] (let [
+            name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))))
+            ]
+            (if (>= (.indexOf shelters/indicators name) 0)  true false)
+          )) (:indications @data))
+        )
       ]
       (dom/div
         (om/build shelters/website-view data {})
@@ -538,33 +558,33 @@
                     (dom/div {:className "row"}
                       (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
                         (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
-                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 0))))))
+                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 0))))))
                         )
                       )
 
                       (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
                         (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
-                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 1))))))
+                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 1))))))
                         )
                       )
 
                       (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 2))))))
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 2))))))
                         )
                       )
 
                       (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 3))))))
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 3))))))
                         )
                       )
 
                       (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 4))))))
+                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 4))))))
                         )
                       )
 
                       (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth (:indications @data) 5))))))
+                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 5))))))
                         )
                       )
                     )

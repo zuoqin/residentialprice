@@ -36,7 +36,7 @@
 
 (defn handleChange [e]
   (let [
-    tr1 (.log js/console (str (.. e -nativeEvent -target -id)))
+    ;tr1 (.log js/console (str (.. e -nativeEvent -target -id)))
     ]
   )
   (swap! shelters/app-state assoc-in [(keyword (.. e -nativeEvent -target -id))] (.. e -nativeEvent -target -value))
@@ -77,6 +77,8 @@
          name (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator))))
 
          status (case (:isok item) true (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "fail")))))
+
+         ;tr1 (if (= "missing" status) (.log js/console (str "name=" (:name indicator) "; trans=" name)))
          time (tf/unparse shelters/custom-formatter1 (:lastupdate item))
           ]
           (dom/div {:style {:border "1px solid rgba(0,0,0,.125)" :border-radius ".25rem" :padding "0px" :min-width "92px" :margin-top "10px" :display "table"}}
@@ -110,7 +112,15 @@
           )
         )
       )
-      (filter (fn [x] (if (> (count (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state))) 0) true false)) (:indications unit)))
+      (filter (fn [x]
+        (let [
+          name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state)))) 
+          ;tr1 (.log js/console "name=" name)
+          ]
+          (if (>= (.indexOf shelters/indicators name) 0) true false))
+        )
+        (:indications unit)
+      ))
     )
   )
 )
@@ -121,7 +131,9 @@
 
     (dom/div {:style {:justify-content "space-evenly" :text-align "justify" :display "flex" :flex-wrap "wrap" :width "100%"}}
          (map (fn [item]
-           (let []
+           (let [
+             lastupdate (tf/unparse shelters/custom-formatter1 (:lastupdate (first (filter (fn [x] (if (= (:id x) 10) true false)) (:indications item)))))
+             ]
              (dom/div { :className "panel panel-primary device" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "330px" :margin-bottom "0px" :backgroundColor "white"}}
                (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}}
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
@@ -134,6 +146,10 @@
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
                    (dom/div {:style {:white-space "normal"}} (str "כתובת יחידה: " (if (or (nil? (:address item)) (< (count (:address item)) 1)) "empty" (:address item))))
+                 )
+
+                 (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+                   (dom/div {:style {:white-space "normal"}} (str "בדיקה אחרונה: " lastupdate))
                  )
                )
 
@@ -161,7 +177,7 @@
                )
              )
            )
-         ) (sort (comp comp-devs) (filter (fn [x] (if (str/includes? (str/lower-case (if (nil? (:name x)) "" (:name x))) (str/lower-case (:search @data))) true false)) (:devices @data)))
+         ) (sort (comp comp-devs) (filter (fn [x] (if (or (str/includes? (str/lower-case (if (nil? (:name x)) "" (:name x))) (str/lower-case (:search @data))) (str/includes? (str/lower-case (if (nil? (:controller x)) "" (:controller x))) (str/lower-case (:search @data))) (str/includes? (str/lower-case (if (nil? (:address x)) "" (:address x))) (str/lower-case (:search @data)))) true false)) (:devices @data)))
       )
     )
   )
@@ -200,7 +216,7 @@
             )
           )
 
-          (dom/div {:className "row" :style {:margin-right "0px"}}
+          (dom/div {:className "row" :style {:margin-right "15px"}}
             (dom/input {:id "search" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
           )
           (om/build showdevices-view  data {})

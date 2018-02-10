@@ -9,6 +9,7 @@
             [cljs.core.async :refer [put! dropping-buffer chan take! <! timeout]]
             [cljs-time.core :as tc]
             [cljs-time.format :as tf]
+            [cljs-time.local :as tl]
             [shelters.groupstouser :as groupstouser]
             [om-bootstrap.button :as b]
             [clojure.string :as str]
@@ -264,8 +265,8 @@
           creator (first (filter (fn [x] (if (= (:id x) (:addedby item)) true false)) (:users @shelters/app-state)))
           ]
           (dom/div {:className "row tablerow" :style {:border-bottom "1px solid" :padding-top "0px" :margin-right "0px" :margin-left "0px"}}
-            (dom/div {:className "col-xs-1 col-md-1" :style {:border-left "1px solid"}}
-              (dom/div {:className "col-xs-12 col-md-12" :style {:text-align "center" :padding-right "0px" :padding-left "0px" :padding-bottom "8px"}}
+            (dom/div {:className "col-md-1" :style {:border-left "1px solid"}}
+              (dom/div {:className "col-md-12" :style {:text-align "center" :padding-right "0px" :padding-left "0px" :padding-bottom "8px"}}
                 (dom/div { :className "dropdown"}
                   (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false" :style {:padding-top "3px" :padding-bottom "3px" :padding-left "6px" :padding-right "6px" :margin-top "6px"}}
                     "☰"
@@ -298,40 +299,40 @@
                 )
               )
             )
-          (dom/div {:className "col-xs-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+          (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
             (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (:login item)
             )
           )
 
-          (dom/div {:className "col-xs-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+          (dom/div {:className "col-md-3" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
             (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (str (:firstname item) " " (:lastname item))
             )
           )
 
-          (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+          (dom/div {:className "col-md-3" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
             (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (if (nil? (:name (:role item))) "אדמיניסטרטור" (:name (:role item)))
             )
           )
 
-          (dom/div {:className "col-xs-3" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px"}}
+          (dom/div {:className "col-md-3" :style { :border-left "1px solid transparent" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
             (dom/a {:href (str "#/userdetail/" (:userid item))}
               ;(dom/i {:className "fa fa-hdd-o"})
               (if (nil? creator) "Beeper" (str (:firstname creator) " " (:lastname creator)))
             )
           )
 
-          (dom/div {:className "col-xs-2" :style { :padding-top "11px" :padding-bottom "11px"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item))}
-              ;(dom/i {:className "fa fa-hdd-o"})
-              (tf/unparse shelters/custom-formatter2 (tc/now))
-            )
-          )
+          ;; (dom/div {:className "col-xs-2" :style { :padding-top "11px" :padding-bottom "11px"}}
+          ;;   (dom/a {:href (str "#/userdetail/" (:userid item))}
+          ;;     ;(dom/i {:className "fa fa-hdd-o"})
+          ;;     (tf/unparse shelters/custom-formatter2 (tl/local-now))
+          ;;   )
+          ;; )
         )
         )
         )(sort (comp comp-users) (filter (fn [x] (if (or (str/includes? (str/lower-case (:firstname x)) (str/lower-case (:search @data))) (str/includes? (str/lower-case (:lastname x)) (str/lower-case (:search @data))) (str/includes? (str/lower-case (:login x)) (str/lower-case (:search @data)))) true false)) (:users @data)))
@@ -403,14 +404,14 @@
             (dom/div {:className "panel-primary" :style {:padding "0px" :margin-top "10px"}}
               (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "0px"}}
                 (dom/div {:className "row" :style {:margin-left "-14px" :margin-right "-14px"}}
-                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
-                    (dom/div {:className "col-xs-12 col-md-12" :style {:text-align "center" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px"}}
+                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding "0px"}}
+                    (dom/div {:className "col-md-12" :style {:text-align "center" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px"}}
                       (dom/div "פעולות")
                     )
                   )
 
 
-                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                       (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "7px" :padding-bottom "3px" :text-align "center" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left"}}
                         (dom/span {:onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))} "קוד משתמש")
@@ -418,7 +419,7 @@
                     )
                   )
 
-                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "3px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "3px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                       (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left"}}
                         (dom/span {:onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))} "שם מלא")
@@ -426,7 +427,7 @@
                     )
                   )
 
-                  (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "3px" :white-space "nowrap" :border-left "1px solid"}}
+                  (dom/div {:className "col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "3px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                       (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left"}}
                         (dom/span {:onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))} "רמת הרשאה")
@@ -434,13 +435,13 @@
                     )
                   )
 
-                  (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :padding-bottom "5px" :border-left "1px solid" :text-align "center"}}
+                  (dom/div {:className "col-md-3" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :padding-bottom "5px" :border-left "1px solid transparent" :text-align "center"}}
                     "יוצר"
                   )
 
-                  (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :padding-bottom "5px" :text-align "center"}}
-                    "נוצר בתאריך"
-                  )
+                  ;; (dom/div {:className "col-xs-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :padding-bottom "5px" :text-align "center"}}
+                  ;;   "נוצר בתאריך"
+                  ;; )
                 )              
               )
             )

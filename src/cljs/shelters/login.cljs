@@ -24,10 +24,12 @@
             [cljs-time.format :as tf]
             [cljs-time.core :as tc]
             [cljs-time.coerce :as te]
-
+            [cljs-time.local :as tl]
             [shelters.groupstounit :as groupstounit]
+            [shelters.unitstogroup :as unitstogroup]
             [shelters.groupstouser :as groupstouser]
-            [shelters.reportunits :as reportunits]
+            [shelters.reportalerts :as reportalerts]
+            [shelters.reportsensors :as reportsensors]
             [shelters.notedetail :as notedetail]
             [shelters.roledetail :as roledetail]
             [shelters.localstorage :as ls]
@@ -198,7 +200,7 @@
 
 (defn OnGetIndications [response]
   (let [
-    indicators (filter (fn [x] (if (>= (.indexOf shelters/indicators (:name x)) 0) true false)) (map map-indication response))
+    indicators (filter (fn [x] (if (or (= 1 1) (>= (.indexOf shelters/indicators (:name x)) 0)) true false)) (map map-indication response))
     ]
     (swap! shelters/app-state assoc-in [:indications] indicators)
     (ls/set-item! "indicators" (.stringify js/JSON (clj->js indicators)))
@@ -296,9 +298,10 @@
     id (str (get group "groupId"))
     name (get group "groupName")
     parents (get group "parentGroups")
+    childs (get group "childEntities")
     owners (get group "owners")
     ;tr1 (.log js/console (str  "username=" username ))
-    result {:id id :name name :parents parents :owners owners}
+    result {:id id :name name :childs childs :parents parents :owners owners}
     ]
     ;
     result
@@ -311,6 +314,7 @@
     id (str (get group "id"))
     name (get group "name")
     parents (get group "parents")
+    childs (get group "childs")
     owners (get group "owners")
     ;tr1 (.log js/console (str  "username=" username ))
     result {:id id :name name :parents parents :owners owners}
@@ -635,34 +639,51 @@
 )
 
 
-(defn setUser [theUser]
-  (let [cnt (count (:users @shelters/app-state))]
-    (swap! shelters/app-state assoc-in [:users cnt] {:role (nth theUser 1)  :login (nth theUser 0) :password (nth theUser 2)})
+(defn map-word [word]
+  (let [
+    key (get word "key")
+    value (get word "value")
+    ]
+    ;
+    {(keyword key) value}
   )
-  
-
-  ;;(.log js/console (nth theUser 0))
-  ;;(.log js/console (:login (:user @shelters/app-state) ))
-  (if (= (nth theUser 0) (:login (:user @shelters/app-state) ))   
-    (swap! shelters/app-state assoc-in [:user :role] (nth theUser 1) )
-  )
-  
 )
 
 
-(defn OnGetUser [response]
-  ;(.log js/console (str "In On GetUser"))
-  (doall (map setUser response))
-  ;(reqclients)  
+(defn OnGetTranslations [response]
+  (let [
+    words (loop [result {} words response]
+      (if (seq words)
+        (let [
+            word (first words)
+            key (get word "key")
+            value (get word "value")
+          ]
+          (recur (assoc result (keyword key) value) (rest words))
+        )
+        result
+      )
+    )
+    ]
+    (swap! shelters/app-state assoc-in [:words] words)
+    (ls/set-item! "words" (.stringify js/JSON (clj->js words)))
+  ) 
 )
 
 
-(defn requser [token]
-  ;(.log js/console (str "In requser with token " (:token  (:token @shelters/app-state))))
-  (GET (str settings/apipath "api/user") {
-    :handler OnGetUser
+
+
+(defn reqtransaltions []
+  (let [
+    words (ls/get-item "words")
+    tmpwords (js->clj (.parse js/JSON words))
+  ]
+    (swap! shelters/app-state assoc-in [:words] tmpwords)
+  )
+  (GET (str settings/apipath "getLanguage?languageCode=he") {
+    :handler OnGetTranslations
     :error-handler error-handler
-    :headers {:content-type "application/json" :Authorization (str "Bearer "  (:token  (:token @shelters/app-state))) }
+    :headers {:content-type "application/json"}
   })
 )
 
@@ -671,7 +692,26 @@
     let [
       ;response1 (js->clj response)
       ;tr1 (.log js/console (str  "In LoginSuccess token: " (get response "token") ))
-      newdata {:token (get response "token") :userid (get response "userId" ) }
+      firstname (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "firstName") true false)
+      ) ) (get response "details"))) "value")
+
+      lastname (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "lastName") true false)
+      ) ) (get response "details"))) "value")
+
+      newdata {
+          :token (get response "token")
+          :userid (get response "userId" ) 
+          :roleid (get (get response "role") "roleId")
+          :rolename (get (get response "role") "roleName")
+          :name (str firstname " " lastname)
+        }
+      ;tr1 (.log js/console newdata)
     ]
     ;(swap! app-state assoc-in [:state] 0)
     ;(.log js/console (str (:token newdata)))
@@ -679,8 +719,7 @@
     (swap! shelters/app-state assoc-in [:view] 2 )
     (swap! shelters/app-state assoc-in [:users] [] )
     (reqroles)
-    ;;(requser {:token newdata})
-    ;;(put! ch 43)
+    (reqtransaltions)
   )
 )
 
@@ -790,7 +829,7 @@
   )
 )
 
-(defn processMessage [notification]
+(defn processNotification [notification]
   (let [
     unitid (get notification "unitId")
     userid (get notification "userId")
@@ -820,7 +859,7 @@
     
     oldindications (:indications (first (filter (fn [x] (if (= (:id x) unitid) true false)) (:devices @shelters/app-state))))
 
-    newindications (map (fn [ind] (if (= (:id ind) indicatorid) (assoc ind :isok indstatus :value "" :lastupdate (tc/now)) ind)) oldindications)
+    newindications (map (fn [ind] (if (= (:id ind) indicatorid) (assoc ind :isok indstatus :value "" :lastupdate (tl/local-now)) ind)) oldindications)
 
     ;tr1 (.log js/console (str "unit: " (:name unit) "; indicator: " indicatorid "; status=" indstatus))
 
@@ -862,17 +901,101 @@
 )
 
 
-(defn processNotification [notification]
+(defn processUnit [unit]
   (let [
-      tr1 (js/console.log "Hooray! Message:" (pr-str notification))
+    controller (str (get unit "controllerId"))
+    name (if (nil? (get unit "name")) controller (get unit "name"))
+    port (get unit "port")
+    port (if (nil? port) 5050 port)
+    ip (get unit "ip")
+    ip (if (nil? ip) "1.1.1.1" ip)
+
+    status (case (get unit "status") "Normal" 0 3)
+    lat (get unit "latitude")
+    lon (get unit "longitude")
+    groups (get unit "parentGroups")
+    unitid (str (get unit "unitId"))    
+    address (get (first (filter (fn [x] (if (= (get x "key") "address") true false)) (get unit "details"))) "value" )
+    phone (get (first (filter (fn [x] (if (= (get x "key") "phone") true false)) (get unit "details"))) "value")
+
+    contact1 (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "contact1") true false)
+      ) ) (get unit "details"))) "value")
+
+    contact2 (get (first (filter (fn [x] (let [
+          ;tr1 (.log js/console (str x))
+        ]
+        (if (= (get x "key") "contact2") true false)
+      ) ) (get unit "details"))) "value")
+
+    indications (map map-unitindication (get unit "indications"))
+    indications (if (> (count indications) 0) indications [{:id 1, :isok false, :value "open"} {:id 2, :isok true, :value "closed"} {:id 3, :isok true, :value "closed"} {:id 4, :isok true, :value "idle"} {:id 5, :isok true, :value "enabled"} {:id 6, :isok true, :value "normal"} {:id 7, :isok true, :value "normal"} {:id 8, :isok true, :value "idle"} {:id 9, :isok true, :value ""} {:id 10, :isok true, :value "2017-12-31_18:53:05.224"} {:id 12, :isok true, :value "normal"}])
+    ;tr1 (.log js/console (str  "username=" username ))
+    result {:id unitid :controller controller :name name :status status :address address :ip ip :lat lat :lon lon :port port :groups groups :indications (if (nil? indications) [] indications) :contacts [contact1 contact2]}
+
+
+    ;tr1 (.log js/console (str "unitid in Notification: " unitid))
+    marker (first (filter (fn [x] (if (= (.. x -unitid) unitid) true false)) (:markers @shelters/app-state)))
+
+    newunits (map (fn [x] (if (= (:id x) unitid) (assoc x :indications indications) x)) (:devices @shelters/app-state))
+    
+    tr1 (swap! shelters/app-state assoc-in [:devices] newunits)
+
+    size (js/google.maps.Size. 48 48)
+    indstatus (:isok (first (filter (fn [x] (if (= :id x) 12) true false) indications)))
+    
+    image (clj->js {:url (str iconBase (case indstatus false "red_point.ico" "green_point.ico")) :scaledSize size})
+
+
+
+    infownd (shelters/addMarkerInfo result)
     ]
     
-    (try
-      (processMessage notification)
-      (catch js/Error e
-        (println (str "error while processing message: " e))
+    (if (nil? marker)
+      (.log js/console (str "did not find a unit for unitid=" unitid " in notification"))
+      (let [
+          infownd (:info (first (filter (fn [x] (if (= (:id x) unitid) true false)) (:infownds @shelters/app-state))))
+        ]
+        ;Remove all click listeners from marker instance.
+        ;(.clearListeners js/google.maps.event marker "click")
+        (.setContent infownd (shelters/add-marker-info-content result))
+
+        ;; (jquery
+        ;;   (fn []
+        ;;     (-> marker
+        ;;       (.addListener "click"
+        ;;         (fn []              
+        ;;           (.open infownd (:map @shelters/app-state) marker)
+        ;;         )
+        ;;       )
+        ;;     )
+        ;;   )
+        ;; )
+        
+        (.setIcon marker image)
       )
     )
+  )
+)
+
+
+(defn processMessage [data]
+  (let [
+      tr1 (js/console.log "Hooray! Message:" (pr-str data))
+      id (get data "notificationId")
+    ]
+    (if (nil? id)
+      (processUnit data)
+      (processNotification data)
+    )
+    ;; (try
+      
+    ;;   (catch js/Error e
+    ;;     (println (str "error while processing message: " e))
+    ;;   )
+    ;; )
   )
 )
 
@@ -882,41 +1005,45 @@
 )
 
 (defn receivesocketmsg []
-  (try
-    (go
-      (let [
-          ;{:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
-          {:keys [message error]} (<! (:ws_channel @shelters/app-state))
-        ]
-        (if error
-          (js/console.log "Uh oh:" error)
-          (let []
-            (if (not (nil? message))
-              (processNotification message)
+  (go
+    (let [
+        ;{:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
+        {:keys [message error]} (<! (:ws_channel @shelters/app-state))
+      ]
+      (if error
+        (js/console.log "Uh oh:" error)
+        (let []
+          (if (not (nil? message))
+            (let []
+              (processMessage message)
+              (receivesocketmsg)
             )
-            (receivesocketmsg)
+            (-> js/document .-location (set! "#/login"))
           )
         )
       )
     )
-    (catch js/Error e
-      (.log js/console e)
-    )
   )
+  ;; (try
+
+  ;;   (catch js/Error e
+  ;;     (.log js/console e)
+  ;;   )
+  ;; )
 )
 
 
 (defn initsocket []
+  ;(if (not (nil? (:ws_channel @shelters/app-state))) (close! (:ws_channel @shelters/app-state)))
+  (shelters/closesocket)
   (go
     (if (nil? (:ws_channel @shelters/app-state))
-
       (let [
           ;tr1 (.log js/console (:ws_channel @shelters/app-state))
           ;tr1 (if (not (nil? (:ws_channel @shelters/app-state))) (close! (:ws_channel @shelters/app-state)))
           {:keys [ws-channel error]} (<! (ws-ch (str settings/socketpath) {:format :json}))
           ;{:keys [message error]} (<! ws-channel)        
         ]
-        (if (not (nil? (:ws_channel @shelters/app-state))) (close! (:ws_channel @shelters/app-state)))
         ;(swap! app-state assoc-in [:ws_ch] ws-channel)
         ;(.log js/console (str "token to send in socket: " (:token (:token @shelters/app-state))))
         (if-not error
@@ -936,7 +1063,8 @@
   (if (or (> counter 1) (and (> (count (:devices @shelters/app-state)) 0) (> (count (:groups @shelters/app-state)) 0)))
 
     (let []
-      (aset js/window "location" "#/map")
+      (-> js/document .-location (set! "#/map"))
+      ;(aset js/window "location" "#/map")
       (swap! app-state assoc-in [:state] 0)
     )
     

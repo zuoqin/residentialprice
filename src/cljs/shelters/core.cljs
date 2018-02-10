@@ -12,6 +12,7 @@
             [cljs-time.core :as tc]
             [cljs-time.format :as tf]
             [cljs-time.coerce :as te]
+            [cljs-time.local :as tl]
             [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout close!]]
             [om-bootstrap.button :as b]
             [shelters.settings :as settings]
@@ -24,7 +25,7 @@
 
 (enable-console-print!)
 
-(def indicators ["lockState" "doorState" "lastCommunication" "batteryState" "tamper" "communicationStatus"])
+(def indicators ["lockState" "doorState" "alarmState" "batteryState" "tamper" "communicationStatus"])
 
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 (def custom-formatter1 (tf/formatter "dd/MM/yyyy HH:mm:ss"))
@@ -33,7 +34,7 @@
 (def ch (chan (dropping-buffer 2)))
 
 (defn tableheight [count] 
-  (+ 0 (* 27 (min count 10)))
+  (+ 2 (* 27 (min count 10)))
 )
 
 (def main-tconfig
@@ -64,22 +65,21 @@
           :doorStateok              "סגור"
           :doorStatefail            "פתוח"
 
-          :lastCommunication        "ארון תקשורת"
-          :lastCommunicationok      "כן"
-          :lastCommunicationfail    "לא"
+          :tamper                   "ארון תקשורת"
+          :tamperok                 "כן"
+          :tamperfail               "לא"
 
           :batteryState             "סוללה"
           :batteryStateok           "ok"
           :batteryStatefail         "fail"
 
-          :tamper                   "גלאי"
-          :tamperok                 "אין אירוע"
-          :tamperfail               "יש אירוע"
+          :alarmState               "גלאי"
+          :alarmStateok             "אין אירוע"
+          :alarmStatefail           "יש אירוע"
 
-          :communicationStatus      "איבוד תקשורת"
-          :communicationStatusok    "יש תקשור"
-          :communicationStatusfail  "אין תקשור"
-
+          :communicationStatus      "תקשורת"
+          :communicationStatusok    "יש תקשורת"
+          :communicationStatusfail  "אין תקשורת"
         }
         :commands
         {           
@@ -96,7 +96,7 @@
 
 ;;{:id "1602323" :bcity 1 :name "tek aviv sfs" :status 3 :address "נחלת בנימין 24-26, תל אביב יפו, ישראל" :lat 32.08088 :lon 34.78057 :contacts [{:tel "1235689" :name "Alexey"} {:tel "7879787" :name "Oleg"}]} {:id "2" :city 2 :name "The second device" :status 2 :address "נחלת בנימין 243-256, תל אביב יפו, ישראל" :lat 31.92933 :lon 34.79868 }
 
-(defonce app-state (atom {:ws_channel nil :selectedusers [] :markers [] :selectedstatus -1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.9321 :lon 34.8013},
+(defonce app-state (atom {:ws_channel nil :selectedgroup {:name ""} :selectedusers [] :markers [] :infownds [] :selectedstatus -1 :map nil :state 0 :selectedunits [] :search "" :isalert false :isnotification false :user {:role "admin"} :selectedcenter {:lat 31.9321 :lon 34.8013},
 
 ;:contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
 
@@ -262,6 +262,214 @@
   )
 )
 
+(defn map-user-node [user]
+  {:text (:firstname user) :id (:id user) :icon "fa fa-hdd-o" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
+)
+
+
+(defn map-dev-node [dev]
+  {:text (:name dev) :unitid (:id dev) :icon "fa fa-hdd-o" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
+)
+
+
+(defn buildUnits [id]
+  (let [
+    devices (if (> (count (:devices @app-state)) 0) (filter (fn [x] (if (and (not (nil? (:groups x))) (> (.indexOf (:groups x) id) -1))  true false)) (:devices @app-state)) []) 
+    nodes (into [] (map map-dev-node devices))
+    ;tr1 (.log js/console nodes)
+    ]
+    nodes
+  )
+)
+
+(defn buildUsers [id]
+  (let [
+    users (if (> (count (:users @app-state)) 0) (filter (fn [x] (if (and (not (nil? (:groups x))) (> (.indexOf (:groups x) id) -1))  true false)) (:users @app-state)) []) 
+    nodes (into [] (map map-user-node users))
+    ;tr1 (.log js/console nodes)
+    ]
+    nodes
+  )
+)
+
+
+(defn getChildUnits [id children]
+  (let [
+    childgroups (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @app-state))
+    ;(filter (fn [x] (if (> (.indexOf (:parents x) id) -1) true false)) (:groups @app-state))
+
+    
+    childs (concat children (buildUnits id))
+        
+    childdevs (
+      loop [result [] groups childgroups]
+        (if (seq groups)
+          (let [
+            thegroup (first groups)
+            tr1 (.log js/console (str "Current group: " (:name thegroup)))
+            ]
+            (recur (conj result (getChildUnits (:id thegroup) [])) (rest groups))
+          )
+          result
+        )
+    )
+    ;; childdevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @app-state)))) childs)
+
+    ;; nextchildunits (distinct (flatten (map (fn [x] (buildUnits (:id x))) childgroups)))
+
+    ;; nextchilddevs (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:text x)) true false)) (:devices @app-state)))) nextchildunits)
+    ]
+
+    (distinct (flatten (concat childs childdevs)))
+    ;childgroups
+    ;(if (> (count childgroups) 0) (concat ))
+  )
+)
+
+(defn getChildUsers [id children]
+  (let [
+    childgroups (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @app-state))
+    ;(filter (fn [x] (if (> (.indexOf (:parents x) id) -1) true false)) (:groups @app-state))
+
+    
+    childs (concat children (buildUsers id))
+        
+    childdevs (
+      loop [result [] groups childgroups]
+        (if (seq groups)
+          (let [
+            thegroup (first groups)
+            tr1 (.log js/console (str "Current group: " (:name thegroup)))
+            ]
+            (recur (conj result (getChildUsers (:id thegroup) [])) (rest groups))
+          )
+          result
+        )
+    )
+    ]
+    (distinct (flatten (concat childs childdevs)))
+  )
+)
+
+
+(defn calcGroupLatLon [id]
+  (let [
+    ;tr1 (.log js/console (str "id in calcGroupLatLon=" id))
+    units (map (fn [x] (first (filter (fn [y] (if (= (:id y) (:unitid x)) true false)) (:devices @app-state)))) (getChildUnits id [])) 
+ 
+    minlat (if (= (count units) 0) (:lat (:selectedcenter @app-state)) (apply min (map (fn [x] (:lat x)) units))) 
+    maxlat (if (= (count units) 0) (:lat (:selectedcenter @app-state)) (apply max (map (fn [x] (:lat x)) units)))
+
+    tr1 (.log js/console (str "first unit=" (first units) " ;2nd=" (nth units 1)))
+
+    lat (/ (+ minlat maxlat) 2)
+
+    minlon (if (= (count units) 0) (:lon (:selectedcenter @app-state)) (apply min (map (fn [x] (:lon x)) units)))
+    maxlon (if (= (count units) 0) (:lon (:selectedcenter @app-state)) (apply max (map (fn [x] (:lon x)) units)))
+
+
+    lon (/ (+ minlon maxlon) 2)
+    ]
+    {:lat lat :lon lon}
+  )
+)
+
+(defn add-marker-indications [device]
+  (reduce (fn [x y]
+    (let [
+      indicator (first (filter (fn [z] (if (= (:id z) (:id y)) true false)) (:indications @app-state) ))
+      ;tr1 (.log js/console indicator)
+      name (t :he main-tconfig (keyword (str "indicators/" (:name indicator))))
+
+      indicator (first (filter (fn [z] (if (= (:id z) (:id y)) true false))  (:indications @app-state)))
+
+      icon (case (:isok y) true (:okicon indicator) (if (> (count (:failicon indicator)) 0) (:failicon indicator) "fail"))
+
+      status (case (:isok y) true (str (t :he main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he main-tconfig (keyword (str "indicators/" (:name indicator) "fail"))))) 
+
+
+      ;tr1 (.log js/console (str "status=" status))
+      ]
+      (if (nil? indicator) x
+        (str x
+          "<div style=\"border: 1px solid rgba(0, 0, 0, 0.125); border-radius: 0.25rem; padding: 0px; width: 46px; margin-left: 5px; margin-top: 10px; display: table;\">"
+            "<div style=\"text-align: center; margin-left: 0px; margin-right: 0px; border-bottom: 1px solid rgba(0, 0, 0, 0.125); height: 30px; background-color: rgba(0, 0, 0, 0.03); display: table-cell; vertical-align: middle \">"
+                name
+             "</div>"
+             "<div style=\"background-color: white; text-align: center; display: table-row;\">"
+               "<img src=\""
+
+               (str "images/" icon ".png")
+               "\" style=\"margin-top: 3px; margin-bottom: 3px; min-width: 25px; max-width: 25px;\" >"
+            "</div>"
+
+            "<div style=\"display: table-row; text-align: center; margin-left: 0px; margin-right: 0px; border-top: 1px solid rgba(0, 0, 0, 0.125); height: 32px; background-color: white;\"> "
+              "<div style=\"display: table-cell; padding-bottom: 2px; vertical-align: middle; border-top: 1px solid rgba(0, 0, 0, 0.125);  \"> "
+                 status
+              "</div>"
+            "</div>"
+          "</div>"
+        )
+      )
+    )
+  ) ""
+
+  (filter (fn [x] (let [name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @app-state))))] (if (>= (.indexOf indicators name) 0)  true false))) (:indications device)))
+)
+
+(defn add-marker-info-content [device]
+  (let [
+    ;tr1 (.log js/console (str "token: " (:token (:token @app-state)) ))
+    ;tr1 (.log js/console (str "command1= " (:name (nth (:commands @app-state) 1))))
+    infownd (str "<div id=\"content\" style=\" width: 200px;  \" >"
+      "<h5 style=\"text-align: center\">" (:name device) "</h5>"
+      "<h5 style=\"text-align: center; margin-bottom: 0px; margin-top: 5px  \">" (:address device) "</h5>"
+
+      "<div style=\"justify-content: space-evenly; text-align: justify; display: flex; flex-wrap: wrap; width: 100%; margin-top: 0px;\">"
+      (add-marker-indications device)
+      "</div>"
+
+      "<div class=\"row\" style=\"text-align: center; margin-top: 5px; margin-bottom: 10px; margin-left: 0px; margin-right: 0px \">"
+        "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 10px; padding-left: 0px; padding-right: 0px; width: 86.31px \" onclick=\"sendcommand('"
+          settings/apipath "', '"
+          (:token (:token @app-state))
+          "', '"
+          (:id device)
+          "', "
+          (:id (nth (:commands @app-state) 0))
+          ")\">"
+          (t :he main-tconfig (keyword (str "commands/" (:name (nth (:commands @app-state) 0)))))
+        "</button>"
+
+
+        "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 5px; padding-left: 0px; padding-right: 0px; \" onclick=\"sendcommand('"
+          settings/apipath "', '"
+          (:token (:token @app-state))
+          "', '"
+          (:id device)
+          "', "
+          (:id (nth (:commands @app-state) 1))
+          ")\">"
+          (t :he main-tconfig (keyword (str "commands/" (:name (nth (:commands @app-state) 1)))))
+        "</button>"
+      "</div>"
+      "</div>")
+    ]
+    infownd
+  )
+)
+
+(defn addMarkerInfo [device]
+  (let [
+    wnd1  (add-marker-info-content device)
+
+    window-options (clj->js {"content" wnd1})
+    infownd (js/google.maps.InfoWindow. window-options)
+    ]
+    infownd
+  )
+)
+
 
 (defn setVersionInfo [info]
   (swap! app-state assoc-in [:verinfo] 
@@ -384,8 +592,8 @@
 
 (defn seennotification [item e]
   (let [
-    ;tr1 (swap! app-state assoc-in [:user :addedby] (:userid (:token @shelters/app-state)))
-      accept (tf/unparse custom-formatter2 (tc/now))
+    ;tr1 (swap! app-state assoc-in [:user :addedby] (:userid (:token @app-state)))
+      accept (tf/unparse custom-formatter2 (tl/local-now))
       newnotifications (map (fn [x] (if (= (:id x) (:id item)) (assoc x :status "Accepted") x)) (if (:isnotification @app-state) (:notifications @app-state) (:alerts @app-state)))
     ]
     (if (:isnotification @app-state) (swap! app-state assoc-in [:notifications] newnotifications) (swap! app-state assoc-in [:alerts] newnotifications))
@@ -415,14 +623,18 @@
             user (first (filter (fn [x] (if (= (:userid x) (:userid item)) true false)) (:users @data)))
 
             indicator (first (filter (fn [x] (if (= (:id x) (:sensorid item)) true false))  (:indications @app-state)))
+
+            ;sensor (str (t :he main-tconfig (keyword (str "indicators/" (:name indicator)))))
+            sensor ((keyword (:name indicator)) (:words @app-state))
+            ;tr1 (.log js/console (str "indicator=" (:name indicator)))
             ]
             (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid transparent" :display "flex" :margin-left "0px" :margin-right "0px" :text-align "center"}}
-              (dom/div {:className "col-md-1"}
+              (dom/div {:className "col-md-1" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/div {:className "row"}
-                  (dom/div {:className "col-md-4" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+                  (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
                     (b/button {:className "btn btn-default" :disabled? (if (= (:status item) "New") false true) :style {:padding "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seennotification item e))} "ראיתי")
                   )
-                  (dom/div {:className "col-md-8" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px"}}
+                  (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px"}}
                     (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }                
                       (:id item)
                     )
@@ -448,8 +660,7 @@
 
               (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
                 (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }
-                  (str (t :he main-tconfig (keyword (str "indicators/" (:name indicator)))))
-                  ;(str (t :he main-tconfig (keyword (str "alerts/" (:type item)))))
+                  sensor ;(str (t :he main-tconfig (keyword (str "indicators/" (:name indicator)))))
                 )
               )
 
@@ -960,16 +1171,16 @@
   )
   (render [_]
     (let [
-      user (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))
+      ;user (first (filter (fn [x] (if (= (:userid x) (:userid (:token @app-state))) true false)) (:users @app-state)))
       ;tr1 (.log js/console (str "in map navigation"))
-      role (:id (:role user))
-      fullname (str (:firstname user) " " (:lastname user))
-      role (:name (:role (first (filter (fn[x] (if (= (:userid (:token @data)) (:userid x)) true false)) (:users @data)))))
+      ;role (:id (:role user))
+      ;fullname (str (:firstname user) " " (:lastname user))
+      ;role (:name (:role (first (filter (fn[x] (if (= (:userid (:token @data)) (:userid x)) true false)) (:users @data)))))
 
       ;tr1 (.log js/console (str "role=" role))
 
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:height "70px" :margin-left "15px"}}
+      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:width "100%" :height "70px" :margin-left "15px"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -985,19 +1196,19 @@
         )
 
         (dom/div {:className "collapse navbar-collapse navbar-ex1-collapse" :id "bs-example-navbar-collapse-1" :style {
-            ;:font-size "larger"
+            :font-size "larger"
           }}
 
           (dom/ul {:className "nav navbar-nav"}
 
             (dom/li
-              (dom/a {:className "navbara" :href "#/map" :style {:padding-left "5px" :padding-right "5px"}}
+              (dom/a {:className "navbara" :href "#/map" :style {:padding-left "15px" :padding-right "0px"}}
                 (dom/i {:className "fa fa-map-o" :style {:margin-left "5px"}})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:className "navbara" :href "#/dashboard" :style {:padding-left "5px" :padding-right "5px"} :onMouseOver (fn [x]
+              (dom/a {:className "navbara" :href "#/dashboard" :style {:padding-left "15px" :padding-right "15px"} :onMouseOver (fn [x]
                                                                                         (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
                                                                                         (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/i {:className "fa fa-dashboard" :style {:margin-left "5px"}})
@@ -1012,8 +1223,8 @@
             ;;   )
             ;; )
 
-            (if (not= role settings/dispatcherrole)
-              (dom/li {:className "dropdown" :style {:min-width "160px"}}
+            (if (not= (:roleid (:token @app-state)) settings/dispatcherrole)
+              (dom/li {:className "dropdown" :style {:min-width "165px"}}
                 (dom/a { :href "#" :className "navbarasysmanage" :style {:padding-left "0px" :padding-right "0px"}
                     :onMouseOver (fn [x]
                       (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "block")
@@ -1025,30 +1236,28 @@
                   (dom/i {:className "fa fa-archive" :style {:margin-left "5px"}})
                   "ניהול מערכת"
                 )
-                (dom/div { :id "navbarulmanage" :className "navbarulmanage" :style {:display "none" :background-color "#f9f9f9" :border-left "2px solid grey" :border-right "2px solid grey" :border-bottom "2px solid grey"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
-                  (dom/div {:className "row" :style {:margin-top "5px"}}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/groups" :className "menu_item" :style {:padding-left "10px" :padding-right "10px"}}
+                (dom/div { :id "navbarulmanage" :className "navbarulmanage" :style {:display "none" :background-color "#f9f9f9" :border-left "2px solid #337ab7" :border-right "2px solid #337ab7" :border-bottom "2px solid #337ab7" :border-top "1px solid #337ab7"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none"))}
+                  (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px" :margin-bottom "5px"}}
+                    (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
+                      (dom/a {:href "#/groups" :className "menu_item" :style {:padding-left "5px" :padding-right "5px"}}
                         (dom/i {:className "fa fa-users" :style {:padding-left "5px"}})
                         "ניהול קבוצות"
                       )
                     )
                   )
 
-                  (if (not= role settings/dispatcherrole)
-                    (dom/div {:className "row" :style {:margin-top "5px"}}
-                      (dom/div {:className "col-md-12"}
-                        (dom/a {:href "#/users" :className "menu_item" :style {:padding-left "10px" :padding-right "10px"}}
-                          (dom/i {:className "fa fa-key" :style {:padding-left "5px"}})
-                          "ניהול משתמשים"
-                        )
+                  (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px"}}
+                    (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
+                      (dom/a {:href "#/users" :className "menu_item" :style {:padding-left "5px" :padding-right "5px"}}
+                        (dom/i {:className "fa fa-key" :style {:padding-left "5px"}})
+                        "ניהול משתמשים"
                       )
                     )
-                  ) 
+                  )
 
-                  (dom/div {:className "row" :style {:margin-top "5px"}}
-                    (dom/div {:className "col-md-12"}
-                      (dom/a {:href "#/devslist" :className "menu_item" :style {:padding-left "10px" :padding-right "10px"}}
+                  (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px"}}
+                    (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
+                      (dom/a {:href "#/devslist" :className "menu_item" :style {:padding-left "5px" :padding-right "5px"}}
                         (dom/i {:className "fa fa-hdd-o" :style {:padding-left "5px"}})
                         "ניהול יחידות"
                       )
@@ -1060,8 +1269,8 @@
 
 
 
-            (dom/li {:className "dropdown" :style {:min-width "200px"}}
-              (dom/a { :href "#" :className "navbarareports"
+            (dom/li {:className "dropdown" :style {:min-width "230px"}}
+              (dom/a { :href "#" :className "navbarareports" :style {:padding-left "0px" :padding-right "0px"}
                 :onMouseOver (fn [x]
                   (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "block")
                   (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
@@ -1072,26 +1281,26 @@
                 (dom/i {:className "fa fa-archive" :style {:margin-left "5px"}})
                 "דו״חות"
               )
-              (dom/div { :id "navbarulreports" :className "navbarulreports" :style {:display "none" :background-color "#f9f9f9" :border-left "2px solid grey" :border-bottom "2px solid grey" :border-right "2px solid grey"} :border-top "1px solid #337ab7" :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
-                (dom/div {:className "row" :style {:margin-top "5px"}}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "#/reportunits" :className "menu_item" :style {:padding-left "10px" :padding-right "10px"}}
+              (dom/div { :id "navbarulreports" :className "navbarulreports" :style {:display "none" :background-color "#f9f9f9" :border-left "2px solid #337ab7" :border-bottom "2px solid #337ab7" :border-right "2px solid #337ab7" :border-top "1px solid #337ab7"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
+                (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px"}}
+                  (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
+                    (dom/a {:href "#/reportalerts" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-line-chart" :style {:padding-left "5px"}})
                       "דו''ח תקלות"
                     )
                   )
                 )
-                (dom/div {:className "row" :style {:margin-top "5px"}}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "#/report.triggeredAlerts" :className "menu_item" :style {:padding-left "10px" :padding-right "10px"}}
+                (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px"}}
+                  (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
+                    (dom/a {:href "#/reportsensors" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-bullhorn" :style {:padding-left "5px"}})
                       "דו''ח חיווים"
                     )
                   )
                 )
-                (dom/div {:className "row" :style {:margin-top "5px"}}
-                  (dom/div {:className "col-md-12"}
-                    (dom/a {:href "#/report.notifications" :className "menu_item" :style {:padding-left "10px" :padding-right "10px"}}
+                (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px"}}
+                  (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
+                    (dom/a {:href "#/report.notifications" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-envelope-o" :style {:padding-left "5px"}})
                       "דו''ח שליחת פקודות הפעלה"
                     )
@@ -1126,7 +1335,7 @@
 
           (dom/ul {:className "nav navbar-nav navbar-left"}
             (dom/li {:style {:margin-right "0px" :margin-top "10px" :text-align "center"} :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
-              (dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} (str "שירות לקוחות" " " "03-6100066"))
+              (dom/div {:style {:padding-top "10px" :color "#337ab7" :margin-left "10px"}} (str "שירות לקוחות" " " "03-6100066"))
               ;(dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "03-123-456-789")
             )
             (dom/li {:className "dropdown"}
@@ -1138,7 +1347,10 @@
                 }
                 (dom/span {:className "caret"})
                 (dom/i {:className "fa fa-user-circle" :style {:margin-left "3px" :margin-right "3px"}})
-                (str fullname " " role)
+                  (:name (:token @app-state))
+                  (dom/p {:style {:margin "0px"}}
+                    (:rolename (:token @app-state))
+                  )
               )
 
               (dom/div { :id "navbarulexit" :className "navbarulexit" :style {:display "none" :background-color "#f9f9f9" :text-align "left"} :onMouseLeave (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}

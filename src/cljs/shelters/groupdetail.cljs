@@ -125,7 +125,7 @@
 
 (defn updateGroup []
   (let [
-    tr1 (.log js/console (str "In updateGroup"))
+    ;tr1 (.log js/console (str "In updateGroup"))
     ]
     (PUT (str settings/apipath  "updateGroup") {
       :handler OnUpdateGroupSuccess
