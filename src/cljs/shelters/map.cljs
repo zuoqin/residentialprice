@@ -37,7 +37,7 @@
 
 (def ch (chan (dropping-buffer 2)))
 
-(def iconBase "images/")
+
 
 (defn tableheight [count] 
   (+ 100 (* 27 (min count 10)))
@@ -64,6 +64,13 @@
 ;;   {:text (:id city)  :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded false :selected false} :nodes (into [] (concat (buildCities (:id city)) (buildUnits (:id city)))) }
 ;; )
 
+
+(defn comp-cities [city1 city2]
+  (if (< (compare (:text city1) (:text city2)) 0)
+    true false
+  )
+)
+
 (defn buildCities [id]
   (let [
     children (filter (fn [x] (if (and (nil? id) (nil? (:parents x))) true (if (nil? (:parents x)) false (if (> (.indexOf (:parents x) id) -1)  true false)))) (:groups @shelters/app-state))
@@ -75,13 +82,13 @@
       ) ) children))
     ;tr1 (.log js/console nodes)
     ]
-    nodes
+    (sort (comp comp-cities) nodes)
   )
 )
 
 (defn buildTreeGroups []
   ;(.log js/console (str "groups=" (count (:groups @shelters/app-state)) "; units=" (count (:devices @shelters/app-state))))
-  (swap! shelters/app-state assoc-in [:selectedunits] [])
+  ;(swap! shelters/app-state assoc-in [:selectedunits] [])
   (do (clj->js {:multiSelect true :searchResultBackColor "#337ab7" :searchResultColor "#FFFFFF" :data [{:text "כל ישראל" :icon "fa-flag-israel" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (into [] (concat (buildCities nil) (shelters/buildUnits nil)))}]}))
 )
 
@@ -111,9 +118,10 @@
   ;;(getPortfolios)
   (put! ch 42)
   (put! ch 43)
-
+  ;(.log js/console "setting tree to nil")
+  ;(swap! app-state assoc-in [:treeview] nil)
   (set! (.-title js/document) "מפה")
-  (swap! shelters/app-state assoc :state 1)
+  (swap! shelters/app-state assoc :state 0)
   (swap! shelters/app-state assoc-in [:view] 2)
 )
 
@@ -164,10 +172,18 @@
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
     ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    size (js/google.maps.Size. 48 48)
+    
 
     status (:isok (first (filter (fn [x] (if (= (:id x) 12) true false)) (:indications device))))
-    image (clj->js {:url (str iconBase (case status true "green_point.ico" "red_point.ico")) :scaledSize size})
+
+
+
+    image (shelters/calcunitimage device)
+
+
+    ;image (clj->js {:url (str iconBase (case status true "green_point.ico" "red_point.ico")) :scaledSize size})
+
+
     marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" image "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
 
@@ -175,6 +191,8 @@
 
     ;tr1 (.log js/console (str "info counts = " (count (filter (fn[x] (if (= (:id device) (:id x)) true false)) (:infownds @shelters/app-state)))))
     infownds (if (> (count (filter (fn[x] (if (= (:id device) (:id x)) true false)) (:infownds @shelters/app-state))) 0) infownds (conj infownds {:id (:id device) :info infownd}))
+
+    delmarker (remove (fn [x] (if (= (.. x -unitid) (:id device)) true false)) (:markers @shelters/app-state))
     ]
     (jquery
       (fn []
@@ -188,6 +206,7 @@
       )
     )
     (swap! shelters/app-state assoc-in [:markers] (conj (:markers @shelters/app-state) marker))
+    
 
     (swap! shelters/app-state assoc-in [:infownds] infownds)
   )
@@ -195,8 +214,8 @@
 
 (defn addplace [place]
   (let [
-    tr1 (.log js/console place)
-    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @shelters/app-state) "icon" (str iconBase "green_point.png") "title" (.. place -name)})
+    ;tr1 (.log js/console place)
+    marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @shelters/app-state) "icon" (str shelters/iconBase "green_point.png") "title" (.. place -name)})
 
     ;If need to add marker on the map:
     ;marker (js/google.maps.Marker. marker-options)
@@ -205,21 +224,12 @@
   )
 )
 
-(defn setcenterbydevice [device]
-  (let [
-    thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @shelters/app-state)))
-
-    ;tr1 (.log js/console (str "device=" device " obj=" thedev))
-    tr1 (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
-    ]
-    (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
-  )
-)
 
 (defn uncheckall []
   (let [
     selected (js->clj (-> (jquery "#tree" ) (.treeview "getSelected")))
     ]
+    (swap! shelters/app-state assoc-in [:selectedunits] [])
     (doall (map (fn [x]
       (let [
         nodeid (get x "nodeId")
@@ -235,20 +245,84 @@
     (-> (jquery "#tree" )
       (.treeview "clearSearch")
     )
+    (put! ch 47)
   )
 )
 
-(defn locatedevice [device]
+(defn select-units-group [element]
   (let [
-    options (clj->js [(:name device) {:ignoreCase true :exactMatch false :revealResults true}])
+    nodes (get (js->clj element) "nodes")
     ]
-    (setcenterbydevice (:id device))
+    ;(.log js/console "selecting group with " (count nodes) " childs")
+    (doall (map (fn [x] (let [
+      ;tr1 (.log js/console (str "selecting nodeid=" (get x "nodeId")))
+      ]
+      (-> (jquery "#tree" )
+        (.treeview "selectNode" (clj->js [ (get x "nodeId") {:silent true}]))
+      )
+      (select-units-group x)
+     )) nodes))
+  )
+)
+
+(defn deselect-units-group [element]
+  (let [
+    nodes (get (js->clj element) "nodes")
+    ]
+    ;(.log js/console "selecting group with " (count nodes) " childs")
+    (doall (map (fn [x] (let [
+      ;tr1 (.log js/console (str "selecting nodeid=" (get x "nodeId")))
+      unitid (get x "unitid")
+      ;tr1 (.log js/console "unitid = " unitid)
+      ]
+
+      (if (not (nil? unitid))
+        (if (> (.indexOf (:selectedunits @shelters/app-state) unitid) -1)
+          (swap! shelters/app-state assoc-in [:selectedunits] (remove (fn [x] (if (= unitid x) true false)) (:selectedunits @shelters/app-state)))
+        )
+      )
+      (-> (jquery "#tree" )
+        (.treeview "unselectNode" (clj->js [ (get x "nodeId") {:silent true}]))
+      )
+      (deselect-units-group x)
+     )) nodes))
+  )
+)
+
+
+(defn search-units-tree [select]
+  (let [
+    options (clj->js [select {:ignoreCase true :exactMatch false :revealResults true}])
+    ]
     (-> (jquery "#tree" )
       (.treeview "clearSearch")
     )
     (-> (jquery "#tree" )
         (.treeview "search" options)
     )
+  )
+)
+
+(defn select-units-tree []
+  (doall (map (fn [x]
+    (let [
+      node (-> (jquery "#tree" ) (.treeview "getNode" x))
+    ]
+    ;(.log js/console (.-unitid node))
+    (if (not (nil? (.-unitid node)))
+      (if (> (.indexOf (:selectedunits @shelters/app-state) (.-unitid node)) -1)
+        (-> (jquery "#tree" ) (.treeview "selectNode" (clj->js [x {:silent true}])))
+        (-> (jquery "#tree" ) (.treeview "unselectNode" (clj->js [x {:silent true}])))
+      )
+    ))
+  ) (range 0 (* (count (:groups @shelters/app-state)) (count (:devices @shelters/app-state))))))
+)
+
+
+(defn locatedevice [device]
+  (let [
+    ]
+    (shelters/setcenterbydevice (:id device))
   )
 )
 
@@ -272,13 +346,22 @@
       (fn []
         (-> searchbox
           (.addListener "places_changed"
-            (fn []              
+            (fn []
               ;(.log js/console (.getPlaces searchbox))
-              (if (> (count (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))) 0) 
-                (locatedevice (first (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))))
+              (if (> (count (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))) 0)
+                (let [first (first (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state)))
+                  ]
+                  (swap! shelters/app-state assoc-in [:selectedunits] (map (fn [x] (:id x)) (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))) )
+                  (locatedevice first)
+                  
+
+                  (put! ch 47)
+                  ;(.log js/console (str "trying to check " (:name first) " liunit" (:id first)))
+                  ;(.checked (:treeview @app-state) true (jquery (str "liunit" (:id first))))
+                )
+                
                 (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
               )
-              
             )
           )
         )
@@ -290,8 +373,10 @@
 
 (defn addMarkers []
   (let[
-       tr1 (swap! shelters/app-state assoc-in [:markers] [])
+       
     ]
+    (doall (map (fn [x] (.setMap x nil)) (:markers @shelters/app-state)))
+    (swap! shelters/app-state assoc-in [:markers] [])
     (doall (map addMarker (:devices @shelters/app-state)))
     (go
          (<! (timeout 100))
@@ -320,7 +405,9 @@
   (let [
     thecity (first (filter (fn [x] (if (= (:id x) city) true false)) (:groups @shelters/app-state)))
 
-    latlon (shelters/calcGroupLatLon (:id thecity)) ;{:lat 32.08088 :lon 34.78057}
+    latlon (shelters/calcGroupLatLon (:id thecity))
+
+    
     ;tr1 (.log js/console (str "city=" city " obj=" thecity " latlon=" latlon))
     ]
     (swap! shelters/app-state assoc-in [:selectedcenter] {:lat (:lat latlon) :lon (:lon latlon) })
@@ -334,10 +421,109 @@
   ;(.log js/console (count (:employees @app-state)))
   (jquery
     (fn []
-      (-> (jquery "#treeview" )
-        (.shieldTreeView)
+      (-> (jquery "#tree" )
+        (.treeview (buildTreeGroups) ) ;;js-object        
+        (.on "nodeSelected"
+          (fn [event data] (
+             let [
+               
+               
+               res (js->clj data)
+               unitid (get res "unitid")
+             ]
+             ;(.log js/console (str "unitid=" unitid))
+             ;(.log js/console data)
+             ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
+             (if (nil? unitid) 
+               (let []
+                 (select-units-group data)
+                 (setcenterbycity (get res "groupid"))
+               )
+
+               (shelters/setcenterbydevice unitid))
+
+             (if (nil? unitid)
+               (add-group-to-selected (get res "groupid"))
+               (addtoselected unitid)
+             )
+             ;(gotoSelection (first res)) 
+             (put! ch 47)
+            )
+          )
+        )
+
+
+        (.on "nodeUnselected"
+          (fn [event data] (
+             let [
+               ;table (-> (jquery "#dataTables-example") (.DataTable) )
+               ;res (.data (.row table (.. e -currentTarget)) )
+               res (js->clj data)
+               unitid (get res "unitid")
+             ]
+             ;(.log js/console (str "unitid=" unitid))
+             ;(.log js/console (str "parentid=" (get res "parentId") " text=" (get res "text")))
+             ;(if (nil? unitid) (setcenterbycity (get res "groupid")) (setcenterbydevice unitid))
+             
+             (if (nil? unitid)
+               (deselect-units-group data)
+               (if (> (.indexOf (:selectedunits @shelters/app-state) unitid) -1)
+                 (swap! shelters/app-state assoc-in [:selectedunits] (remove (fn [x] (if (= unitid x) true false)) (:selectedunits @shelters/app-state)))
+               )
+             )
+             (put! ch 47)
+            )
+          )
+        )
       )      
     )
+  )
+  (put! ch 47)
+)
+
+
+;; (defn setTreeControl []
+;;   (let [
+;;     ;; tv (.swidget (-> (jquery "#treeview" )
+;;     ;;      (.shieldTreeView (clj->js {:checkboxes {:enabled true :children true}}))
+;;     ;;      )
+;;     ;;   ) 
+;;     ]
+;;     ;(swap! app-state assoc-in [:treeview] tv)
+;;     (jquery
+;;       (fn []
+;;         (-> (jquery "#treeview" )
+;;           (.shieldTreeView)
+;;         )      
+;;       )
+;;     )
+;;   ) 
+;; )
+
+(defn updatemarkers []
+  (let [
+
+  ]
+  (doall (map (fn [num] 
+    (let [
+      x (nth (:markers @shelters/app-state) num)
+      unit (first (filter (fn [y] (if (= (.. x -unitid) (:id y)) true false)) (:devices @shelters/app-state)))
+      ;tr1 (.log js/console "unitod = " (:id unit))
+      ;size (js/google.maps.Size. 48 48)
+      ;indstatus (:isok (first (filter (fn [z] (if (= (:id z) 12) true false)) (:indications unit))))
+
+      
+      image (shelters/calcunitimage unit)
+
+      ;tr1 (.log js/console "unit=" (:name unit) "; image=" (get (js->clj image) "url") "; old= " (.-url (.getIcon x)))
+      ]
+      (if (not= (.-url (.getIcon x)) (get (js->clj image) "url")) 
+        (.setIcon x image)
+      )
+      
+      ;(swap! shelters/app-state assoc-in [:markers] newmarkers)
+    ))
+    (range 0 (count (:markers @shelters/app-state))) ))
   )
 )
 
@@ -348,6 +534,10 @@
          (setTreeControl)
        )
     43 (addMarkers)
+    47 (let []
+         (select-units-tree)
+         (updatemarkers)
+      )  
   )
   
 )
@@ -370,6 +560,9 @@
 
 (defn OnDoCommand [response] 
   (.log js/console (str response ))
+  (-> (jquery "#confirmModal .close")
+          (.click)
+  )
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
@@ -507,7 +700,7 @@
           (let [
             theunit (first (filter (fn [x] (if (= (:id x) unit) true false)) (:devices @shelters/app-state)))
             ]
-            (dom/li (:name theunit))
+            (dom/li {:id (str "liunit" (:id theunit))} (:name theunit))
           )
         ) (:childs group))
       )
@@ -533,6 +726,73 @@
     
   )
 )
+
+(defcomponent addmodalconfirm [data owner]
+  ;; (will-mount
+  ;;   (transact! data :selectedgroup  (fn [_] {:id "9ce9fce2-58d7-47bd-8e3e-0b4e2f8ee6c9", :name "jhghgjh", :parents nil, :owners nil, :current "khjhjkhjk"}))
+  ;; )
+  (render [_]
+    (let [
+      ;tr1 (.log js/console (str "name=" (:name (:selectedgroup @data))))
+      ]
+      (dom/div
+        (dom/div {:id "confirmModal" :className "modal fade" :role "dialog"}
+          (dom/div {:className "modal-dialog"} 
+            ;;Modal content
+            (dom/div {:className "modal-content"} 
+              (dom/div {:className "modal-header"} 
+                (b/button {:type "button" :className "close" :data-dismiss "modal"})
+                (dom/h4 {:className "modal-title"} "Confirmation" )
+              )
+              (dom/div {:className "modal-body"}
+
+                (dom/div {:className "panel panel-primary"}
+                  (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
+                    ;(dom/h1 {:style {:text-align "center"}} "Please confirm")
+                  )
+                  (dom/div {:className "panel-body"}
+                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                      (dom/div {:className "col-md-12" :style {}}
+                        "האם אתה בטוח רוצה לשלוח פקודה פתח מנעול עבור יחידות שנבחרו?"
+                      )
+                    )
+                  )
+                )
+              )
+              (dom/div {:className "modal-footer"}
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                    (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal"} "ביטול")
+                  )
+
+                  (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                    (b/button {:id "btnsavegroup" :disabled? (if (= (:state @data) 1) true false) :type "button" :className (if (= (:state @data) 0) "btn btn-default" "btn btn-default m-progress" ) :onClick (fn [e] (sendcommand1))} "לשלוח פקודה")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+
+(defn openConfirmDialog []
+  (let [
+    ;tr1 (.log js/console (:device @dev-state))
+    ]
+    (jquery
+      (fn []
+        (-> (jquery "#confirmModal")
+          (.modal)
+        )
+      )
+    )
+  )
+)
+
 
 (defcomponent map-view [data owner]
 
@@ -563,14 +823,15 @@
         (om/build shelters/website-view data {})
         (dom/div {:className "row maprow" :style {:margin-left "15px" :margin-right "0px" :max-width "100%" :height (case (or (:isalert @data) (:isnotification @data)) true (str (+ 0 (- (.. js/document -body -clientHeight) (tableheight (if (:isalert @data) (count (:alerts @data)) (count (:notifications @data)))) 0)) "px") "100%")}}
           (dom/div  {:className "col-3 col-sm-3" :style {:height "100%" :padding-left "5px"}}
-            (dom/div {:className "panel-primary" :style {:border "1px solid darkgrey" :overflow-y "hidden" :max-height (str pnlheight "px")}}
+            (dom/div {:className "panel-primary" :style {:border "1px solid darkgrey" :overflow-y "hidden" :height "100%";:max-height (str pnlheight "px")
+}}
               (dom/div {:className "panel-heading" :style {:margin-top "3px" :padding-top "3px" :padding-bottom "3px" :margin-left "15px" :margin-right "15px"}} "בחר קבוצה/יחידה")
               (dom/div {:className "panel-body" :style {:margin-top "0px" :padding-top "5px" :padding-bottom "5px" :margin-left "0px" :margin-right "0px"}}
-                ;(dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (str treeheight "px") }})
-                (om/build tree-view data {})
+                (dom/div  {:className "tree" :id "tree" :style { :overflow-y "scroll" :height (str treeheight "px") }})
+                ;(om/build tree-view data {})
                 (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px" :bottom "0px"}}
                   (dom/div {:className "col-xs-6" :style {:padding-left "5px" :padding-right "5px"}}
-                    (b/button {:className "btn btn-primary" :onClick (fn [e] (sendcommand1)) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))
+                    (b/button {:className "btn btn-primary btn-danger" :onClick (fn [e] (openConfirmDialog)) :disabled? (if (> (count (:selectedunits @shelters/app-state)) 0) false true) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))
                   )
                   (dom/div {:className "col-xs-6" :style {:padding-right "5px" :padding-left "5px"}}
                     (b/button {:className "btn btn-primary" :onClick (fn [e] (uncheckall)) :style {:margin-bottom "5px" :width "100%"}} "בטל בחירה")
@@ -589,6 +850,7 @@
         (if (or (:isnotification @data) (:isalert @data))
           (om/build notifications-view data {})
         )
+        (om/build addmodalconfirm data {})
       ) 
     )
   )
@@ -599,7 +861,6 @@
 
 (sec/defroute map-page "/map" []
   (let []
-    (swap! shelters/app-state assoc-in [:view] 2)
     (om/root map-view
           shelters/app-state
           {:target (. js/document (getElementById "app"))})

@@ -33,6 +33,8 @@
 (def custom-formatter3 (tf/formatter "yyyy-MM-dd HH:mm:ss"))
 (def ch (chan (dropping-buffer 2)))
 
+(def iconBase "images/")
+
 (defn tableheight [count] 
   (+ 2 (* 27 (min count 10)))
 )
@@ -142,6 +144,18 @@
 
 
 (def jquery (js* "$"))
+
+
+(defn setcenterbydevice [device]
+  (let [
+    thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @app-state)))
+
+    ;tr1 (.log js/console (str "device=" device " obj=" thedev))
+    tr1 (swap! app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
+    ]
+    (.panTo (:map @app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
+  )
+)
 
 
 (defn comp-alerts
@@ -271,11 +285,16 @@
   {:text (:name dev) :unitid (:id dev) :icon "fa fa-hdd-o" :selectedIcon "glyphicon glyphicon-ok" :selectable true :state {:checked false :disabled false :expanded true :selected false} }
 )
 
+(defn comp-units [unit1 unit2]
+  (if (< (compare (:text unit1) (:text unit2)) 0)
+    true false
+  )
+)
 
 (defn buildUnits [id]
   (let [
     devices (if (> (count (:devices @app-state)) 0) (filter (fn [x] (if (and (not (nil? (:groups x))) (> (.indexOf (:groups x) id) -1))  true false)) (:devices @app-state)) []) 
-    nodes (into [] (map map-dev-node devices))
+    nodes (into [] (sort (comp comp-units) (map map-dev-node devices)) )
     ;tr1 (.log js/console nodes)
     ]
     nodes
@@ -306,7 +325,7 @@
         (if (seq groups)
           (let [
             thegroup (first groups)
-            tr1 (.log js/console (str "Current group: " (:name thegroup)))
+            ;tr1 (.log js/console (str "Current group: " (:name thegroup)))
             ]
             (recur (conj result (getChildUnits (:id thegroup) [])) (rest groups))
           )
@@ -323,6 +342,16 @@
     (distinct (flatten (concat childs childdevs)))
     ;childgroups
     ;(if (> (count childgroups) 0) (concat ))
+  )
+)
+(defn calcunitimage [device]
+  (let [
+    size (js/google.maps.Size. 48 48)
+    communicationind (:isok (first (filter (fn [x] (if (= (:id x) 12) true false)) (:indications device))))
+
+    lockind (:isok (first (filter (fn [x] (if (= (:id x) 1) true false)) (:indications device))))
+    ]
+    (clj->js {:url (str iconBase (if (= communicationind false) (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "red-point-black.ico" "red_point.ico") (if (= lockind false) (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "yellow-point-black.ico" "yellow_point.ico") (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "green-point-black.ico" "green_point.ico")))) :scaledSize size})
   )
 )
 
@@ -360,7 +389,7 @@
     minlat (if (= (count units) 0) (:lat (:selectedcenter @app-state)) (apply min (map (fn [x] (:lat x)) units))) 
     maxlat (if (= (count units) 0) (:lat (:selectedcenter @app-state)) (apply max (map (fn [x] (:lat x)) units)))
 
-    tr1 (.log js/console (str "first unit=" (first units) " ;2nd=" (nth units 1)))
+    ;tr1 (.log js/console (str "first unit=" (first units) " ;2nd=" (nth units 1)))
 
     lat (/ (+ minlat maxlat) 2)
 
@@ -635,45 +664,45 @@
                     (b/button {:className "btn btn-default" :disabled? (if (= (:status item) "New") false true) :style {:padding "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seennotification item e))} "ראיתי")
                   )
                   (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px"}}
-                    (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }                
+                    (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
                       (:id item)
                     )
                   )
                 )
               )
               (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }                
-                  (:controller unit)
+                (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
+                      (:controller unit)
                 )
               )
               (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }                
-                  (:name unit)
+                (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
+                      (:name unit)
                 )
               )
 
               (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :max-height "27px" :overflow-y "hidden"}}
-                (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }
-                  (:address unit)                
+                (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
+                      (:address unit)
                 )
               )
 
               (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }
-                  sensor ;(str (t :he main-tconfig (keyword (str "indicators/" (:name indicator)))))
+                (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
+                  sensor
                 )
               )
 
               (dom/div {:className "col-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
                   (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :text-align "center"}}
-                    (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }
+                    (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
                       (tf/unparse custom-formatter1 (:open item))
                     )
                   )
 
                   (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
-                    (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) :style {:color (if (= (:status item) "Closed") "black" "transparent" )}}
+                    (dom/a {:className "nolink" :href "#/map/" :style {:color (if (= (:status item) "Closed") "black" "transparent" )} :onClick (fn [e] (let [] (setcenterbydevice (:uintid item)))) }
                       (tf/unparse custom-formatter1 (:close item))
                     )
                   )
@@ -681,13 +710,13 @@
               )
               (dom/div {:className "col-md-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
-                  (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }
+                  (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
                     (t :he main-tconfig (keyword (str "alerts/" (:status item))))
                   )
                 )
 
                 (dom/div {:className "col-md-6" :style { :border-left "1px solid transparent" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                  (dom/a {:className "nolink" :href (str "#/unitdetail/" (:id unit)) }
+                  (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
                     (str (:firstname user) " " (:lastname user))
                   )
                 )
@@ -861,34 +890,6 @@
   )
 )
 
-(defn OnGetPortfolios [response]
-  (swap! app-state assoc :state 1 )
-  (swap! app-state assoc-in [ (keyword (str (:selectedsec @app-state)) ) :portfolios] (map (fn [x] (map-portfolio x)) response) )
-)
-
-(defn OnGetCalcPortfolios [response]
-  ;(set! ( . (.getElementById js/document "btnrefresh") -disabled) false)
-  (swap! app-state assoc :state 1 )
-  (swap! app-state assoc-in [ (keyword (str (:selectedsec @app-state)) ) :calcportfs] (map (fn [x] (map-calc-portfolio x)) response) )
-)
-
-(defn OnGetPositions [response]
-  (swap! app-state assoc :state 1 )
-  (swap! app-state assoc-in [(keyword (:selectedclient @app-state)) :positions] (map (fn [x] (map-position x)) (filter (fn [x] (if (= (:amount (nth x 1)) 0.0) false true)) response) ) )
-)
-
-(defn OnGetDeals [response]
-  (let [
-    deals (:deals ((keyword (:selectedclient @app-state)) @app-state))
-    ]
-    (swap! app-state assoc :state 1 )
-    (if (> (count response) 0)
-      (swap! app-state assoc-in [(keyword (:selectedclient @app-state)) :deals] (concat deals (flatten (map (fn [x] (map-deal x)) (filter (fn [x] (if (> 1 1) true true)) response) ))))
-      (swap! app-state assoc-in [:nomoredeals] true)
-    )    
-  )
-)
-
 (defn update-position [position]
   (let [
     client (first (filter (fn [x] (if (= (:selectedclient @app-state) (:code x)) true false)) (:clients @app-state)))
@@ -944,107 +945,6 @@
   (.log js/console (str "something bad happened: " status " " status-text))
 )
 
-
-
-(defn reqsecurities []
-  (swap! app-state assoc :state 2 )
-  (GET (str settings/apipath "api/security")
-       {:handler OnGetSecurities
-        :error-handler error-handler
-        :headers {:content-type "application/json"
-                  :Authorization (str "Bearer " (:token  (:token @app-state))) }
-       })
-)
-
-
-
-(defn getPositions []
-  (swap! app-state assoc :state 2 )
-  (GET (str settings/apipath "api/position?client=" (:selectedclient @app-state) ) {
-    :handler OnGetPositions
-    :error-handler error-handler
-    :headers {
-      :content-type "application/json"
-      :Authorization (str "Bearer "  (:token (:token @app-state))) }
-  })
-)
-
-(defn getDeals []
-  (swap! app-state update-in [:dealspage] inc)
-  (swap! app-state assoc :state 2 )
-  (GET (str settings/apipath "api/deals?client=" (:selectedclient @app-state) "&page=" (:dealspage @app-state)) {
-    :handler OnGetDeals
-    :error-handler error-handler
-    :headers {
-      :content-type "application/json"
-      :Authorization (str "Bearer "  (:token (:token @app-state)))}
-  })
-)
-
-
-(defn getPortfolios [] 
-  (GET (str settings/apipath "api/portfolios?security=" (:selectedsec @app-state) ) {
-    :handler OnGetPortfolios
-    :error-handler error-handler
-    :headers {
-      :content-type "application/json"
-      :Authorization (str "Bearer "  (:token (:token @app-state))) }
-  })
-)
-
-(defn getCalcPortfolios []
-  (let [
-      percentage 10.0 ;;(:percentage @app-state)
-    ]
-    (swap! app-state assoc :state 2 )
-    ;(set! ( . (.getElementById js/document "btnrefresh") -disabled) true)
-    (GET (str settings/apipath "api/calcshares?security=" (:selectedsec @app-state) "&percentage=" percentage ) {
-      :handler OnGetCalcPortfolios
-      :error-handler error-handler
-      :headers {
-        :content-type "application/json"
-        :Authorization (str "Bearer "  (:token (:token @app-state))) }
-    })
-  )
-)
-
-(defn onSecsDropDownChange [id value]
-  (let [
-        code (:id (first (filter (fn[x] (if (= (:id x) (js/parseInt value) ) true false)) (:securities @app-state)))  )
-        ]
-
-    (swap! app-state assoc-in [:selectedsec] code)
-    (if (nil? (:portfolios ((keyword value) @app-state)))
-      (getPortfolios)
-    )
-  )
-  
-  ;;(.log js/console value)  
-)
-
-(defn onCalcSecsDropDownChange [id value]
-  (let [
-        code (:id (first (filter (fn[x] (if (= (:id x) (js/parseInt value) ) true false)) (:securities @app-state)))  )
-        ]
-
-    (swap! app-state assoc-in [:selectedsec] code)
-    (if (nil? (:calcportfs ((keyword value) @app-state))) (getCalcPortfolios))    
-  )
-  (.log js/console (str "in onCalcSecsDropDownChange value =") value)  
-)
-
-(defn onCalcCurrenciesDropDownChange [id value]
-  (let [
-        code ""
-        ]
-
-    (swap! app-state assoc-in [:selectedcurrency] value)
-    ;(if (nil? (:calcportfs ((keyword value) @app-state))))
-    ;(getCalcPortfolios)
-  )
-  
-  ;;(.log js/console value)  
-)
 
 
 
@@ -1180,7 +1080,7 @@
       ;tr1 (.log js/console (str "role=" role))
 
       ]
-      (dom/div {:className "navbar navbar-default navbar-fixed-top" :role "navigation" :style {:width "100%" :height "70px" :margin-left "15px"}}
+      (dom/div {:className "navbar navbar-inverse navbar-fixed-top" :role "navigation" :style {:width "100%" :height "70px" :margin-left "15px" :border-top "solid 3px steelblue" :border-bottom "solid 3px steelblue"}}
         (dom/div {:className "navbar-header"}
           (dom/button {:type "button" :className "navbar-toggle"
             :data-toggle "collapse" :data-target ".navbar-collapse"}
@@ -1189,8 +1089,8 @@
             (dom/span {:className "icon-bar"})
             (dom/span {:className "icon-bar"})
           )
-          (dom/a {:className "navbar-brand" :style {:padding-top "5px" :padding-left "5px" :padding-right "5px"}}
-            (dom/img {:src "images/loginbackground.png" :className "img-responsive company-logo-logon" :style {:width "130px" :height "61px"}})
+          (dom/a {:className "navbar-brand" :style {:padding-top "5px" :padding-left "5px" :padding-right "5px" :margin-left "10px"}}
+            (dom/img {:src "images/loginbackground_black.png" :className "img-responsive company-logo-logon" :style {:width "120px" :height "50px"}})
             ;;(dom/span {:id "pageTitle"} "Beeper")
           )          
         )
@@ -1199,16 +1099,16 @@
             :font-size "larger"
           }}
 
-          (dom/ul {:className "nav navbar-nav"}
+          (dom/ul {:className "nav navbar-nav" :style {:padding-top "10px"}}
 
             (dom/li
-              (dom/a {:className "navbara" :href "#/map" :style {:padding-left "15px" :padding-right "0px"}}
+              (dom/a {:className "navbara" :href "#/map" :style {:padding-left "15px" :padding-right "0px" :color (if (str/includes? (.-href (.-location js/window)) "/#/map") "rgb(51, 122, 183)" "#9d9d9d")}}
                 (dom/i {:className "fa fa-map-o" :style {:margin-left "5px"}})
                 "מפה"
               )
             )
             (dom/li
-              (dom/a {:className "navbara" :href "#/dashboard" :style {:padding-left "15px" :padding-right "15px"} :onMouseOver (fn [x]
+              (dom/a {:className "navbara" :href "#/dashboard" :style {:padding-left "15px" :padding-right "15px" :color (if (str/includes? (.-href (.-location js/window)) "/#/dashboard") "rgb(51, 122, 183)" "#9d9d9d")} :onMouseOver (fn [x]
                                                                                         (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
                                                                                         (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/i {:className "fa fa-dashboard" :style {:margin-left "5px"}})
@@ -1225,7 +1125,7 @@
 
             (if (not= (:roleid (:token @app-state)) settings/dispatcherrole)
               (dom/li {:className "dropdown" :style {:min-width "165px"}}
-                (dom/a { :href "#" :className "navbarasysmanage" :style {:padding-left "0px" :padding-right "0px"}
+                (dom/a { :href "#" :className "navbarasysmanage" :style {:padding-left "0px" :padding-right "0px" :color (if (or (str/includes? (.-href (.-location js/window)) "/#/groups") (str/includes? (.-href (.-location js/window)) "/#/users") (str/includes? (.-href (.-location js/window)) "/#/devslist"))  "rgb(51, 122, 183)" "#9d9d9d")}
                     :onMouseOver (fn [x]
                       (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "block")
                       (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none")
@@ -1270,7 +1170,7 @@
 
 
             (dom/li {:className "dropdown" :style {:min-width "230px"}}
-              (dom/a { :href "#" :className "navbarareports" :style {:padding-left "0px" :padding-right "0px"}
+              (dom/a { :href "#" :className "navbarareports" :style {:padding-left "0px" :padding-right "0px" :color (if (or (str/includes? (.-href (.-location js/window)) "/#/reportalerts") (str/includes? (.-href (.-location js/window)) "/#/reportsensors") (str/includes? (.-href (.-location js/window)) "/#/report"))  "rgb(51, 122, 183)" "#9d9d9d")}
                 :onMouseOver (fn [x]
                   (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "block")
                   (set! (.-display (.-style (js/document.getElementById "navbarulmanage")) ) "none")
@@ -1300,7 +1200,7 @@
                 )
                 (dom/div {:className "row" :style {:margin-top "5px" :margin-left "0px" :margin-right "0px"}}
                   (dom/div {:className "col-md-12" :style {:padding-left "5px" :padding-right "15px"}}
-                    (dom/a {:href "#/report.notifications" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
+                    (dom/a {:href "#/reportcomands" :className "menu_item" :style {:padding-left "0px" :padding-right "0px"}}
                       (dom/i {:className "fa fa-envelope-o" :style {:padding-left "5px"}})
                       "דו''ח שליחת פקודות הפעלה"
                     )
@@ -1310,7 +1210,7 @@
             )
 
 
-            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px" :padding "10px" :margin-top "0px" :margin-left "5px" :border-radius "10px"}}
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick 1)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
                   (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (filter (fn [x] (if (= "Closed" (:status x)) false true)) (:notifications @data)))))
@@ -1321,7 +1221,7 @@
               ;(om/build notifications-navbar data {})
             )
 
-            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px"  :padding "10px" :margin-top "5px" :margin-left "5px" :border-radius "10px"}}
+            (dom/li {:className "dropdown" :style {:background-color "#555555" :margin-right "0px"  :padding "10px" :margin-top "0px" :margin-left "5px" :border-radius "10px"}}
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick 2))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
                   (b/button {:className "btn btn-danger" :style {:padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px" :border-radius "25px" :margin-top "-25px"}} (str (count (filter (fn [x] (if (= "Closed" (:status x)) false true)) (:alerts @data)))))

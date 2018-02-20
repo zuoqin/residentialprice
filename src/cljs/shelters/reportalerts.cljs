@@ -204,6 +204,7 @@
                 "OpenTime" (assoc result :open (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
                 "AcceptanceTime" (assoc result :accept (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
                 "CloseTime" (assoc result :close (if (> (count val) 0) (tf/parse (tf/formatter "yyyy-MM-dd HH:mm:ss") val) nil))
+                "MaintenanceTime" (assoc result :maintenance val)
                 "ResponsibleUser" (assoc result :user val)
                 "NotificationType" (assoc result :type (str (t :he shelters/main-tconfig (keyword (str "alerts/" val)))))
                 "ControllerId" (assoc result :controller val)
@@ -444,7 +445,7 @@
                 )
 
                 (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
-                  (if (nil? (:close item)) "" (tf/unparse shelters/custom-formatter1 (:close item)))
+                  (:maintenance item) ;(if (nil? (:close item)) "" (tf/unparse shelters/custom-formatter1 (:close item)))
                 )
               )
             )
@@ -457,8 +458,8 @@
 )
 (defcomponent header-view [data owner]
   (render [_]
-    (dom/div  {:className "panel panel-default" :style {:margin-top "70px"}}
-      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "15px" :border-bottom "1px solid lightgrey" :padding-top "0px" :padding-bottom "0px"}}
+    (dom/div  {:className "panel panel-default" :style {:margin-top "75px"}}
+      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :border-bottom "1px solid lightgrey" :padding-top "0px" :padding-bottom "0px" :padding-right "15px"}}
         (dom/h3 "דו''ח תקלות")
       )
 
@@ -501,7 +502,7 @@
                   )
 
                   (dom/div {:className "col-md-1" :style {:padding-right "5px"}}
-                    (dom/div {:className "col-md-12" :style {:font-weight "700" :text-align "right" :padding-left "0px" :padding-right "0px" :margin-top "5px"}} (dom/div "תקלת"))
+                    (dom/div {:className "col-md-12" :style {:font-weight "700" :text-align "right" :padding-left "0px" :padding-right "0px" :margin-top "5px"}} (dom/div "תקלה"))
 
 
                     ;; (dom/div {:className "col-md-9" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
@@ -527,11 +528,11 @@
                     )
 
                     (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
-                      (dom/input {:id "fromdate" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :height "34px"}})
+                      (dom/input {:id "fromdate" :className "form-control" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :height "34px"}})
                     )
 
                     (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
-                      (dom/input {:id "todate" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px"  :height "34px"}} )
+                      (dom/input {:id "todate" :className "form-control" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px"  :height "34px"}} )
                     )
 
                     (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}

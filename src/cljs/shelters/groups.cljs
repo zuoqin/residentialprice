@@ -380,7 +380,7 @@
                         "שם קבוצה"
                       )
                       (dom/div {:className "col-md-2"}
-                        (dom/input {:id "name" :type "text" :placeholder "שם קבוצה" :onChange (fn [e] (handlechange e)) :required true :value (:name (:selectedgroup @data))})
+                        (dom/input {:id "name" :className "form-control" :type "text" :placeholder "שם קבוצה" :onChange (fn [e] (handlechange e)) :required true :value (:name (:selectedgroup @data))})
                       )
                     )
                   )

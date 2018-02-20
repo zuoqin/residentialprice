@@ -20,6 +20,7 @@
             [shelters.contacts :as contacts]
             [shelters.contactdetail :as contactdetail]
             [shelters.userdetail :as userdetail]
+            [shelters.reportcomands :as reportcomands]
 
             [cljs-time.format :as tf]
             [cljs-time.core :as tc]
@@ -45,7 +46,7 @@
 
 (enable-console-print!)
 
-(def iconBase "/images/")
+;(def iconBase "/images/")
 (def application
   (js/document.getElementById "app"))
 
@@ -886,16 +887,16 @@
           )
         )
     )
-    size (js/google.maps.Size. 48 48)
+    ;size (js/google.maps.Size. 48 48)
 
     
-    image (clj->js {:url (str iconBase (case indstatus false "red_point.ico" "green_point.ico")) :scaledSize size})
+    image (shelters/calcunitimage (first (filter (fn [x] (if (= (:id x) unitid) true false)) (:devices @shelters/app-state)))) ;(clj->js {:url (str iconBase (case indstatus false (case indicatorid 1 "yellow_point.ico" "red_point.ico") "green_point.ico")) :scaledSize size})
     ]
     (if (nil? marker)
       (.log js/console (str "did not find a unit for unitid=" unitid " in notification"))
-      (if (= indicatorid 12)
-        (.setIcon marker image)
-      )
+      ;; (if (= indicatorid 12)
+      ;;   (.setIcon marker image)
+      ;; )
     )
   )
 )
@@ -943,12 +944,18 @@
     
     tr1 (swap! shelters/app-state assoc-in [:devices] newunits)
 
-    size (js/google.maps.Size. 48 48)
-    indstatus (:isok (first (filter (fn [x] (if (= :id x) 12) true false) indications)))
+    ;size (js/google.maps.Size. 48 48)
+    ;indstatus (:isok (first (filter (fn [x] (if (= :id x) 12) true false) indications)))
     
-    image (clj->js {:url (str iconBase (case indstatus false "red_point.ico" "green_point.ico")) :scaledSize size})
 
+    ;communicationind (:isok (first (filter (fn [x] (if (= (:id x) 12) true false)) indications)))
 
+    ;lockind (:isok (first (filter (fn [x] (if (= (:id x) 1) true false)) indications)))
+    theunit (first (filter (fn [x] (if (= (:id x) unitid)  true false)) (:devices @shelters/app-state)) )
+
+    image (shelters/calcunitimage theunit) ;(clj->js {:url (str iconBase (if (= communicationind false) "red_point.ico"  (if (= lockind false) "yellow_point.ico" "green_point.ico"))) :scaledSize size})
+
+    ;tr1 (.log js/console (:name theunit))
 
     infownd (shelters/addMarkerInfo result)
     ]
@@ -973,7 +980,7 @@
         ;;     )
         ;;   )
         ;; )
-        
+        ;(.log js/console image)
         (.setIcon marker image)
       )
     )
