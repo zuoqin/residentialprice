@@ -60,7 +60,7 @@
         :indicators
         {           
           :lockState                "בריח"
-          :lockStateok              "סגור"
+          :lockStateok              "נעול"
           :lockStatefail            "פתוח"
 
           :doorState                "דלת"
@@ -68,20 +68,20 @@
           :doorStatefail            "פתוח"
 
           :tamper                   "ארון תקשורת"
-          :tamperok                 "כן"
-          :tamperfail               "לא"
+          :tamperok                 "סגור"
+          :tamperfail               "פתוח"
 
           :batteryState             "סוללה"
-          :batteryStateok           "ok"
-          :batteryStatefail         "fail"
+          :batteryStateok           " תקין"
+          :batteryStatefail         "התרעה"
 
           :alarmState               "גלאי"
-          :alarmStateok             "אין אירוע"
-          :alarmStatefail           "יש אירוע"
+          :alarmStateok             "תקין"
+          :alarmStatefail           "התרעה"
 
           :communicationStatus      "תקשורת"
-          :communicationStatusok    "יש תקשורת"
-          :communicationStatusfail  "אין תקשורת"
+          :communicationStatusok    "תקין"
+          :communicationStatusfail  "תקלה"
         }
         :commands
         {           
@@ -660,28 +660,30 @@
             (dom/div {:className "row" :style { :border-bottom "1px solid" :border-right "1px solid transparent" :display "flex" :margin-left "0px" :margin-right "0px" :text-align "center"}}
               (dom/div {:className "col-md-1" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/div {:className "row"}
-                  (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px"}}
+                  (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :height "27px"}}
                     (b/button {:className "btn btn-default" :disabled? (if (= (:status item) "New") false true) :style {:padding "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seennotification item e))} "ראיתי")
                   )
-                  (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px"}}
+                  (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :height "27px"}}
                     (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
                       (:id item)
                     )
                   )
                 )
               )
-              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
-                      (:controller unit)
+              (dom/div {:className "col-md-3"}
+                (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :height "27px"}}
+                  (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
+                        (:controller unit)
+                  )
                 )
-              )
-              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
-                (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
-                      (:name unit)
+                (dom/div {:className "col-xs-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :height "27px"}}
+                  (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
+                        (:name unit)
+                  )
                 )
               )
 
-              (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :max-height "27px" :overflow-y "hidden"}}
+              (dom/div {:className "col-xs-2" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :height "27px" :overflow-y "hidden"}}
                 (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
                       (:address unit)
                 )
@@ -708,14 +710,14 @@
                   )
                 )
               )
-              (dom/div {:className "col-md-3" :style {:padding-left "0px" :padding-right "0px"}}
-                (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
+              (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "col-md-5" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :padding-top "3px" :padding-bottom "3px"}}
                   (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
                     (t :he main-tconfig (keyword (str "alerts/" (:status item))))
                   )
                 )
 
-                (dom/div {:className "col-md-6" :style { :border-left "1px solid transparent" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+                (dom/div {:className "col-md-7" :style { :border-left "1px solid transparent" :padding-left "0px" :padding-right "0px" :text-align "center"}}
                   (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }
                     (str (:firstname user) " " (:lastname user))
                   )
@@ -1214,7 +1216,7 @@
               (dom/a {:style {:padding "0px"} :onClick (fn [e] (notificationsclick 1)) :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulreports")) ) "none"))}
                 (dom/div {:style {:background-color "grey" :border-radius "5px"}}
                   (b/button {:className "btn btn-danger" :style {:border-radius "15px" :margin-top "-25px" :padding-left "6px" :padding-right "6px" :padding-top "0px" :padding-bottom "0px"}} (str (count (filter (fn [x] (if (= "Closed" (:status x)) false true)) (:notifications @data)))))
-                  (dom/span {:style {:cursor "pointer" :color "white"}} "התראות")
+                  (dom/span {:style {:cursor "pointer" :color "white"}} "התרעות")
                   (dom/i {:className "fa fa-bell fa-fw" :style {:font-size "24px" :color "red"}})
                 )
               )
@@ -1235,7 +1237,7 @@
 
           (dom/ul {:className "nav navbar-nav navbar-left"}
             (dom/li {:style {:margin-right "0px" :margin-top "10px" :text-align "center"} :onMouseOver (fn [x] (set! (.-display (.-style (js/document.getElementById "navbarulexit")) ) "none"))}
-              (dom/div {:style {:padding-top "10px" :color "#337ab7" :margin-left "10px"}} (str "שירות לקוחות" " " "03-6100066"))
+              (dom/div {:style {:padding-top "10px" :color "#337ab7" :margin-left "30px"}} (str "שירות לקוחות" " " "03-6100066"))
               ;(dom/h5 {:style {:padding-top "0px" :color "#337ab7" }} "03-123-456-789")
             )
             (dom/li {:className "dropdown"}

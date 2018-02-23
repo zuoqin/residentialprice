@@ -256,12 +256,13 @@
     (dom/div {:className "row"}
       (map (fn [item]
         (let [
-
+            indicator (first (filter (fn [x] (if (= (:id x) (:id item)) true false))  (:indications @shelters/app-state)))
+            status (case (:isok item) true (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "fail")))))
           ]
           (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "3px" :padding-bottom "3px"}}
             (dom/i {:id (str "status_" (:id item)) :className (case (:isok item) true "fa-toggle-on fa" "fa-toggle-off fa") :style {:color (case (:isok item) true "#00dd00" "#dd0000") :font-size "24px"}})
             (dom/p {:style {:margin "0px" :line-height "10px"}}
-              (case (:isok item) true "פועל" "כבוי")
+              status ;(case (:isok item) true "פועל" "כבוי")
             )
           )
         )
@@ -426,6 +427,7 @@
 
 (defn OnDoCommand [response] 
   (.log js/console (str response ))
+  (.generate js/Notify "Command has been sent" "Success" 1)
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
@@ -471,7 +473,7 @@
       )
 
       (dom/div {:className "row" :style {:margin-right "0px"}}
-        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )
@@ -594,6 +596,7 @@
             )
             (om/build showdevices-view data {})
             (om/build addModal data {})
+            (dom/div {:id "notifies"})
           )
         )
       ) 

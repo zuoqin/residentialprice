@@ -128,7 +128,7 @@
     (let [
       ;tr1 (.log js/console data)
       ]
-      (dom/div {:className "list-group" :style {:display "block"}}
+      (dom/div {:className "list-group" :style {:display "block" :overflow-y "scroll" :overflow-x "hidden" :height "50vh"}}
         (map (fn [item]
           (let [
             isselected (if (and (nil? (:parents (:selectedgroup @data)))) false (if (> (.indexOf (:parents (:selectedgroup @data)) (:id item)) -1) true false))   

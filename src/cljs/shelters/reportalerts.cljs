@@ -257,11 +257,17 @@
       :headers {
         :token (str (:token (:token @shelters/app-state))) }
       :format :json
-      :params {:reportId 1 :filter [{:column "OpenTime" :minValue (tf/unparse shelters/custom-formatter2 (:fromdate (:filter @app-state))) :maxValue (tf/unparse shelters/custom-formatter2 (:todate (:filter @app-state)))} {:column "ControllerId" :likeValue (:controller (:filter @app-state))} {:column "FaultName" :likeValue (if (= 0 fault) "Failure" "CommunicationFailure")} {:column "Status" :likeValue (if (= 1 status) "" (str/lower-case (:eng (first (filter (fn [x] (if (= (:id x) status) true false)) (:statuses @shelters/app-state))))))}] }
+      :params {:reportId 1 :filter [{:column "OpenTime" :minValue (tf/unparse shelters/custom-formatter2 (:fromdate (:filter @app-state))) :maxValue (tf/unparse shelters/custom-formatter2 (:todate (:filter @app-state)))} {:column "ControllerId" :likeValue (if (= (:controller (:filter @app-state)) "הכל") "" (:controller (:filter @app-state))) } {:column "FaultName" :likeValue (if (= 0 fault) "Failure" "CommunicationFailure")} {:column "Status" :likeValue (if (= 1 status) "" (str/lower-case (:eng (first (filter (fn [x] (if (= (:id x) status) true false)) (:statuses @shelters/app-state))))))}] }
     })
   )
 )
 
+(defn comp-units [unit1 unit2]
+  (if (< (compare (:controller unit1) (:controller unit2)) 0)
+    true
+    false
+  )
+)
 
 (defn comp-data
   [item1 item2]
@@ -393,7 +399,7 @@
       (dom/option {:key (:id item) :data-subtext "" :value (:controller item)
                     :onChange #(handle-change % owner)} (:name item))
     )
-    (:devices @shelters/app-state )
+    (sort (comp comp-units) (conj (:devices @shelters/app-state ) {:id "0" :controller "" :name "הכל"}))  
   )
 )
 
@@ -458,12 +464,6 @@
 )
 (defcomponent header-view [data owner]
   (render [_]
-    (dom/div  {:className "panel panel-default" :style {:margin-top "75px"}}
-      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :border-bottom "1px solid lightgrey" :padding-top "0px" :padding-bottom "0px" :padding-right "15px"}}
-        (dom/h3 "דו''ח תקלות")
-      )
-
-    )      
   )
 )
 
@@ -480,8 +480,14 @@
         (om/build shelters/website-view shelters/app-state {})
         (dom/div {:className "container" :style {:height "100%" :width "100%"}}
           (dom/div {:style {:height "100%" :display "flex" :flex-direction "column"}}
-            (om/build header-view data {})
-            (dom/div {:className "panel-default" :style {:border-top "solid 1px lightgrey" :padding-left "15px" :margin-left "-0px" :border-left "solid 1px lightgrey" :border-right "solid 1px lightgrey"}}
+            ;(om/build header-view data {})
+            (dom/div {:className "panel-default" :style {:margin-top "75px" :border-top "solid 1px lightgrey" :padding-left "15px" :margin-left "-0px" :border-left "solid 1px lightgrey" :border-right "solid 1px lightgrey"}}
+              (dom/div  { :style {:margin-top "0px"}}
+                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :border-bottom "1px solid lightgrey" :padding-top "0px" :padding-bottom "0px" :padding-right "15px"}}
+                  (dom/h3 "דו''ח תקלות")
+                )
+
+              )      
               (dom/div {:style {:margin-bottom "10px"}}
                 (dom/div {:className "row" :style {:margin-left "0px" :margin-right "10px"}}
                   (dom/div {:className "col-md-2" :style {:padding-right "0px"}}
@@ -514,10 +520,10 @@
 
                 )
                 (dom/div {:className "row" :style {:margin-left "0px" :margin-right "10px"}}
-                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
+                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "5px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
                       (omdom/select #js {:id "controller"
                                      :className "selectpicker"
-                                     :title "בחר אחד מהבאים ..."
+                                     :title "בחר יחידה"
                                      :data-show-subtext "false"
                                      :data-width "100%"
                                      :data-live-search "true"
@@ -527,15 +533,19 @@
                       )
                     )
 
-                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
-                      (dom/input {:id "fromdate" :className "form-control" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :height "34px"}})
+                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
+                      (dom/input {:id "fromdate" :className "form-control"
+;;:data-date-start-date "-24d" :data-date-end-date "0d"
+                        :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :height "34px"}})
                     )
 
-                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
-                      (dom/input {:id "todate" :className "form-control" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px"  :height "34px"}} )
+                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
+                      (dom/input {:id "todate" :className "form-control"
+;;:data-date-start-date "-24d" :data-date-end-date "0d"
+                        :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px"  :height "34px"}} )
                     )
 
-                    (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
+                    (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "left" :padding-top "7px"}}
                       (omdom/select #js {:id "statuses"
                                          :className "selectpicker"
                                          :data-width "100%"
@@ -548,7 +558,7 @@
                       )
                     )
 
-                    (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
+                    (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "left" :padding-top "7px"}}
                       (omdom/select #js {:id "fault"
                                      :className "selectpicker"
                                      :title "בחר אחד מהבאים ..."

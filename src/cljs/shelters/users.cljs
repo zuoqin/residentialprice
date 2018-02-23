@@ -186,7 +186,7 @@
       )
 
       (dom/div {:className "row" :style {:margin-right "0px"}}
-        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )

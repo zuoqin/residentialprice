@@ -326,14 +326,23 @@
   )
 )
 
+
+
+
 (defn addsearchbox []
   (let [
     ;;Create the search box and link it to the UI element.
     input (. js/document (getElementById "pac-input"))
     searchbox (js/google.maps.places.SearchBox. input)
+
+    btn (. js/document (getElementById "btnopenlock"))
     ;tr1 (.log js/console input)
     ]
     (.push (aget (.-controls (:map @shelters/app-state)) 1) input)
+
+    (.push (aget (.-controls (:map @shelters/app-state)) 2) btn)
+
+
     (.addDomListener js/google.maps.event input "change"
       (fn []
         (let [
@@ -563,6 +572,7 @@
   (-> (jquery "#confirmModal .close")
           (.click)
   )
+  (.generate js/Notify "Command has been sent" "Success" 1)
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
@@ -588,7 +598,7 @@
 
 
 (defn buildStatusesList [data owner]
-  (dom/optgroup {:label (if (:isnotification  @data) "סטטוס התראה" "סטטוס תקלה")}
+  (dom/optgroup {:label (if (:isnotification  @data) "סטטוס התרעה" "סטטוס תקלה")}
     (map
       (fn [text]
         (let [
@@ -611,7 +621,7 @@
                 (dom/div {:className "panel-heading" :style {:text-align "right" :padding-top "0px" :padding-bottom "0px" :background-image "linear-gradient(to bottom,#337ab7 0,#265a88 100%)" :font-size "large" :color "white"}}
                   (dom/div {:className "row"}
                     (dom/div {:className "col-md-11" :style {:padding-top "5px" :padding-bottom "5px"}}
-                      (if (:isnotification  @data) "טבלת התראות" "טבלת תקלות")
+                      (if (:isnotification  @data) "טבלת התרעות" "טבלת תקלות")
                     ) 
                     (dom/div {:className "col-md-1" :style {:text-align "left" :padding-top "5px" :padding-bottom "5px"}}
                       (dom/span {:className "glyphicon glyphicon-remove" :style {:margin-left "5px" :cursor "pointer"} :onClick (fn [e] (shelters/notificationsclick 0))})
@@ -632,11 +642,15 @@
                       )
                     )
 
-                    (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :line-height "17px" :background-image (case (:sort-alerts @shelters/app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 3 4 3)) (shelters/doswaps)))}
-                    (dom/p {:style {:margin "0px"}} "מזהה") (dom/p {:style {:margin "0px"}} "יחידה"))
+                    (dom/div {:className "col-md-3"}
+
+                      (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :line-height "17px" :background-image (case (:sort-alerts @shelters/app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 3 4 3)) (shelters/doswaps)))}
+                      (dom/p {:style {:margin "0px"}} "מזהה") (dom/p {:style {:margin "0px"}} "יחידה"))
 
 
-                    (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 5 6 5)) (shelters/doswaps)))}  "שם יחידה")
+                      (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 5 6 5)) (shelters/doswaps)))}  "שם יחידה")
+                    )
+
 
                     (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "7px" :padding-bottom "7px" :background-image (case (:sort-alerts @shelters/app-state) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 7 8 7)) (shelters/doswaps)))}  "מיקום יחידה")
 
@@ -651,10 +665,10 @@
                       )
                     )
 
-                    (dom/div {:className "col-md-3" :style {:padding-left "0px" :padding-right "0px"}}
-                      (dom/div {:className "col-md-6" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps)))}
+                    (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "0px"}}
+                      (dom/div {:className "col-md-5" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps)))}
                         (omdom/select #js {:id "statuses"
-                                           :title (if (:isnotification  @data) "סטטוס התראה" "סטטוס תקלה")
+                                           :title (if (:isnotification  @data) "סטטוס התרעה" "סטטוס תקלה")
                                            :data-width "75%"
                                            ;:data-style "btn-default"
                                            :data-show-subtext "false"
@@ -665,7 +679,7 @@
                         )
                       )
 
-                      (dom/div {:className "col-md-6" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 15 "url(images/sort_asc.png" 16 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 15 16 15)) (shelters/doswaps)))}  "אירוע טופל ע''י")
+                      (dom/div {:className "col-md-7" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "7px" :padding-bottom "7px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 15 "url(images/sort_asc.png" 16 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 15 16 15)) (shelters/doswaps)))}  "אירוע טופל ע''י")
                     )
                   )
                 )
@@ -842,8 +856,10 @@
             
 
           )
-          
+          (dom/div {:id "notifies"})
           (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
+          (dom/button {:id "btnopenlock" :className "btn btn-danger" :onClick (fn [e] (sendcommand1))} "פתח מנעל")
+
           (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
         )
 

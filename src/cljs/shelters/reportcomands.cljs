@@ -222,7 +222,7 @@
       :headers {
         :token (str (:token (:token @shelters/app-state))) }
       :format :json
-      :params {:reportId 2 :filter [{:column "Time" :minValue (tf/unparse shelters/custom-formatter2 (:fromdate (:filter @app-state))) :maxValue (tf/unparse shelters/custom-formatter2 (:todate (:filter @app-state)))} {:column "ControllerId" :likeValue (:controller (:filter @app-state))} {:column "ResponsibleUser" :likeValue (:user (:filter @app-state))}] }
+      :params {:reportId 2 :filter [{:column "Time" :minValue (tf/unparse shelters/custom-formatter2 (:fromdate (:filter @app-state))) :maxValue (tf/unparse shelters/custom-formatter2 (:todate (:filter @app-state)))} {:column "ControllerId" :likeValue (:controller (:filter @app-state))} {:column "ResponsibleUser" :likeValue (if (= 0 (:user (:filter @app-state))) "" (:user (:filter @app-state)) )}] }
     })
   )
 )

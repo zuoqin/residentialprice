@@ -83,7 +83,7 @@
           ]
           (dom/div {:style {:border "1px solid rgba(0,0,0,.125)" :border-radius ".25rem" :padding "0px" :min-width "92px" :margin-top "10px" :display "table"}}
             (dom/div { :style { :text-align "center" :margin-left "0px" :margin-right "0px" :border-bottom "1px solid rgba(0,0,0,.125)" :height "100%" :background-color "rgba(0,0,0,.03)"}}
-               (dom/div {:style {:display "table-cell" :max-width "90px" :height "26px" :vertical-align "middle" :white-space "normal" :word-break "break-word" :padding-bottom "3px" :padding-top "3px" :width "90px"}}
+               (dom/div {:style {:display "table-cell" :max-width "90px" :height "26px" :vertical-align "middle" :white-space "normal" :word-break "break-word" :padding-bottom "3px" :padding-top "3px" :width "90px" :font-weight "bold"}}
                  name
                )
             )
@@ -216,8 +216,8 @@
             )
           )
 
-          (dom/div {:className "row" :style {:margin-right "15px"}}
-            (dom/input {:id "search" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+          (dom/div {:className "row" :style {:margin-right "15px" :margin-left "25px"}}
+            (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
           )
           (om/build showdevices-view  data {})
         )
