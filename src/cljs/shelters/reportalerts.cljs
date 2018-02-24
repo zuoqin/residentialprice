@@ -235,9 +235,12 @@
 
 
 (defn OnCreateReport [response]
-   (swap! app-state assoc :data  (map map-report-values response))
-   (swap! app-state assoc-in [:state] 0)
+  (swap! app-state assoc :data  (map map-report-values response))
+  (swap! app-state assoc-in [:state] 0)
    ;(.log js/console (:groups @app-state))
+  (if (= (count response) 0)
+    (.generate js/Notify "אין תוצאות עבור תאריכים שמבחרו" "Success" 1)
+  )
 )
 
 (defn error-handler [{:keys [status status-text]}]
@@ -630,6 +633,7 @@
             )
           )
         )
+        (dom/div {:id "notifies"})
       )
     )
   )

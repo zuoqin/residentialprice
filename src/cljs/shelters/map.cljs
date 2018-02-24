@@ -184,7 +184,7 @@
     ;image (clj->js {:url (str iconBase (case status true "green_point.ico" "red_point.ico")) :scaledSize size})
 
 
-    marker-options (clj->js {"position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" image "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
+    marker-options (clj->js {"animation" 2 "position" (google.maps.LatLng. (:lat device), (:lon device)) "icon" image "map" (:map @shelters/app-state) "title" (:name device) "unitid" (:id device)})
     marker (js/google.maps.Marker. marker-options)
 
     infownds (map (fn [x] (if (= (:id x) (:id device)) (assoc x :info infownd) x)) (:infownds @shelters/app-state))
@@ -335,12 +335,12 @@
     input (. js/document (getElementById "pac-input"))
     searchbox (js/google.maps.places.SearchBox. input)
 
-    btn (. js/document (getElementById "btnopenlock"))
+    panel (. js/document (getElementById "floating-panel"))
     ;tr1 (.log js/console input)
     ]
-    (.push (aget (.-controls (:map @shelters/app-state)) 1) input)
+    (.push (aget (.-controls (:map @shelters/app-state)) 1) panel)
 
-    (.push (aget (.-controls (:map @shelters/app-state)) 2) btn)
+    ;(.push (aget (.-controls (:map @shelters/app-state)) 2) btn)
 
 
     (.addDomListener js/google.maps.event input "change"
@@ -813,7 +813,7 @@
   (did-mount [_]
     (let [
       map-canvas (. js/document (getElementById "map"))
-      map-options (clj->js {"center" {:lat (:lat (:selectedcenter @data)) :lng (:lon (:selectedcenter @data))} "zoom" 15})
+      map-options (clj->js {"mapTypeControl" false "center" {:lat (:lat (:selectedcenter @data)) :lng (:lon (:selectedcenter @data))} "zoom" 15})
       map (js/google.maps.Map. map-canvas map-options)
 
       
@@ -857,8 +857,10 @@
 
           )
           (dom/div {:id "notifies"})
-          (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
-          (dom/button {:id "btnopenlock" :className "btn btn-danger" :onClick (fn [e] (sendcommand1))} "פתח מנעל")
+          (dom/div {:id "floating-panel" :className "row"}
+            (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
+            (dom/button {:id "btnopenlock" :className "btn btn-primary btn-danger btn btn-default" :style {:margin-top "-5px" :width "120px" :font-family "sans-serif"} :onClick (fn [e] (sendcommand1))} "פתח מנעל")
+          )
 
           (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
         )
@@ -902,4 +904,3 @@
     unit
   )
 )
-

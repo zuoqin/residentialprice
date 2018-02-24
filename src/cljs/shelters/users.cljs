@@ -269,7 +269,7 @@
               (dom/div {:className "col-md-12" :style {:text-align "center" :padding-right "0px" :padding-left "0px" :padding-bottom "8px"}}
                 (dom/div { :className "dropdown"}
                   (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false" :style {:padding-top "3px" :padding-bottom "3px" :padding-left "6px" :padding-right "6px" :margin-top "6px"}}
-                    "☰"
+                    (dom/i {:className "fa fa-angle-down"}) "☰"
                   )
                   (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "100px"}}
                     ;; (dom/li {:className "dropdown-item" :style {:text-align "center"}}
@@ -300,28 +300,28 @@
               )
             )
           (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item))}
+            (dom/span
               ;(dom/i {:className "fa fa-hdd-o"})
               (:login item)
             )
           )
 
           (dom/div {:className "col-md-3" :style {:border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item))}
+            (dom/span
               ;(dom/i {:className "fa fa-hdd-o"})
               (str (:firstname item) " " (:lastname item))
             )
           )
 
           (dom/div {:className "col-md-3" :style { :border-left "1px solid" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item))}
+            (dom/span
               ;(dom/i {:className "fa fa-hdd-o"})
               (if (nil? (:name (:role item))) "אדמיניסטרטור" (:name (:role item)))
             )
           )
 
           (dom/div {:className "col-md-3" :style { :border-left "1px solid transparent" :padding-top "11px" :padding-bottom "11px" :text-align "center"}}
-            (dom/a {:href (str "#/userdetail/" (:userid item))}
+            (dom/span
               ;(dom/i {:className "fa fa-hdd-o"})
               (if (nil? creator) "Beeper" (str (:firstname creator) " " (:lastname creator)))
             )

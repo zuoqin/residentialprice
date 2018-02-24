@@ -462,7 +462,7 @@
               (dom/div {:className "col-md-1" :style {:text-align "center" :padding-right "12px" :padding-left "0px" :border-left "1px solid" :border-bottom "1px solid"}}
                 (dom/div { :className "dropdown"}
                   (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false" :style {:padding-top "3px" :padding-bottom "3px" :padding-left "6px" :padding-right "6px" :margin-top "3px" :margin-bottom "3px"}}
-                    "☰"
+                    (dom/i {:className "fa fa-angle-down"}) "☰"
                   )
                   (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "120px"}}
                     ;; (dom/li {:className "dropdown-item" :style {:text-align "center"}}
@@ -501,11 +501,11 @@
               )
 
               (dom/div {:className "col-md-4" :style {:border-left "1px solid" :border-bottom "1px solid" :padding-top "7px" :padding-bottom "7px"}}
-                unitscnt
+                userscnt
               )
 
               (dom/div {:className "col-md-3" :style {:border-left "1px solid transparent" :border-bottom "1px solid" :padding-top "7px" :padding-bottom "7px"}}
-                userscnt
+                unitscnt
               )
             )                  
             )

@@ -302,7 +302,7 @@
               (dom/div {:className "col-xs-6 col-md-6" :style {:text-align "center" :padding-right "12px" :padding-left "0px"}}
                 (dom/div { :className "dropdown"}
                   (b/button {:className "btn btn-danger dropdown-toggle" :data-toggle "dropdown" :aria-haspopup "true" :aria-expanded "false" :style {:padding-top "3px" :padding-bottom "3px" :padding-left "6px" :padding-right "6px" :margin-top "6px"}}
-                    "☰"
+                    (dom/i {:className "fa fa-angle-down"}) "☰"
                   )
                   (dom/ul {:className "dropdown-menu" :aria-labelledby "dropdownMenuButton" :style {:min-width "100px"}}
                     ;; (dom/li {:className "dropdown-item" :style {:text-align "center"}}
@@ -334,7 +334,7 @@
             )
 
             (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :height "42px" :line-height "42px" :padding-left "0px" :padding-right "0px" :text-align "center" :overflow "hidden"}}
-              (dom/a {:href (str "#/devdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
+              (dom/span {:style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}} )
                 (:controller item)
               )
@@ -342,7 +342,7 @@
 
 
             (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden" :line-height "42px"}}
-              (dom/a {:href (str "#/devdetail/" (:id item)) :style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
+              (dom/span {:style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
                 (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}})
                 (:name item)
               )

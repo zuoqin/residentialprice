@@ -102,7 +102,7 @@
 
 ;:contacts [{:id "1" :name "Alexey" :phone "+79175134855" :email "zorchenkov@gmail.com"} {:id "2" :name "yulia" :phone "+9721112255" :email "yulia@gmail.com"} {:id "3" :name "Oleg" :phone "+8613946174558" :email "oleg@yahoo.com"}]
 
-:statuses [{:id 1 :name "הכל" :eng "All"} {:id 2 :name "בטיפול" :eng "Accepted"} {:id 3 :name "פתוח" :eng "New"} {:id 4 :name  "סגור" :eng "Closed"}]
+:statuses [{:id 1 :name "הכל" :eng "All"} {:id 2 :name "בטיפול" :eng "Seen"} {:id 3 :name "פתוח" :eng "New"} {:id 4 :name  "סגור" :eng "Closed"}]
 :alerts [] ;; [{:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
 
            ;;  {:unitid "e8ebaeb8-5f77-47de-9085-6ad033efc621" :userid "1ecc9d4b-6766-4109-94a5-07885e2e6ac6" :status "Failure" :id "67867887687" :open (tf/parse custom-formatter2 "11/01/2017 09:12:13") }
@@ -146,14 +146,26 @@
 (def jquery (js* "$"))
 
 
+(defn stopanimation [marker]
+  (.setAnimation marker nil)
+)
+
 (defn setcenterbydevice [device]
   (let [
     thedev (first (filter (fn [x] (if (= (:id x) device) true false)) (:devices @app-state)))
 
     ;tr1 (.log js/console (str "device=" device " obj=" thedev))
     tr1 (swap! app-state assoc-in [:selectedcenter] {:lat (:lat thedev) :lon (:lon thedev) }  )
+
+    marker (first (filter (fn [x] (if (= (.. x -unitid) device) true false)) (:markers @app-state)) )
     ]
     (.panTo (:map @app-state) (google.maps.LatLng. (:lat thedev), (:lon thedev)))
+
+    (.setAnimation marker 1)
+    (go
+         (<! (timeout 2000))
+         (stopanimation marker)
+    )
   )
 )
 
@@ -664,7 +676,7 @@
                     (b/button {:className "btn btn-default" :disabled? (if (= (:status item) "New") false true) :style {:padding "0px" :margin-top "2px" :margin-bottom "2px"} :onClick (fn [e] (seennotification item e))} "ראיתי")
                   )
                   (dom/div {:className "col-md-6" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px" :height "27px"}}
-                    (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
+                    (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item))))}
                       (:id item)
                     )
                   )
