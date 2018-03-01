@@ -206,7 +206,7 @@
         (om/build shelters/website-view shelters/app-state {})
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
         )
-          (dom/h1 {:style {:text-align "center"}} (:current @data))
+          (dom/h3 {:style {:text-align "center"}} (:current @data))
           (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}

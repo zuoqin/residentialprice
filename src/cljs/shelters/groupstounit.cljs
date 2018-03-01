@@ -127,7 +127,7 @@
     (let [
       ;tr1 (.log js/console data)
       ]
-      (dom/div {:className "list-group" :style {:display "block"}}
+      (dom/div {:className "list-group" :style {:display "block" :overflow-y "scroll" :overflow-x "hidden" :height "50vh"}}
         (map (fn [item]
           (let [
 
@@ -139,7 +139,7 @@
               )
               (dom/div {:className "col-xs-4" }
                 (dom/a {:className "list-group-item" :href (str "#/groupdetail/" (:id item))}
-                  (dom/h4  #js {:className "list-group-item-heading" :dangerouslySetInnerHTML #js {:__html (:name item)}} nil)
+                  (dom/h4  {:className "list-group-item-heading" :style {:white-space "nowrap"}} (:name item))
                   ;(dom/h4 {:className "list-group-item-heading"} (get item "subject"))
                   ;(dom/h6 {:className "paddingleft2"} (get item "senddate"))
                   ;(dom/p  #js {:className "list-group-item-text paddingleft2" :dangerouslySetInnerHTML #js {:__html (get item "body")}} nil)
@@ -230,7 +230,7 @@
         (om/build shelters/website-view shelters/app-state {})
         (dom/div  (assoc styleprimary  :className "panel panel-primary" ;;:onClick (fn [e](println e))
         )
-          (dom/h1 {:style {:text-align "center"}} (:current @data))
+          (dom/h3 {:style {:text-align "center"}} (:current @data))
           (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
             (dom/div {:className "row"}
               (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
@@ -241,11 +241,11 @@
               )
 
               (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}
-                (dom/h5 "Selection")
+                (dom/h5 "Selection11")
               )
 
               (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}
-                (dom/h5 "Selected")
+                (dom/h5 "Selected11")
               )
             )
 

@@ -379,7 +379,7 @@
                       (dom/div {:className "col-md-2" :style {:text-align "left"}}
                         "שם קבוצה"
                       )
-                      (dom/div {:className "col-md-2"}
+                      (dom/div {:className "col-md-10"}
                         (dom/input {:id "name" :className "form-control" :type "text" :placeholder "שם קבוצה" :onChange (fn [e] (handlechange e)) :required true :value (:name (:selectedgroup @data))})
                       )
                     )
@@ -586,7 +586,7 @@
       )
 
       (dom/div {:className "row" :style {:margin-right "0px"}}
-        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px" :width "25%"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )

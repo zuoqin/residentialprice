@@ -33,6 +33,12 @@
 (def ch (chan (dropping-buffer 2)))
 
 
+(defn comp-units [unit1 unit2]
+  (if (< (compare (:controller unit1) (:controller unit2)) 0)
+    true
+    false
+  )
+)
 
 
 (defn onDropDownChange [id value]
@@ -89,6 +95,12 @@
        )
      )
    )
+  (let [
+    els (.getElementsByClassName js/document "filter-option pull-left")
+    ]
+    (set! (.-textAlign (.-style (aget els 0))) (str "right"))
+    (set! (.-textAlign (.-style (aget els 1))) (str "right"))
+  )
 )
 
 (defn set-datepicker-style [elem]
@@ -157,7 +169,7 @@
   )
 )
 
-(defn map-report-values [row]
+(defn map-report-values [row num]
   (let [
     res
       (loop [result {} data row]
@@ -180,7 +192,9 @@
                 "ControllerId" (assoc result :controller val)
                 "UnitAddress" (assoc result :address val)
                 "UnitDescription" (assoc result :name val)
-                "FaultName" (assoc result :sensor val)
+                "FaultName" (let [sensor ((keyword val) (:words @shelters/app-state))
+                 ;tr1 (.log js/console "val=" val "; sensor=" sensor)
+                 ] (assoc result :sensor sensor))
                 "Status" (assoc result :status (str (t :he shelters/main-tconfig (keyword (str "alerts/" val)))))
 
                 ;; "Id" (assoc result :id val)
@@ -200,7 +214,7 @@
       )
     ;tr1 (.log js/console (str "res=" res))
     ]
-    res
+    (assoc res :seqid num)
   )
 )
 
@@ -214,9 +228,12 @@
 
 
 (defn OnCreateReport [response]
-   (swap! app-state assoc :data  (map map-report-values response))
-   (swap! app-state assoc-in [:state] 0)
-   ;(.log js/console (:groups @app-state))
+  (swap! app-state assoc :data  (map map-report-values response (map inc (range))))
+  (swap! app-state assoc-in [:state] 0)
+
+  (if (= (count response) 0)
+    (.generate js/Notify "אין תוצאות עבור תאריכים שמבחרו" "" 1)
+  )
 )
 
 (defn error-handler [{:keys [status status-text]}]
@@ -245,12 +262,12 @@
 (defn comp-data
   [item1 item2]
   (case (:sort-list @app-state)
-    1 (if (> (:id item1) (:id item2))
+    1 (if (> (:seqid item1) (:seqid item2))
         false
         true
       )
 
-    2 (if (> (:id item1) (:id item2))
+    2 (if (> (:seqid item1) (:seqid item2))
         true
         false
       )
@@ -266,12 +283,12 @@
         false
       )
 
-    5 (if (> (compare (:indication item1) (:indication item2)) 0)
+    5 (if (> (compare (:name item1) (:name item2)) 0)
         false
         true
       )
 
-    6 (if (> (compare (:indication item1) (:indication item2)) 0)
+    6 (if (> (compare (:name item1) (:name item2)) 0)
         true
         false
       )
@@ -282,6 +299,26 @@
       )
 
     8 (if (> (compare (:address item1) (:address item2)) 0)
+        true
+        false
+      )
+
+    9 (if (> (compare (:sensor item1) (:sensor item2)) 0)
+        false
+        true
+      )
+
+    10 (if (> (compare (:sensor item1) (:sensor item2)) 0)
+        true
+        false
+      )
+
+    13 (if (> (compare (:status item1) (:status item2)) 0)
+        false
+        true
+      )
+
+    14 (if (> (compare (:status item1) (:status item2)) 0)
         true
         false
       )
@@ -360,7 +397,7 @@
       (dom/option {:key (:id item) :value (:controller item)
                     :onChange #(handle-change % owner)} (:name item))
     )
-    (:devices @shelters/app-state )
+    (sort (comp comp-units) (conj (:devices @shelters/app-state ) {:id "0" :controller "" :name "הכל"}))
   )
 )
 
@@ -368,14 +405,14 @@
   (render [_]
     (let []
       (dom/div {:className "panel-body" :style {:flex 1 :overflow-y "scroll" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :border-right "1px solid lightgrey"}}
-        (map (fn [item num]
+        (map (fn [item]
           (let [
               
               ;tr1 (.log js/console (str "indication=" (:indication item) "; newval=" (:newval item)))
             ]
             (dom/div {:className "row tablerow" :style {:userSelect "none" :margin-left "0px" :margin-right "0px" :border-bottom "1px solid lightgrey"}}
               (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px"}}
-                num
+                (:seqid item)
               )
               (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px"}}
                 (:controller item)
@@ -383,42 +420,41 @@
               (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px"}}
                 (:name item)
               )
-              (dom/div {:className "col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :height "36px" :overflow-y "hidden" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px"}}
+              (dom/div {:className "col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :height "36px" :overflow-y "hidden" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px"}}
                 (:address item)
               )
 
-              (dom/div {:className "col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
-                ((keyword (:sensor item)) (:words @shelters/app-state))
+              (dom/div {:className "col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
+                (:sensor item)
                 ;((keyword (:indication item)) (:words @shelters/app-state))
               )
 
               (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid lightgrey" :padding-left "0px" :padding-right "0px" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
                 (:status item)
-                ;((keyword (:newval item)) (:words @shelters/app-state))
               )
 
-              (dom/div {:className "col-md-5" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-md-3" :style {:text-align "center" :padding-left "0px" :padding-right "0px"}}
                 ;; (dom/div {:className "col-md-4" :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :overflow-x "hidden" :padding-top "3px" :padding-bottom "3px" :height "26px"}}
                 ;;   ((keyword (:oldval item)) (:words @shelters/app-state))
                 ;; )
 
 
-                (dom/div {:className "col-md-4" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "col-md-5" :style {:padding-left "0px" :padding-right "0px"}}
                   (dom/div {:className "col-md-12" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
                     (tf/unparse shelters/custom-formatter1 (:open item))
                   )
 
                 )
 
-                (dom/div {:className "col-md-4" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "col-md-5" :style {:padding-left "0px" :padding-right "0px"}}
                   (dom/div {:className "col-md-12" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
-                    (if (nil? (:accept item)) "" (tf/unparse shelters/custom-formatter1 (:accept item)))
+                    (if (nil? (:close item)) "" (tf/unparse shelters/custom-formatter1 (:close item)))
                     ;(tf/unparse shelters/custom-formatter1 (:accept item))
                   )
 
                 )
 
-                (dom/div {:className "col-md-4" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "0px"}}
                   (dom/div {:className "col-md-12" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid transparent" :overflow-x "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
                     (:maintenance item)
                   )
@@ -427,7 +463,7 @@
               )
             )
           ))
-          (sort (comp comp-data) (:data @data)) (map inc (range))
+          (sort (comp comp-data) (:data @data))
         )
       )
     )
@@ -437,11 +473,10 @@
 
 (defcomponent header-view [data owner]
   (render [_]
-    (dom/div  {:className "panel panel-primary" :style {:margin-top "70px"}}
-      (dom/div {:className "panel-heading" :style {:padding-top "0px" :padding-bottom "0px"}}
-        (dom/h3 "דוייח חיווים")
+      (dom/div {:className "panel-heading" :style {:padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
+        (dom/h3 {:style {:background-image "linear-gradient(to bottom,#337ab7 0,#2e6da4 100%)" :color "white" :padding-right "15px"}}  "דוייח חיווים")
       )
-    )    
+
   )
 )
 
@@ -455,13 +490,11 @@
   )
   (render [_]
     (let [
-      ;style {:style {:margin "10px" :padding-bottom "0px"}}
-      ;styleprimary {:style {:margin-top "70px"}}
       ]
       (dom/div
         (om/build shelters/website-view shelters/app-state {})
         (dom/div {:className "container" :style {:height "100%" :width "100%"}}
-          (dom/div {:style {:height "100%" :display "flex" :flex-direction "column"}}
+          (dom/div {:style {:height "100%" :display "flex" :flex-direction "column" :padding-top "70px"}}
             (om/build header-view data {})
             (dom/div {:className "panel-default" :style {:border-top "solid 1px lightgrey" :padding-left "15px" :margin-left "-0px" :border-left "solid 1px lightgrey" :border-right "solid 1px lightgrey"}}
               (dom/div {:style {:margin-bottom "10px"}}
@@ -479,7 +512,7 @@
                   )
 
                   (dom/div {:className "col-md-1" :style {:padding-right "5px"}}
-                    (dom/div {:className "col-md-12" :style {:font-weight "700" :text-align "right" :padding-left "0px" :padding-right "0px" :margin-top "5px"}} (dom/div "תקלה"))
+                    (dom/div {:className "col-md-12" :style {:font-weight "700" :text-align "right" :padding-left "0px" :padding-right "0px" :margin-top "5px"}} (dom/div "חיווי"))
 
 
                     ;; (dom/div {:className "col-md-9" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
@@ -491,7 +524,7 @@
 
                 )
                 (dom/div {:className "row" :style {:margin-left "0px" :margin-right "10px"}}
-                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
+                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "left" :padding-top "7px"}}
                       (omdom/select #js {:id "controller"
                                      :className "selectpicker"
                                      :title "בחר אחד מהבאים ..."
@@ -504,17 +537,21 @@
                       )
                     )
 
-                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
-                      (dom/input {:id "fromdate" :className "form-control" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :height "34px"}})
+                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
+                      (dom/input {:id "fromdate" :className "form-control"
+;:data-date-start-date "-24d" 
+:data-date-end-date "0d" :value (if (nil? (:fromdate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:fromdate (:filter @app-state)))) :style {:margin-top "0px" :height "34px"}})
                     )
 
-                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "right" :padding-top "7px"}}
-                      (dom/input {:id "todate" :className "form-control" :data-date-start-date "-24d" :data-date-end-date "0d" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px"  :height "34px"}} )
+                    (dom/div {:className "col-md-2" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "right" :padding-top "7px"}}
+                      (dom/input {:id "todate" :className "form-control"
+;:data-date-start-date "-24d"
+:data-date-end-date "0d" :value (if (nil? (:todate (:filter @app-state))) "" (tf/unparse (tf/formatter "dd/MM/yyyy") (:todate (:filter @app-state)))) :style {:margin-top "0px"  :height "34px"}} )
                     )
 
 
 
-                    (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "0px" :padding-right "0px" :text-align "left" :padding-top "7px"}}
+                    (dom/div {:className "col-md-1" :style {:margin-left "0px" :padding-left "5px" :padding-right "5px" :text-align "left" :padding-top "7px"}}
                       (omdom/select #js {:id "indication"
                                      :className "selectpicker"
                                      :title "בחר אחד מהבאים ..."
@@ -535,39 +572,39 @@
               )          
               (dom/div {:className "panel-heading" :style {:padding-top "0px" :padding-bottom "0px" :margin-left "-15px" :border-top "solid 1px lightgrey" :border-bottom "solid 2px #337ab7"}}
                 (dom/div {:className "row" :style {:margin-left "2px" :margin-right "-15px"}}
-                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))}
+                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))}
                     "מספר רץ"
                   )
 
-                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}
+                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}
                     "מזהה יחידה"
                   )
-                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))}
+                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))}
                     "שם מקלט"
                   )
-                  (dom/div {:className "col-md-2" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 7 8 7)) (shelters/doswaps)))}
+                  (dom/div {:className "col-md-3" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 7 8 7)) (shelters/doswaps)))}
                     "כתובת מקלט"
                   )
 
-                  (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 9 "url(images/sort_asc.png" 10 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 9 10 9)) (shelters/doswaps)))}
+                  (dom/div {:className "col-md-2" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 9 "url(images/sort_asc.png" 10 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 9 10 9)) (shelters/doswaps)))}
                     "שם חיווי"
                   )
 
                   (dom/div {:className "col-md-1" :style {:font-weight "700" :text-align "center" :border-left "1px solid lightgrey" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
-                    (dom/div {:className "col-md-12" :style {:font-weight "700" :padding-left "0px" :padding-right "0px" :height "100%" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 13 "url(images/sort_asc.png" 14 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 13 14 13)) (shelters/doswaps)))}
+                    (dom/div {:className "col-md-12" :style {:font-weight "700" :padding-left "0px" :padding-right "0px" :height "100%" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 13 "url(images/sort_asc.png" 14 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 13 14 13)) (shelters/doswaps)))}
                       "סטטוס"
                     )                    
                   )
-                  (dom/div {:className "col-md-5" :style {:font-weight "700" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
-                    (dom/div {:className "col-md-4" :style {:border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 17 18 17)) (shelters/doswaps)))}
+                  (dom/div {:className "col-md-3" :style {:font-weight "700" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
+                    (dom/div {:className "col-md-5" :style {:border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 17 18 17)) (shelters/doswaps)))}
                       "תאריך פתיחה"
                     )
 
-                    (dom/div {:className "col-md-4" :style {:font-weight "700" :border-left "1px solid lightgrey" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 19 "url(images/sort_asc.png" 20 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 19 20 19)) (shelters/doswaps)))}
+                    (dom/div {:className "col-md-5" :style {:font-weight "700" :border-left "1px solid lightgrey" :padding-top "15px" :padding-bottom "15px" :background-image (case (:sort-list @app-state) 19 "url(images/sort_asc.png" 20 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 19 20 19)) (shelters/doswaps)))}
                       "תאריך סגירה"
                     )
 
-                    (dom/div {:className "col-md-4" :style {:font-weight "700" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 21 "url(images/sort_asc.png" 22 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 21 22 21)) (shelters/doswaps)))}
+                    (dom/div {:className "col-md-2" :style {:font-weight "700" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-list @app-state) 21 "url(images/sort_asc.png" 22 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 21 22 21)) (shelters/doswaps)))}
                       "ביחידות של שעה"
                     )
                   )
@@ -580,68 +617,11 @@
             )
           )
         )
+        (dom/div {:id "notifies"})
       )
     )
   )
 )
-
-(defcomponent report-view1 [data owner]
-  (will-mount [_]
-    (onMount data)
-  )
-  (render [_]
-    (let [
-      ;style {:style {:margin "10px" :padding-bottom "0px"}}
-      ;styleprimary {:style {:margin-top "70px"}}
-      ]
-      (dom/div
-        (om/build shelters/website-view shelters/app-state {})
-        (dom/div {:className "container" :style {:height "100%" :width "100%"}}
-          (dom/div {:style {:height "100%" :display "flex" :flex-direction "column"}}
-            (om/build header-view data {})
-            (dom/div {:className "panel-primary" :style {:padding-left "16px" :margin-left "-0px"}}
-              (dom/div {:className "panel-heading" :style {:padding-top "0px" :padding-bottom "0px" :margin-left "-15px"}}
-                (dom/div {:className "row" :style {:margin-left "2px" :margin-right "-15px"}}
-                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))}
-                    "מספר אירוע"
-                  )
-
-                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}
-                    "מזהה יחידה"
-                  )
-                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 5 6 5)) (shelters/doswaps)))}
-                    "שם יחידה"
-                  )
-                  (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 7 8 7)) (shelters/doswaps)))}
-                    "מיקום יחידה"
-                  )
-
-                  (dom/div {:className "col-md-1" :style {:text-align "center" :border-left "1px solid" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 9 "url(images/sort_asc.png" 10 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 9 10 9)) (shelters/doswaps)))}
-                    "Indication"
-                  )
-
-                  (dom/div {:className "col-md-4" :style {:text-align "center" :border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
-                    (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "0px" :height "100%" :padding-top "5px" :padding-bottom "5px" :border-left "1px solid" :background-image (case (:sort-list @app-state) 11 "url(images/sort_asc.png" 12 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 11 12 11)) (shelters/doswaps)))}
-                      "oldValue"
-                    )
-                    (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "0px" :height "100%" :padding-top "5px" :padding-bottom "5px" :background-image (case (:sort-list @app-state) 13 "url(images/sort_asc.png" 14 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 13 14 13)) (shelters/doswaps)))}
-                      "newValue"
-                    )                    
-                  )
-                  (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid transparent" :padding-top "5px" :padding-bottom "5px" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-list @app-state) 15 "url(images/sort_asc.png" 16 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 15 16 15)) (shelters/doswaps)))}
-                    "Change Time"
-                  )
-                )
-              )
-            )
-            (om/build show-report data {})
-          )
-        )
-      )
-    )
-  )
-)
-
 
 
 

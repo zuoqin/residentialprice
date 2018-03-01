@@ -620,18 +620,16 @@
               )
             )
 
-            (dom/h5 {:style {:display:inline true}} "קו רוחב: "
-               (:lat (:device @data))
-               ;(dom/input {:id "lat" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lat (:device @data))} )
-            )
-            (dom/h5 {:style {:display:inline true}} "קו האורך: "
-               (:lon (:device @data))
-               ;(dom/input {:id "lon" :type "number" :step "0.00001" :onChange (fn [e] (handleChange e)) :value (:lon (:device @data))} )
-            )
+            ;; (dom/h5 {:style {:display:inline true}} "קו רוחב: "
+            ;;    (:lat (:device @data))
+            ;; )
+            ;; (dom/h5 {:style {:display:inline true}} "קו האורך: "
+            ;;    (:lon (:device @data))
+            ;; )
             (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
 
             (dom/div {:style {:margin-bottom "10px"}}
-              (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (swap! app-state assoc-in [:showmap] (- (:showmap @data))))} (case (:showmap @data) -1 "Show map" "Hide Map"))
+              (b/button {:className "btn btn-primary colbtn" :onClick (fn [e] (swap! app-state assoc-in [:showmap] (- (:showmap @data))))} (case (:showmap @data) -1 "בחר באמצעות מפה" "סגור מפה"))
             )
             (dom/div {:className "row maprow" :style {:padding-top "0px" :height "400px" :display (case (:showmap @data) -1 "none" "block")}}
               (dom/div  {:className "col-12 col-sm-12" :id "map" :style {:margin-top "0px" :height "100%"}})
@@ -649,13 +647,9 @@
 
             (dom/div {:style {:margin-top "10px"}}
 
-              (b/button {:className "btn btn-default" :style {:margin "5px"} :disabled? (or (and (:isinsert @app-state) (> (count (filter (fn [x] (if (= (:controller x) (:controller (:device @data))) true false)) (:devices @shelters/app-state))) 0)) (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "Insert" "Update"))
-              (b/button {:className "btn btn-danger" :style {:display (if (:isinsert @app-state) "none" "inline") :margin "5px"} :onClick (fn [e] (deleteUnit))} "Delete")
-
-              (b/button {:className "btn btn-info" :style {:margin "5px"} :onClick (fn [e]
-                                        ;(shelters/goDashboard e)
-                                                                                      (js/window.history.back)
-                                                                                      )  } "Cancel"
+              (b/button {:className "btn btn-default" :style {:margin "5px"} :disabled? (or (and (:isinsert @app-state) (> (count (filter (fn [x] (if (= (:controller x) (:controller (:device @data))) true false)) (:devices @shelters/app-state))) 0)) (< (count (:controller (:device @data))) 1)  (< (count (:address (:device @data))) 1) (< (count (:ip (:device @data))) 1) (< (:port (:device @data)) 1) (< (count (:name (:device @data))) 1) ) :onClick (fn [e] (if (:isinsert @app-state) (createUnit) (updateUnit)) )} (if (:isinsert @app-state) "שמירת נתונים" "שמירת נתונים"))
+              (b/button {:className "btn btn-danger" :style {:display (if (:isinsert @app-state) "none" "inline") :margin "5px"} :onClick (fn [e] (deleteUnit))} "ביטול")
+              (b/button {:className "btn btn-info" :style {:margin "5px"} :onClick (fn [e] (js/window.history.back))} "חזרה למסך הקודם"
               )
             )
 

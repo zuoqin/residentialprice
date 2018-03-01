@@ -112,7 +112,7 @@
       dev (first (filter (fn [x] (if (= (:id x) id) true false)) (:devices @shelters/app-state)))
       ]
     (swap! shelters/app-state assoc-in [:selecteddevice] dev)
-    (swap! shelters/app-state assoc-in [:selecteddevice :current] (str "שייך לקבוצה " (:name dev)))
+    (swap! shelters/app-state assoc-in [:selecteddevice :current] (str "שיוך לקבוצה -יחידה בשם " (:name dev)))
     (put! ch 47)
   )
 )
@@ -133,19 +133,19 @@
 
               (dom/div {:className "panel panel-primary"}
 
-                (dom/h1 {:style {:text-align "center"}} (:current (:selecteddevice @data)))
+                (dom/h3 {:style {:text-align "center"}} (:current (:selecteddevice @data)))
                 (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
                   (dom/div {:className "row"}
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
                     )
                     (dom/div {:className "col-xs-4 col-md-4" :style {:text-align "center" :border-left "1px solid"}}
-                      (dom/h5 "Name")
+                      (dom/h5 "שם קבוצה")
                     )
                     (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "1px solid"}}
-                      (dom/h5 "Selection")
+                      (dom/h5 "שייך לקבוצה")
                     )
                     (dom/div {:className "col-xs-3 col-md-3" :style {:text-align "center" :border-left "0px solid"}}
-                      (dom/h5 "Selected")
+                      (dom/h5 "שינוי סטטוס")
                     )
                     (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" }}
                     )
@@ -158,12 +158,14 @@
             )
             (dom/div {:className "modal-footer"}
               (dom/div {:className "row"}
-                (dom/div {:className "col-xs-6" :style {:text-align "center"}}
-                  (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal"} "Close")
-                )
+
 
                 (dom/div {:className "col-xs-6" :style {:text-align "center"}}
                   (b/button {:id "btnsavegroups" :disabled? (if (= (:state @app-state) 1) true false) :type "button" :className (if (= (:state @app-state) 0) "btn btn-default" "btn btn-default m-progress" ) :onClick (fn [e] (savegroups))} "שמור")
+                )
+
+                (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                  (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal"} "סגור")
                 )
               )
             )
@@ -431,22 +433,22 @@
   ;;(.log js/console (str  (get (first response)  "Title") ))
 )
 
-(defn sendcommand1 []
-  (POST (str settings/apipath "doCommand" ;"?userId="(:userid  (:token @shelters/app-state))
-       )
-       {:handler OnDoCommand
-        :error-handler error-handler
-        :format :json
-        :headers {:token (str (:token  (:token @shelters/app-state)))}
-        :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (into [] (:selectedunits @shelters/app-state)) }
-    }
-  )
-)
+;; (defn sendcommand1 []
+;;   (POST (str settings/apipath "doCommand" ;"?userId="(:userid  (:token @shelters/app-state))
+;;        )
+;;        {:handler OnDoCommand
+;;         :error-handler error-handler
+;;         :format :json
+;;         :headers {:token (str (:token  (:token @shelters/app-state)))}
+;;         :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (into [] (:selectedunits @shelters/app-state)) }
+;;     }
+;;   )
+;; )
 
 (defcomponent topbuttons-view [data owner]
   (render [_]
     (dom/div
-
+      (om/build shelters/addmodalconfirm data {})
       (dom/div {:className "row" :style {:padding-top "60px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
         (dom/div {:className "col-xs-8" :style { :text-align "right" }}
           (dom/h3 "רשימת יחידות")
@@ -457,9 +459,9 @@
           (b/button {:className "btn btn-primary" :style { :padding-left "5px" :padding-right "5px" :margin-left "10px"} :onClick (fn [e] (-> js/document .-location (set! "#/devdetail")))} "הוספת יחידה חדשה"
           )
 
-          (b/button {:className "btn btn-primary"  :style { :padding-left "5px" :padding-right "5px"}
+          (b/button {:className "btn btn-primary btn-danger" :style { :padding-left "5px" :padding-right "5px"}
             :disabled? (= (count (:selectedunits @data)) 0)
-            :onClick (fn [e] (sendcommand1))} (str (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))) " (" (count (:selectedunits @data)) ") יחידות")
+            :onClick (fn [e] (shelters/openConfirmDialog))} (str (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))) " (" (count (:selectedunits @data)) ") יחידות")
           )
           )
         )
@@ -473,7 +475,7 @@
       )
 
       (dom/div {:className "row" :style {:margin-right "0px"}}
-        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+        (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px" :width "25%"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
       )
     )
   )

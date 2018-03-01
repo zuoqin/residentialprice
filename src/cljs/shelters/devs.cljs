@@ -1,5 +1,6 @@
 (ns shelters.devs 
   (:use [net.unit8.tower :only [t]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [om-tools.core :refer-macros [defcomponent]]
@@ -11,11 +12,13 @@
             [om-bootstrap.button :as b]
             [clojure.string :as str]
             [shelters.settings :as settings]
+            [cljs.core.async :refer [put! dropping-buffer chan take! <! >! timeout close!]]
   )
   (:import goog.History)
 )
 
 (enable-console-print!)
+(def ch (chan (dropping-buffer 2)))
 
 (defonce app-state (atom  {:users [] }))
 
@@ -25,6 +28,7 @@
 
 
 (defn OnSendCommand [response]
+   (put! ch 49)
    (.log js/console (str response)) 
 
 )
@@ -161,7 +165,7 @@
                    (dom/div {:style {:border "solid 1px transparent" :padding "3px"}}
                      (dom/div {:style {:backgroundColor "transparent" :text-align "center" :padding-top "0px" :padding-bottom "0px" :padding-left "5px" :padding-right "5px"}}
                        ;(dom/span {:className "glyphicon glyphicon-film" :style {:margin-top "25px" :margin-bottom "25px" :height "30px" :font-size "xx-large" :color "yellow"}})
-                       (b/button {:className "btn btn-block btn-primary" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (sendCommand {:id (:id (nth (:commands @data) 0)) :units [(:id item)]}))} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))))
+                       (b/button {:className "btn btn-block btn-danger" :style {:margin-top "0px" :font-size "12px"} :onClick (fn [e] (sendCommand {:id (:id (nth (:commands @data) 0)) :units [(:id item)]}))} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (nth (:commands @data) 0))))))
                      )
                    )
                  )
@@ -183,6 +187,28 @@
   )
 )
 
+
+(defn setcontrols [value]
+  (case value
+
+    49 (js/alert "הפקודה נשלחה בהצלחה")
+  )
+)
+
+(defn initqueue []
+  (doseq [n (range 1000)]
+    (go ;(while true)
+      (take! ch(
+        fn [v] (
+           setcontrols v
+          )
+        )
+      )
+    )
+  )
+)
+
+(initqueue)
 
 
 (defn onMount [data]
@@ -208,7 +234,7 @@
         (om/build shelters/website-view data {})
         (dom/div {:className "container" :style {:margin-top "0px" :width "100%"}}
           (dom/div {:className "row" :style {:margin-top "60px" :margin-left "30px" :margin-right "15px" :border-bottom "solid 1px" :border-color "#e7e7e7"}}
-            (dom/div {:className "col-xs-9" :style {:text-align "right"  :padding-top "5px"}}
+            (dom/div {:className "col-xs-9" :style {:text-align "right"  :padding-top "5px"}} 
               (dom/h3 "תמונת מצב")
             )
             (dom/div {:className "col-xs-3" :style {:margin-top "20px" :text-align "left"}}
@@ -217,7 +243,7 @@
           )
 
           (dom/div {:className "row" :style {:margin-right "15px" :margin-left "25px"}}
-            (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:height "24px" :margin-top "12px"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
+            (dom/input {:id "search" :className "form-control" :type "text" :placeholder "חיפוש" :style {:margin-top "12px" :width "25%"} :value  (:search @shelters/app-state) :onChange (fn [e] (handleChange e )) })
           )
           (om/build showdevices-view  data {})
         )
@@ -234,6 +260,7 @@
           ;   )
           ; )          
         )
+        (dom/div {:id "notifies" :style {:z-index 100}})
       ) 
     )
   )

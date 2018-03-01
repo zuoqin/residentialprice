@@ -100,16 +100,7 @@
 ;(def js-object  (do (clj->js  {:multiSelect true :data [ {:text "All cities" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes [{:text "Tel Aviv" :selectedIcon "glyphicon glyphicon-stop" :selectable true :nodes (buildNodes 1) } {:text "Ness Ziona" :selectedIcon "glyphicon glyphicon-stop" :selectable true :nodes (buildNodes 2) } {:text "Jerusalem" :selectedIcon "glyphicon glyphicon-stop" :selectable true :state {:checked false :disabled false :expanded true :selected false} :nodes (buildNodes 3)} ]}]} )))
 
 
-(defn OnGetPortfolios [response]
-  ;;
-  ;;(sbercore/setSecsDropDown)
-  ;;(.log js/console (:client @app-state)) 
-)
 
-
-(defn error-handler [{:keys [status status-text]}]
-  (.log js/console (str "something bad happened: " status " " status-text))
-)
 
 
 
@@ -144,7 +135,7 @@
       "</div>"
 
       "<div class=\"row\" style=\"text-align: center; margin-top: 5px; margin-bottom: 10px; margin-left: 0px; margin-right: 0px \">"
-        "<button type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 10px; padding-left: 0px; padding-right: 0px; width: 86.31px \" onclick=\"sendcommand('"
+        "<button type=\"button\" class=\"btn btn-primary btn-danger\" style=\"margin-left: 10px; padding-left: 0px; padding-right: 0px; width: 86.31px \" onclick=\"sendcommand('"
           settings/apipath "', '"
           (:token (:token @shelters/app-state))
           "', '"
@@ -567,27 +558,6 @@
 
 (initqueue)
 
-(defn OnDoCommand [response] 
-  (.log js/console (str response ))
-  (-> (jquery "#confirmModal .close")
-          (.click)
-  )
-  (.generate js/Notify "Command has been sent" "Success" 1)
-  ;;(.log js/console (str  (get (first response)  "Title") ))
-)
-
-
-(defn sendcommand1 []
-  (POST (str settings/apipath "doCommand" ;"?userId="(:userid  (:token @shelters/app-state))
-       )
-       {:handler OnDoCommand
-        :error-handler error-handler
-        :format :json
-        :headers {:token (str (:token  (:token @shelters/app-state)))}
-        :params {:commandId (js/parseInt (:id (first (:commands @shelters/app-state)))) :units (:selectedunits @shelters/app-state)}
-    }
-  )
-)
 
 (defn handle-change [e owner]
   
@@ -598,18 +568,20 @@
 
 
 (defn buildStatusesList [data owner]
-  (dom/optgroup {:label (if (:isnotification  @data) "סטטוס התרעה" "סטטוס תקלה")}
-    (map
-      (fn [text]
-        (let [
-          ;tr1 (.log js/console (str  "name=" (:name text) ))
-          ]
-          (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
-        )
+  (map
+    (fn [text]
+      (let [
+        ;tr1 (.log js/console (str  "name=" (:name text) ))
+        ]
+        (dom/option {:key (:id text) :data-width "100px" :value (:id text) :onChange #(handle-change % owner)} (:name text))
       )
-      (:statuses @data) 
     )
+    (:statuses @data) 
   )
+  ;; (dom/optgroup {
+  ;;   :label (if (:isnotification  @data) "סטטוס התרעה" "סטטוס תקלה")
+  ;;   }
+  ;; )
 )
 
 (defcomponent notifications-view [data owner]
@@ -666,8 +638,11 @@
                     )
 
                     (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "0px"}}
-                      (dom/div {:className "col-md-5" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :background-image (case (:sort-alerts @shelters/app-state) 17 "url(images/sort_asc.png" 18 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center" :cursor "pointer"} :onClick (fn [e] ((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps)))}
+                      (dom/div {:className "col-md-5" :style {:text-align "right" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :cursor "pointer"} :onClick (fn [e] (let [])
+;((swap! shelters/app-state assoc-in [:sort-alerts] (case (:sort-alerts @shelters/app-state) 17 18 17)) (shelters/doswaps))
+)}
                         (omdom/select #js {:id "statuses"
+                                           :className "selectpicker"
                                            :title (if (:isnotification  @data) "סטטוס התרעה" "סטטוס תקלה")
                                            :data-width "75%"
                                            ;:data-style "btn-default"
@@ -741,71 +716,8 @@
   )
 )
 
-(defcomponent addmodalconfirm [data owner]
-  ;; (will-mount
-  ;;   (transact! data :selectedgroup  (fn [_] {:id "9ce9fce2-58d7-47bd-8e3e-0b4e2f8ee6c9", :name "jhghgjh", :parents nil, :owners nil, :current "khjhjkhjk"}))
-  ;; )
-  (render [_]
-    (let [
-      ;tr1 (.log js/console (str "name=" (:name (:selectedgroup @data))))
-      ]
-      (dom/div
-        (dom/div {:id "confirmModal" :className "modal fade" :role "dialog"}
-          (dom/div {:className "modal-dialog"} 
-            ;;Modal content
-            (dom/div {:className "modal-content"} 
-              (dom/div {:className "modal-header"} 
-                (b/button {:type "button" :className "close" :data-dismiss "modal"})
-                (dom/h4 {:className "modal-title"} "Confirmation" )
-              )
-              (dom/div {:className "modal-body"}
-
-                (dom/div {:className "panel panel-primary"}
-                  (dom/div {:className "panel-heading" :style {:padding "0px" :margin-top "10px"}}
-                    ;(dom/h1 {:style {:text-align "center"}} "Please confirm")
-                  )
-                  (dom/div {:className "panel-body"}
-                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-md-12" :style {}}
-                        "האם אתה בטוח רוצה לשלוח פקודה פתח מנעול עבור יחידות שנבחרו?"
-                      )
-                    )
-                  )
-                )
-              )
-              (dom/div {:className "modal-footer"}
-                (dom/div {:className "row"}
-                  (dom/div {:className "col-xs-6" :style {:text-align "center"}}
-                    (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal"} "ביטול")
-                  )
-
-                  (dom/div {:className "col-xs-6" :style {:text-align "center"}}
-                    (b/button {:id "btnsavegroup" :disabled? (if (= (:state @data) 1) true false) :type "button" :className (if (= (:state @data) 0) "btn btn-default" "btn btn-default m-progress" ) :onClick (fn [e] (sendcommand1))} "לשלוח פקודה")
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
 
 
-(defn openConfirmDialog []
-  (let [
-    ;tr1 (.log js/console (:device @dev-state))
-    ]
-    (jquery
-      (fn []
-        (-> (jquery "#confirmModal")
-          (.modal)
-        )
-      )
-    )
-  )
-)
 
 
 (defcomponent map-view [data owner]
@@ -845,7 +757,7 @@
                 ;(om/build tree-view data {})
                 (dom/div {:className "row" :style{:margin-top "10px" :margin-left "15px" :margin-right "-5px" :bottom "0px"}}
                   (dom/div {:className "col-xs-6" :style {:padding-left "5px" :padding-right "5px"}}
-                    (b/button {:className "btn btn-primary btn-danger" :onClick (fn [e] (openConfirmDialog)) :disabled? (if (> (count (:selectedunits @shelters/app-state)) 0) false true) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))
+                    (b/button {:className "btn btn-primary btn-danger" :onClick (fn [e] (shelters/openConfirmDialog)) :disabled? (if (> (count (:selectedunits @shelters/app-state)) 0) false true) :style {:margin-bottom "5px" :width "100%"}} (t :he shelters/main-tconfig (keyword (str "commands/" (:name (first (:commands @data)))))))
                   )
                   (dom/div {:className "col-xs-6" :style {:padding-right "5px" :padding-left "5px"}}
                     (b/button {:className "btn btn-primary" :onClick (fn [e] (uncheckall)) :style {:margin-bottom "5px" :width "100%"}} "בטל בחירה")
@@ -853,13 +765,11 @@
                 )
               )
             )
-            
-
           )
-          (dom/div {:id "notifies"})
+          (dom/div {:id "notifies" :style {:z-index 100}})
           (dom/div {:id "floating-panel" :className "row"}
             (dom/input {:id "pac-input" :className "controls" :type "text" :placeholder "תיבת חיפוש" })
-            (dom/button {:id "btnopenlock" :className "btn btn-primary btn-danger btn btn-default" :style {:margin-top "-5px" :width "120px" :font-family "sans-serif"} :onClick (fn [e] (sendcommand1))} "פתח מנעל")
+            (dom/button {:id "btnopenlock" :className "btn btn-primary btn-danger btn btn-default" :style {:margin-top "-5px" :width "120px" :font-family "sans-serif"} :onClick (fn [e] (shelters/openConfirmDialog)) :disabled (if (> (count (:selectedunits @shelters/app-state)) 0) false true)} "פתח מנעל")
           )
 
           (dom/div  {:className "col-9 col-sm-9" :id "map" :style {:margin-top "0px"}})
@@ -868,7 +778,7 @@
         (if (or (:isnotification @data) (:isalert @data))
           (om/build notifications-view data {})
         )
-        (om/build addmodalconfirm data {})
+        (om/build shelters/addmodalconfirm data {})
       ) 
     )
   )

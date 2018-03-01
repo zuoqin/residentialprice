@@ -239,7 +239,7 @@
   (swap! app-state assoc-in [:state] 0)
    ;(.log js/console (:groups @app-state))
   (if (= (count response) 0)
-    (.generate js/Notify "אין תוצאות עבור תאריכים שמבחרו" "Success" 1)
+    (.generate js/Notify "אין תוצאות עבור תאריכים שמבחרו" "" 1)
   )
 )
 
@@ -467,6 +467,10 @@
 )
 (defcomponent header-view [data owner]
   (render [_]
+      (dom/div {:className "panel-heading" :style {:padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px"}}
+        (dom/h3 {:style {:background-image "linear-gradient(to bottom,#337ab7 0,#2e6da4 100%)" :color "white" :padding-right "15px"}}  "דו''ח תקלות")
+      )
+
   )
 )
 
@@ -482,15 +486,9 @@
       (dom/div
         (om/build shelters/website-view shelters/app-state {})
         (dom/div {:className "container" :style {:height "100%" :width "100%"}}
-          (dom/div {:style {:height "100%" :display "flex" :flex-direction "column"}}
-            ;(om/build header-view data {})
-            (dom/div {:className "panel-default" :style {:margin-top "75px" :border-top "solid 1px lightgrey" :padding-left "15px" :margin-left "-0px" :border-left "solid 1px lightgrey" :border-right "solid 1px lightgrey"}}
-              (dom/div  { :style {:margin-top "0px"}}
-                (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :border-bottom "1px solid lightgrey" :padding-top "0px" :padding-bottom "0px" :padding-right "15px"}}
-                  (dom/h3 "דו''ח תקלות")
-                )
-
-              )      
+          (dom/div {:style {:height "100%" :display "flex" :flex-direction "column" :padding-top "70px"}}
+            (om/build header-view data {})
+            (dom/div {:className "panel-default" :style {:margin-top "5px" :border-top "solid 1px lightgrey" :padding-left "15px" :margin-left "-0px" :border-left "solid 1px lightgrey" :border-right "solid 1px lightgrey"}}
               (dom/div {:style {:margin-bottom "10px"}}
                 (dom/div {:className "row" :style {:margin-left "0px" :margin-right "10px"}}
                   (dom/div {:className "col-md-2" :style {:padding-right "0px"}}

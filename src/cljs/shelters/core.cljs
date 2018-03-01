@@ -39,6 +39,12 @@
   (+ 2 (* 27 (min count 10)))
 )
 
+
+(defn error-handler [{:keys [status status-text]}]
+  (.log js/console (str "something bad happened: " status " " status-text))
+)
+
+
 (def main-tconfig
   {:dictionary ; Map or named resource containing map
     {:he 
@@ -54,7 +60,7 @@
           :new                      "פתוח"
           :Closed                   "סגור"
           :closed                   "סגור"
-          :Accepted                 "בטיפול"
+          :Seen                     "בטיפול"
           :seen                     "בטיפול"
         }
         :indicators
@@ -163,7 +169,7 @@
 
     (.setAnimation marker 1)
     (go
-         (<! (timeout 2000))
+         (<! (timeout 5000))
          (stopanimation marker)
     )
   )
@@ -631,11 +637,91 @@
 )
 
 
+
+
+(defn OnDoCommand [response] 
+  (.log js/console (str response ))
+  (-> (jquery "#confirmModal .close")
+          (.click)
+  )
+  ;(.generate js/Notify "Command has been sent" "Success" 1)
+  ;;(.log js/console (str  (get (first response)  "Title") ))
+  (put! ch 49)
+)
+
+
+(defn sendcommand1 []
+  (POST (str settings/apipath "doCommand" ;"?userId="(:userid  (:token @shelters/app-state))
+       )
+       {:handler OnDoCommand
+        :error-handler error-handler
+        :format :json
+        :headers {:token (str (:token  (:token @app-state)))}
+        :params {:commandId (js/parseInt (:id (first (:commands @app-state)))) :units (:selectedunits @app-state)}
+    }
+  )
+)
+
+(defn openConfirmDialog []
+  (let [
+    ;tr1 (.log js/console (:device @dev-state))
+    ]
+    (jquery
+      (fn []
+        (-> (jquery "#confirmModal")
+          (.modal)
+        )
+      )
+    )
+  )
+)
+
+
+(defcomponent addmodalconfirm [data owner]
+  ;; (will-mount
+  ;;   (transact! data :selectedgroup  (fn [_] {:id "9ce9fce2-58d7-47bd-8e3e-0b4e2f8ee6c9", :name "jhghgjh", :parents nil, :owners nil, :current "khjhjkhjk"}))
+  ;; )
+  (render [_]
+    (let [
+      ;tr1 (.log js/console (str "name=" (:name (:selectedgroup @data))))
+      ]
+      (dom/div
+        (dom/div {:id "confirmModal" :className "modal fade" :role "dialog"}
+          (dom/div {:className "modal-dialog" :style {:width "30%"}} 
+            ;;Modal content
+            (dom/div {:className "modal-content"} 
+              (dom/div {:className "modal-header" :style {:border-bottom "none"}} 
+                (b/button {:type "button" :className "close" :data-dismiss "modal"})
+                (dom/h4 {:className "modal-title"} "האם אתה בטוח רוצה לשלוח פקודה ''פתח מנעול'' עבור יחידות שנבחרו?")
+              )
+              (dom/div {:className "modal-body"}
+              )
+              (dom/div {:className "modal-footer"}
+                (dom/div {:className "row"}
+
+                  (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                    (b/button {:id "btnsavegroup" :disabled? (if (= (:state @data) 1) true false) :type "button" :style {:width "100%"} :className (if (= (:state @data) 0) "btn btn-default" "btn btn-default m-progress" ) :onClick (fn [e] (sendcommand1))} "לשלוח פקודה")
+                  )
+
+                  (dom/div {:className "col-xs-6" :style {:text-align "center"}}
+                    (b/button {:type "button" :className "btn btn-default" :data-dismiss "modal" :style {:width "100%"}} "ביטול")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+
 (defn seennotification [item e]
   (let [
     ;tr1 (swap! app-state assoc-in [:user :addedby] (:userid (:token @app-state)))
       accept (tf/unparse custom-formatter2 (tl/local-now))
-      newnotifications (map (fn [x] (if (= (:id x) (:id item)) (assoc x :status "Accepted") x)) (if (:isnotification @app-state) (:notifications @app-state) (:alerts @app-state)))
+      newnotifications (map (fn [x] (if (= (:id x) (:id item)) (assoc x :status "Seen") x)) (if (:isnotification @app-state) (:notifications @app-state) (:alerts @app-state)))
     ]
     (if (:isnotification @app-state) (swap! app-state assoc-in [:notifications] newnotifications) (swap! app-state assoc-in [:alerts] newnotifications))
     ;(set! (.-disabled (.. e -target)) true)
@@ -646,7 +732,7 @@
         :token (str (:token (:token @app-state)))
       }
       :format :json
-      :params { :notificationId (:id item) :notificationType (:type item) :unitId (:unitid item) :openTime (tf/unparse custom-formatter2 (:open item)) :acceptanceTime accept :closeTime (tf/unparse custom-formatter2 (:close item)) :userid (:userid (:token @app-state)) :status "Accepted"}})
+      :params { :notificationId (:id item) :notificationType (:type item) :unitId (:unitid item) :openTime (tf/unparse custom-formatter2 (:open item)) :acceptanceTime accept :closeTime (tf/unparse custom-formatter2 (:close item)) :userid (:userid (:token @app-state)) :status "Seen"}})
   )
 )
 
@@ -955,9 +1041,6 @@
 
 
 
-(defn error-handler [{:keys [status status-text]}]
-  (.log js/console (str "something bad happened: " status " " status-text))
-)
 
 
 
@@ -1051,6 +1134,15 @@
        )
      )
    )
+
+  (let [
+    els (.getElementsByClassName js/document "filter-option pull-left")
+    ]
+    ;(doall (map (fn [x] (set! (.-textAlign (.-style x)) (str "right"))) els))
+    
+    (set! (.-textAlign (.-style (aget els 0))) (str "right"))
+    ;(set! (.-textAlign (.-style (aget els 2))) (str "right"))
+  )
 )
 
 
@@ -1345,6 +1437,7 @@
     42 ( let [] 
          (setStatusesDropDown)
        )
+    49 (js/alert "הפקודה נשלחה בהצלחה")
   )
 )
 
