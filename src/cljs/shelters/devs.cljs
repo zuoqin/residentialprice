@@ -135,25 +135,28 @@
              (dom/div { :className "panel panel-primary device" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "330px" :margin-bottom "0px" :backgroundColor "white"}}
                (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}}
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:style {:white-space "normal"}} (str "מזהה יחידה: " (if (or (nil? (:controller item)) (< (count (:controller item)) 1)) "empty" (:controller item))))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str "מזהה יחידה:"))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str  (if (or (nil? (:controller item)) (< (count (:controller item)) 1)) "empty" (:controller item))))
                  )
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:style {:white-space "normal"}} (str "שם יחידה: " (if (or (nil? (:name item)) (< (count (:name item)) 1)) "empty" (:name item))))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str "שם יחידה:"))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str  (if (or (nil? (:name item)) (< (count (:name item)) 1)) "empty" (:name item))))
                  )
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:style {:white-space "nowrap"}} (str "כתובת יחידה: " (if (or (nil? (:address item)) (< (count (:address item)) 1)) "empty" (:address item))))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str "כתובת יחידה:"))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str  (if (or (nil? (:address item)) (< (count (:address item)) 1)) "empty" (:address item))))
                  )
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str "בדיקה אחרונה סלולר: "))
-                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str lastupdate))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str "בדיקה אחרונה סלולר: "))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str lastupdate))
                  )
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str "בדיקה אחרונה B3: "))
-                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str b3update))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str "בדיקה אחרונה B3: "))
+                   (dom/div {:className "col-md-6" :style {:text-align "right" :white-space "normal" :padding "0px"}} (str b3update))
                  )
                )
 

@@ -335,20 +335,23 @@
               )
             )
 
-            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :height "42px" :line-height "42px" :padding-left "0px" :padding-right "0px" :text-align "center" :overflow "hidden"}}
-              (dom/span {:style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
-                (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}} )
-                (:controller item)
+            (dom/div {:className "col-md-3" :style {:padding "0px" :margin "0px"}}
+              (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :height "42px" :line-height "42px" :padding-left "0px" :padding-right "0px" :text-align "center" :overflow "hidden"}}
+                (dom/span {:style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
+                  (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}} )
+                  (:controller item)
+                )
+              )
+
+
+              (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden" :line-height "42px"}}
+                (dom/span {:style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
+                  (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}})
+                  (:name item)
+                )
               )
             )
 
-
-            (dom/div {:className "col-md-1" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden" :line-height "42px"}}
-              (dom/span {:style {:margin-left "-100px" :margin-right "-100px"} :onClick (fn [e] (goDevice (:id item)))}
-                (dom/i {:className "fa fa-hdd-o" :style {:margin-left "5px"}})
-                (:name item)
-              )
-            )
 
             (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "0px" :padding-bottom "0px" :padding-left "0px" :padding-right "0px" :text-align "center" :height "42px" :overflow "hidden"}}
               (dom/div {:style {:line-height "42px"}}
@@ -358,7 +361,7 @@
 
             (om/build showstatuses item {})
 
-            (dom/div {:className "col-md-3" :style {:padding "0px"}}
+            (dom/div {:className "col-md-2" :style {:padding "0px"}}
               (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px" :overflow "hidden"}}
                 (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
                   (str (:firstname contact1) " " (:lastname contact1) " " (:phone contact1))
@@ -526,22 +529,24 @@
                     )
                   )
 
+                  (dom/div {:className "col-md-3" :style {:margin "0px" :padding "0px"}}
+                    (dom/div {:className "col-md-6" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
+                      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                        (dom/div {:className "col-xs-13" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}
+                          "מזהה יחידה"
+                        )
+                      )
+                    )
 
-                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
-                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-13" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 3 4 3)) (shelters/doswaps)))}
-                        "מזהה יחידה"
+                    (dom/div {:className "col-md-6" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
+                      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
+                        (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))}
+                          "שם יחידה"
+                        )
                       )
                     )
                   )
 
-                  (dom/div {:className "col-xs-1 col-md-1" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
-                    (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
-                      (dom/div {:className "col-xs-12" :style {:padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @app-state) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "left center"} :onClick (fn [e] ((swap! app-state assoc-in [:sort-list] (case (:sort-list @app-state) 1 2 1)) (shelters/doswaps)))}
-                        "שם יחידה"
-                      )
-                    )
-                  )
 
                   (dom/div {:className "col-xs-2 col-md-2" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "7px" :padding-bottom "7px" :white-space "nowrap" :border-left "1px solid"}}
                     (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px"}}
@@ -589,7 +594,7 @@
                     (dom/div {:className "row" :style {:margin "0px"}}
                     )
                   )
-                  (dom/div {:className "col-md-3" :style {:padding "0px"}}
+                  (dom/div {:className "col-md-2" :style {:padding "0px"}}
                     (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid" :text-align "center"}}
                       "איש קשר 1"
                     )
