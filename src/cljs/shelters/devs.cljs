@@ -116,15 +116,7 @@
           )
         )
       )
-      (filter (fn [x]
-        (let [
-          name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @shelters/app-state)))) 
-          ;tr1 (.log js/console "name=" name)
-          ]
-          (if (>= (.indexOf shelters/indicators name) 0) true false))
-        )
-        (:indications unit)
-      ))
+      (shelters/getunitinds unit))
     )
   )
 )
@@ -137,6 +129,8 @@
          (map (fn [item]
            (let [
              lastupdate (tf/unparse shelters/custom-formatter1 (:lastupdate (first (filter (fn [x] (if (= (:id x) 10) true false)) (:indications item)))))
+
+             b3update (tf/unparse shelters/custom-formatter1 (:lastupdate (first (filter (fn [x] (if (= (:id x) 13) true false)) (:indications item)))))
              ]
              (dom/div { :className "panel panel-primary device" :style {:display "inline-block" :white-space "nowrap" :border "1px solid #ddd" :margin-left "20px" :margin-top "20px" :max-width "330px" :margin-bottom "0px" :backgroundColor "white"}}
                (dom/div {:className "panel-heading" :style {:padding-top "3px" :padding-bottom "3px"}}
@@ -149,11 +143,17 @@
                  )
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:style {:white-space "normal"}} (str "כתובת יחידה: " (if (or (nil? (:address item)) (< (count (:address item)) 1)) "empty" (:address item))))
+                   (dom/div {:style {:white-space "nowrap"}} (str "כתובת יחידה: " (if (or (nil? (:address item)) (< (count (:address item)) 1)) "empty" (:address item))))
                  )
 
                  (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
-                   (dom/div {:style {:white-space "normal"}} (str "בדיקה אחרונה: " lastupdate))
+                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str "בדיקה אחרונה סלולר: "))
+                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str lastupdate))
+                 )
+
+                 (dom/div {:className "row" :style {:max-width "290px" :text-align "center" :margin-left "0px" :margin-right "0px"}}
+                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str "בדיקה אחרונה B3: "))
+                   (dom/div {:className "col-md-6" :style {:white-space "normal" :padding "0px"}} (str b3update))
                  )
                )
 

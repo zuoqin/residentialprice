@@ -25,7 +25,7 @@
 
 (enable-console-print!)
 
-(def indicators ["lockState" "doorState" "alarmState" "batteryState" "tamper" "communicationStatus"])
+(def indicators ["lockState" "doorState" "alarmState" "batteryState" "tamper" "communicationStatus" "redKeepAlive"])
 
 (def custom-formatter (tf/formatter "dd/MM/yyyy"))
 (def custom-formatter1 (tf/formatter "dd/MM/yyyy HH:mm:ss"))
@@ -36,7 +36,7 @@
 (def iconBase "images/")
 
 (defn tableheight [count] 
-  (+ 2 (* 27 (min count 10)))
+  (+ 3 (* 27 (min count 10)))
 )
 
 
@@ -85,9 +85,13 @@
           :alarmStateok             "תקין"
           :alarmStatefail           "התרעה"
 
-          :communicationStatus      "תקשורת"
+          :communicationStatus      "תקשורת סלולר"
           :communicationStatusok    "תקין"
           :communicationStatusfail  "תקלה"
+
+          :redKeepAlive             "תקשורת B3"
+          :redKeepAliveok           "תקין"
+          :redKeepAlivefail         "תקלה"
         }
         :commands
         {           
@@ -367,9 +371,11 @@
     size (js/google.maps.Size. 48 48)
     communicationind (:isok (first (filter (fn [x] (if (= (:id x) 12) true false)) (:indications device))))
 
+    b3ind (:isok (first (filter (fn [x] (if (= (:id x) 13) true false)) (:indications device))))
+
     lockind (:isok (first (filter (fn [x] (if (= (:id x) 1) true false)) (:indications device))))
     ]
-    (clj->js {:url (str iconBase (if (= communicationind false) (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "red-point-black.ico" "red_point.ico") (if (= lockind false) (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "yellow-point-black.ico" "yellow_point.ico") (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "green-point-black.ico" "green_point.ico")))) :scaledSize size})
+    (clj->js {:url (str iconBase (if (or (= communicationind false) (= b3ind false))  (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "red-point-black.ico" "red_point.ico") (if (= lockind false) (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "yellow-point-black.ico" "yellow_point.ico") (if (> (.indexOf (:selectedunits @app-state) (:id device)) -1) "green-point-black.ico" "green_point.ico")))) :scaledSize size})
   )
 )
 
@@ -421,6 +427,26 @@
   )
 )
 
+
+(defn getunitinds [device]
+  (let [
+   indications (filter (fn [x]
+        (let [
+          name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @app-state)))) 
+          ;tr1 (.log js/console "name=" name)
+          ]
+          (if (>= (.indexOf indicators name) 0) true false))
+        )
+        (:indications device)
+      )
+   redsignal (:isok (first (filter (fn [x] (if (= 13 (:id x)) true false)) indications)))
+   newindications (filter (fn [x] (if (or (and (= 13 (:id x)) (not redsignal) ) (and (= 12 (:id x)) redsignal)  (< (:id x) 12)) true false)) indications)
+   ]
+   newindications
+  )
+)
+
+
 (defn add-marker-indications [device]
   (reduce (fn [x y]
     (let [
@@ -460,8 +486,7 @@
       )
     )
   ) ""
-
-  (filter (fn [x] (let [name (:name (first (filter (fn [y] (if (= (:id y) (:id x)) true false)) (:indications @app-state))))] (if (>= (.indexOf indicators name) 0)  true false))) (:indications device)))
+  (getunitinds device))
 )
 
 (defn add-marker-info-content [device]
@@ -787,7 +812,7 @@
                 )
               )
 
-              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center"}}
+              (dom/div {:className "col-xs-1" :style { :border-left "1px solid" :padding-left "0px" :padding-right "0px" :text-align "center" :max-height "27px" :overflow "hidden" :padding-top "3px"}}
                 (dom/a {:className "nolink" :href "#/map/" :onClick (fn [e] (let [] (setcenterbydevice (:unitid item)))) }                
                   sensor
                 )

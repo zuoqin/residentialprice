@@ -450,7 +450,7 @@
                   (tf/unparse shelters/custom-formatter1 (:open item))
                 )
                 (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}
-                  (if (nil? (:accept item)) "" (tf/unparse shelters/custom-formatter1 (:accept item)))
+                  (if (nil? (:close item)) "" (tf/unparse shelters/custom-formatter1 (:close item)))
                 )
 
                 (dom/div {:className "col-md-4" :style {:text-align "center" :padding-left "0px" :padding-right "0px" :border-left "1px solid lightgrey" :overflow "hidden" :padding-top "8px" :padding-bottom "8px" :height "36px"}}

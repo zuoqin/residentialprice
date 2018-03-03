@@ -565,7 +565,7 @@
                     )
 
                     (dom/div {:className "col-md-2 col-md-offset-2"}
-                      (dom/button {:className (if (= (:state @app-state) 0) "btn btn-default btn-block" "btn btn-default btn-block m-progress" ) :onClick (fn [e](createReport)) :type "submit" :style {:margin-right "16px" :margin-top "5px"}}  "הצג דו''ח תקלות")
+                      (dom/button {:className (if (= (:state @app-state) 0) "btn btn-default btn-block" "btn btn-default btn-block m-progress" ) :onClick (fn [e](createReport)) :type "submit" :style {:margin-right "16px" :margin-top "5px"}}  "הצג דו''ח חיווים")
                     )
                 )
 

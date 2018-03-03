@@ -346,21 +346,30 @@
       (fn []
         (-> searchbox
           (.addListener "places_changed"
-            (fn []
+            (fn []              
               ;(.log js/console (.getPlaces searchbox))
-              (if (> (count (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))) 0)
-                (let [first (first (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state)))
-                  ]
-                  (swap! shelters/app-state assoc-in [:selectedunits] (map (fn [x] (:id x)) (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))) )
-                  (locatedevice first)
-                  
+              (let [
+                filtered (filter (fn [x] (if (str/includes? (str/upper-case (:name x)) (str/upper-case (.-value input))) true false)) (:devices @shelters/app-state))
+               ]
+               (if (> (count filtered) 0)
+                 (let [first (first filtered)
+                   ]
+                   (swap! shelters/app-state assoc-in [:selectedunits] (map (fn [x] (:id x)) filtered) )
+                   (if (= (count filtered) 1)
+                     (let []
+                       (locatedevice first)
+                     )
+                     (.panTo (:map @shelters/app-state) (google.maps.LatLng. (:lat first), (:lon first)))
+                   )
 
-                  (put! ch 47)
-                  ;(.log js/console (str "trying to check " (:name first) " liunit" (:id first)))
-                  ;(.checked (:treeview @app-state) true (jquery (str "liunit" (:id first))))
-                )
-                
-                (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
+
+                   (put! ch 47)
+                   ;(.log js/console (str "trying to check " (:name first) " liunit" (:id first)))
+                   ;(.checked (:treeview @app-state) true (jquery (str "liunit" (:id first))))
+                 )
+
+                 (doall (map (fn [x] (addplace x)) (.getPlaces searchbox)))
+               )
               )
             )
           )
@@ -440,7 +449,8 @@
                  (setcenterbycity (get res "groupid"))
                )
 
-               (shelters/setcenterbydevice unitid))
+               (shelters/setcenterbydevice unitid)
+             )
 
              (if (nil? unitid)
                (add-group-to-selected (get res "groupid"))

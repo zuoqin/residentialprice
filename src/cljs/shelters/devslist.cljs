@@ -255,13 +255,13 @@
 (defcomponent showstatuses [data owner]
   (render
     [_]
-    (dom/div {:className "row"}
+    (dom/div {:className "col-md-4" :style {:padding "0px"}}
       (map (fn [item]
         (let [
             indicator (first (filter (fn [x] (if (= (:id x) (:id item)) true false))  (:indications @shelters/app-state)))
             status (case (:isok item) true (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "ok")))) (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name indicator) "fail")))))
           ]
-          (dom/div {:className "col-md-2" :style {:text-align "center" :border-left "1px solid" :padding-top "3px" :padding-bottom "3px"}}
+          (dom/div {:className (if (or (= (:id indicator) 1) (= (:id indicator) 2)) "col-md-1" "col-md-2")  :style {:text-align "center" :border-left "1px solid" :padding-left "0px" :padding-right "0px" :padding-top "3px" :padding-bottom "3px"}}
             (dom/i {:id (str "status_" (:id item)) :className (case (:isok item) true "fa-toggle-on fa" "fa-toggle-off fa") :style {:color (case (:isok item) true "#00dd00" "#dd0000") :font-size "24px"}})
             (dom/p {:style {:margin "0px" :line-height "10px"}}
               status ;(case (:isok item) true "פועל" "כבוי")
@@ -356,28 +356,28 @@
               )
             )
 
-            (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px" :overflow "hidden"}}
-              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:firstname contact1) " " (:lastname contact1) " " (:phone contact1))
+            (om/build showstatuses item {})
+
+            (dom/div {:className "col-md-3" :style {:padding "0px"}}
+              (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px" :overflow "hidden"}}
+                (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
+                  (str (:firstname contact1) " " (:lastname contact1) " " (:phone contact1))
+                )
+                (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
+                  (str (:email contact1))
+                )
               )
-              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:email contact1))
+
+              (dom/div {:className "col-md-6" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px"}}
+                (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
+                  (str (:firstname contact2) " " (:lastname contact2) " " (:phone contact2))
+                )
+                (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
+                  (str (:email contact2))
+                )
               )
             )
 
-            (dom/div {:className "col-md-2" :style {:border-left "1px solid" :padding-top "1px" :padding-bottom "1px" :text-align "center" :height "42px"}}
-              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:firstname contact2) " " (:lastname contact2) " " (:phone contact2))
-              )
-              (dom/div {:className "row" :style {:height "20px" :overflow "hidden"}}
-                (str (:email contact2))
-              )
-            )
-
-
-            (dom/div {:className "col-md-3"}
-              (om/build showstatuses item {})
-            )
           )
           )
         ) (sort (comp comp-devs) (filter (fn [x] (if (or (str/includes? (str/upper-case (:name x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:controller x)) (str/upper-case (:search @data))) (str/includes? (str/upper-case (:address x)) (str/upper-case (:search @data)))) true false)) (:devices @data )))
@@ -551,46 +551,51 @@
                     )
                   )
 
-                  (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid" :text-align "center"}}
-                    "איש קשר 1"
+                  (dom/div {:className "col-md-4" :style {:padding "0px" :margin-left "-3px" :margin-right "3px"}}
+                    (dom/div {:className "col-md-1" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
+                        (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 0))))))
+                      )
+                    )
+
+                    (dom/div {:className "col-md-1" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
+                        (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 1))))))
+                      )
+                    )
+
+                    (dom/div {:className "col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 2))))))
+                      )
+                    )
+
+                    (dom/div {:className "col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 3))))))
+                      )
+                    )
+
+                    (dom/div {:className "col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 4))))))
+                      )
+                    )
+                    (dom/div {:className "col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 5))))))
+                      )
+                    )
+                    (dom/div {:className "col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
+                      (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 6))))))
+                      )
+                    )
+                    (dom/div {:className "row" :style {:margin "0px"}}
+                    )
                   )
+                  (dom/div {:className "col-md-3" :style {:padding "0px"}}
+                    (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :border-left "1px solid" :text-align "center"}}
+                      "איש קשר 1"
+                    )
 
-                  (dom/div {:className "col-md-2" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :text-align "center" :border-left "1px solid"}}
-                    "איש קשר 2"
-                  )
-                  (dom/div {:className "col-md-3"}
-                    (dom/div {:className "row"}
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
-                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 0))))))
-                        )
-                      )
-
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}}
-                          (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 1))))))
-                        )
-                      )
-
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 2))))))
-                        )
-                      )
-
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 3))))))
-                        )
-                      )
-
-                      (dom/div {:className "col-xs-2 col-md-2" :style {:border-left "1px solid" :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 4))))))
-                        )
-                      )
-
-                      (dom/div {:className "col-xs-2 col-md-2" :style { :text-align "center" :padding-left "0px" :padding-right "0px" :padding-top "0px" :padding-bottom "0px" :display "table" :height "40px"}}
-                        (dom/div {:className "row" :style {:margin-left "0px" :margin-right "0px" :display "table-cell" :vertical-align "middle"}} (str (t :he shelters/main-tconfig (keyword (str "indicators/" (:name (nth indications 5))))))
-                        )
-                      )
+                    (dom/div {:className "col-md-6" :style {:padding-left "0px" :padding-right "3px" :padding-top "10px" :padding-bottom "10px" :text-align "center"}}
+                      "איש קשר 2"
                     )
                   )
                 )              
