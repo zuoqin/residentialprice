@@ -1,4 +1,4 @@
-(ns shelters.common)
+(ns realty.common)
 
 (defn shared-fn
   "A function that is shared between clj and cljs"

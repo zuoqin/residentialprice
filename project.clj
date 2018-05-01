@@ -1,4 +1,4 @@
-(defproject shelters "0.1.0-SNAPSHOT"
+(defproject realty "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -41,11 +41,11 @@
 
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
 
-  :uberjar-name "shelters.jar"
+  :uberjar-name "realty.jar"
 
   ;; Use `lein run` if you just want to start a HTTP server, without figwheel
-  :main shelters.server
-  :aot [shelters.server]
+  :main realty.server
+  :aot [realty.server]
 
 
   ;; nREPL by default starts in the :main namespace, we want to start in `user`
@@ -59,12 +59,12 @@
 
                 :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
-                ;; :figwheel {:on-jsload "shelters.core/on-figwheel-reload"}
+                ;; :figwheel {:on-jsload "realty.core/on-figwheel-reload"}
 
-                :compiler {:main shelters.login
+                :compiler {:main realty.main
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/shelters.js"
-                           :output-dir "resources/public/js/compiled/out"
+                           :output-to "resources/public/js/compiled/realty.js"
+                           :output-dir "resources/public/js/compiled2/out"
                            :source-map-timestamp true
                            :optimizations :none
                            :pretty-print true}}
@@ -72,9 +72,9 @@
                {:id "max"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main shelters.login
+                :compiler {:main realty.main
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled1/shelters.js"
+                           :output-to "resources/public/js/compiled1/realty.js"
                            :output-dir "resources/public/js/compiled1/out"
                            :source-map-timestamp false
                            :optimizations :none
@@ -93,16 +93,16 @@
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
                 :compiler {:output-to "resources/public/js/compiled/testable.js"
-                           :main shelters.test-runner
+                           :main realty.test-runner
                            :optimizations :none}}
 
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main shelters.login
+                :compiler {:main realty.main
                            :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/shelters.js"
-                           :output-dir "resources/public/js/compiled2/out"
+                           :output-to "resources/public/js/compiled/realty.js"
+                           :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp false
                            :optimizations :simple
                            :closure-warnings {:externs-validation :off}

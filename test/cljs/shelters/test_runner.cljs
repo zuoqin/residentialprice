@@ -1,10 +1,10 @@
-(ns shelters.test-runner
+(ns realty.test-runner
   (:require
    [doo.runner :refer-macros [doo-tests]]
-   [shelters.core-test]
-   [shelters.common-test]))
+   [realty.core-test]
+   [realty.common-test]))
 
 (enable-console-print!)
 
-(doo-tests 'shelters.core-test
-           'shelters.common-test)
+(doo-tests 'realty.core-test
+           'realty.common-test)

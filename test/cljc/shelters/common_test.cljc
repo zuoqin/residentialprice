@@ -1,6 +1,6 @@
-(ns shelters.common-test
+(ns realty.common-test
   #? (:cljs (:require-macros [cljs.test :refer (is deftest testing)]))
-  (:require [shelters.common :as sut]
+  (:require [realty.common :as sut]
             #?(:clj [clojure.test :refer :all]
                :cljs [cljs.test])))
 
