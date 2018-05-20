@@ -47,32 +47,55 @@
   (.log js/console (str "something bad happened: " status " " status-text))
 )
 
+(defn error-handler-zkh [{:keys [status status-text]}]
+  ;(.log js/console (str "something bad happened: " status " " status-text))
+  (swap! realty/app-state assoc-in [:state] 0)
+  (swap! realty/app-state assoc-in [:object :address] "Ошибка получения данных по квартире")
+  
+)
 
-(defn comp-groups
-  [group1 group2]
+(defn comp-analogs
+  [analog1 analog2]
   ;(.log js/console group1)
   ;(.log js/console group2)
-  (if (> (compare (:name group1) (:name group2)) 0)
+  (case (:sort-list @realty/app-state)
+    1  (if (> (compare (:address analog1) (:address analog2)) 0)
       false
       true
+    )
+    2  (if (> (compare (:address analog1) (:address analog2)) 0)
+      true
+      false
+    )
+    3  (if (> (:totalarea analog1) (:totalarea analog2))
+      false
+      true
+    )
+    4  (if (> (:totalarea analog1) (:totalarea analog2))
+      true
+      false
+    )
+    5  (if (> (:price analog1) (:price analog2))
+      false
+      true
+    )
+    6  (if (> (:price analog1) (:price analog2))
+      true
+      false
+    )
+    7  (if (> (:pricepermetr analog1) (:pricepermetr analog2))
+      false
+      true
+    )
+    8  (if (> (:pricepermetr analog1) (:pricepermetr analog2))
+      true
+      false
+    )
   )
 )
 
 (defn drop-nth [n coll]
    (keep-indexed #(if (not= %1 n) %2) coll))
-
-
-(defn handle-chkbsend-change [e]
-  (let [
-      id (str/join (drop 9 (.. e -currentTarget -id)))
-      groups (:groups (:device @realty/app-state))
-      newgroups (if (= true (.. e -currentTarget -checked)) (conj groups id) (remove (fn [x] (if (= x id) true false)) groups))
-    ]
-    (.stopPropagation e)
-    (.stopImmediatePropagation (.. e -nativeEvent) )
-    (swap! realty/app-state assoc-in [:device :groups] newgroups)
-  )
-)
 
 
 (defn handleChange [e]
@@ -118,7 +141,7 @@
     (swap! realty/app-state assoc-in [:state] 1)
     (GET (str "http://api.residential.eliz.site/api/" "getzkh?address=" address) {
       :handler OnGetZKHData
-      :error-handler error-handler
+      :error-handler error-handler-zkh
       :response-format :json
     })
   )
@@ -331,7 +354,7 @@
   (setcontrols 46)
   (put! ch 43)
   (swap! realty/app-state assoc-in [:view] 1)
-  (set! (.-title js/document) (str "Check the price" (:name (:device @realty/app-state))))
+  (set! (.-title js/document) (str "Независимая оценка квартиры" (if (> (count (:address (:object @realty/app-state))) 0) ": ") (:address (:object @realty/app-state))))
 )
 
 
@@ -345,13 +368,17 @@
 )
 
 
-(defn comp-analogs
-  [analog1 analog2]
-  (if (> (compare (:address analog1) (:address analog2)) 0)
-      false
-      true
+(defn handle-chkb-change [e]
+  (let [
+    id (subs (.. e -currentTarget -id) 8)
+    isinclude (.. e -currentTarget -checked)
+    newanalogs (map (fn [x] (let [] x)) (:analogs (:object @realty/app-state)))
+    ]
+    (.log js/console (str "id:" id ";" isinclude))
+    (swap! realty/app-state assoc-in [:object :analogs] newanalogs)
   )
 )
+
 
 (defcomponent showanalogs-view [data owner]
   (render
@@ -360,34 +387,54 @@
     ]
     (let [
       ;tr1 (.log js/console data)
+      
       ]
       (if (> (count (:analogs (:object @realty/app-state))) 0)
-        (dom/div {:className "panel panel-primary"}
+        (dom/div {:className "panel panel-info"}
           (dom/div {:className "panel panel-heading" :style {:margin-bottom "0px"}}
             (dom/div {:className "row"} 
-              (dom/div {:className "col-xs-3  col-xs-offset-1" :style {:text-align "center"}}
-                "Адрес"
-              )
+              ;; (dom/div {:className "col-xs-5  col-xs-offset-0" :style {:text-align "center"}}
+              ;;   "Адрес"
+              ;; )
+              (dom/div {:className "col-xs-5 col-xs-offset-0" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 1 2 1)))}
+                          "Адрес"
+                        )
               (dom/div {:className "col-xs-1"}
                 "Тип дома"
               )
+
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 3 4 3)))}
+                          "Общая площадь"
+                        )
+
               (dom/div {:className "col-xs-1" :style {:text-align "center"}}
-                "Общая площадь"
+                "Этаж"
               )
               (dom/div {:className "col-xs-1" :style {:text-align "center"}}
                 "Год постройки"
               )
+
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 5 6 5)))}
+                          "Цена"
+                        )
+
+
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 7 8 7)))}
+                          "Цена за метр"
+                        )
+
               (dom/div {:className "col-xs-1" :style {:text-align "center"}}
-                "Цена"
+                "Включать"
               )
             )
           )
-          (dom/div {:className "panel panel-body" :style {:padding-top "0px"}}
+          (dom/div {:className "panel panel-body" :style {:padding "0px"}}
             (map (fn [item]
               (let [ 
+                square (str (:totalsquare item) (if (> (:leavingsquare item) 0) (str "/" (:leavingsquare item)) "") (if (> (:kitchensquare item) 0) (str "/" (:kitchensquare item)) "") )
                 ]
-                (dom/div {:className "row tablerow" :style {:margin-right "0px" :margin-left "-16px"}}
-                  (dom/div {:className "col-xs-3  col-xs-offset-1" :style {:text-align "left" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
+                (dom/div {:className "row tablerow" :style {:margin-right "0px" :margin-left "0px"}}
+                  (dom/div {:className "col-xs-5  col-xs-offset-0" :style {:text-align "left" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
                     (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (:address item))
 
                   )
@@ -399,10 +446,20 @@
                     (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (:totalarea item))
                   )
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (:buildyear item))
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (str (:floor item) "/" (:floors item)) )
+                  )
+                  (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (if (= 0 (:buildyear item)) "не известно" (:buildyear item)) )
                   )
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
                     (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (realty/split-thousands (gstring/format "%.0f" (:price item))))
+                  )
+
+                  (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (realty/split-thousands (gstring/format "%.0f" (:pricepermetr item) )))
+                  )
+                  (dom/div {:className "col-xs-1" :style {:text-align "center"}}
+                    (dom/input {:id (str "isanalog" (:id item)) :type "checkbox" :style {:height "32px" :margin-top "1px"} :defaultChecked (:isinclude item) :onChange (fn [e] (handle-chkb-change e ))})
                   )
                 )
               )
@@ -415,18 +472,23 @@
     )
   )
 )
-(defn map-analog [analog]
+(defn map-analog [idx analog]
   (let [
-    id (nth analog 0)
-    housetype (nth analog 1)
-    price (nth analog 2)
-    totalarea (nth analog 3)
-    repair (nth analog 7)
-    buildyear (nth analog 10)
-    address (nth analog 14)
+    housetype (nth analog 0)
+    price (nth analog 1)
+    totalarea (nth analog 2)
+    floor (nth analog 7)
+    floors (nth analog 8)
+    repair (nth analog 11)
+    buildyear (nth analog 12)
+    address (nth analog 9)
+    leavingsquare (nth analog 13)
+    kitchensquare (nth analog 14)
+    pricepermetr (/ price totalarea)
+    isinclude true
     ]
     ;
-    {:id id :housetype housetype :address address :price price :buildyear buildyear :totalarea totalarea}
+    {:id idx :floor floor :isinclude true :floors floors :housetype housetype :address address :price price :buildyear buildyear :totalarea totalarea :pricepermetr pricepermetr}
   )
 )
 
@@ -437,7 +499,7 @@
     (swap! realty/app-state assoc-in [:object :regionAvrgPrice] (get response "regionAvrgPrice"))
     (swap! realty/app-state assoc-in [:object :cityAvrgPrice] (get response "cityAvrgPrice"))
     (swap! realty/app-state assoc-in [:object :data] (get response "data"))
-    (swap! realty/app-state assoc-in [:object :analogs] (map map-analog (get response "analogs")))
+    (swap! realty/app-state assoc-in [:object :analogs] (map-indexed map-analog (get response "analogs")))
     (swap! realty/app-state assoc-in [:state] 0)
     ;;(.log js/console response)
   )
@@ -450,7 +512,7 @@
     ;user (:user (:filter @app-state))
     ]
     (swap! realty/app-state assoc-in [:state] 1)
-    (GET (str settings/apipath "estimate?totalsquare=" (:totalsquare (:object @realty/app-state)) "&repairRaw=" (:repair (:object @realty/app-state)) "&longitude=" (:lon (:object @realty/app-state)) "&latitude=" (:lat (:object @realty/app-state)) "&housetype=" (:buildingtype (:object @realty/app-state)) "&city=" (:city (:object @realty/app-state)) "&buildingyear=" (:buildingyear (:object @realty/app-state)) "&ceilingheight" (:ceilingheight (:object @realty/app-state)) "&storey=" (:storey (:object @realty/app-state)) "&storeysnum=" (:storeysnum (:object @realty/app-state))) {
+    (GET (str settings/apipath "estimate?totalsquare=" (:totalsquare (:object @realty/app-state)) "&repairRaw=" (:repair (:object @realty/app-state)) "&longitude=" (:lon (:object @realty/app-state)) "&latitude=" (:lat (:object @realty/app-state)) "&housetype=" (:buildingtype (:object @realty/app-state)) "&city=" (:city (:object @realty/app-state)) "&buildingyear=" (:buildingyear (:object @realty/app-state)) "&ceilingheight" (:ceilingheight (:object @realty/app-state)) "&storey=" (:storey (:object @realty/app-state)) "&storeysnum=" (:storeysnum (:object @realty/app-state)) "&metrodistance=" (:metrodistance (:object @realty/app-state)) "&leavingsquare=" (:leavingsquare (:object @realty/app-state)) "&kitchensquare=" (:kitchensquare (:object @realty/app-state)) "&analogscount=" (:analogscount (:object @realty/app-state))) {
       :handler OnGetData
       :error-handler error-handler
       :response-format :json
@@ -577,6 +639,29 @@
               )
             )
 
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 "Жилая площадь:")
+              )
+              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "leavingsquare" :class "form-control" :type "number" :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:leavingsquare (:object @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 "Площадь кухни:")
+              )
+              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "kitchensquare" :class "form-control" :type "number" :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:kitchensquare (:object @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
 
 
             (dom/div {:className "row"}
@@ -690,7 +775,31 @@
                 (dom/h5 (str "Этажность дома:"))
               )
               (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "storeysnum" :type "number" :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:storeysnum (:object @data))})
+                (dom/input {:id "storeysnum" :type "number" :min 1 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:storeysnum (:object @data))})
+              )
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 (str "Расстояние до метро:"))
+              )
+              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "metrodistance" :type "number" :min 10 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:metrodistance (:object @data))})
+              )
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 (str "Количество аналогов:"))
+              )
+              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "analogscount" :type "number" :min 10 :max 100 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:analogscount (:object @data))})
               )
               (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
                 (dom/span {:className "asterisk"} "*")
@@ -718,7 +827,7 @@
             (dom/h5 {:style {:display:inline true}} "Долгота: "
                (:lon (:object @data))
             )
-            (dom/h5 {:style {:display:inline true}} "Address: "
+            (dom/h5 {:style {:display:inline true}} "Адрес: "
                (:address (:object @data))
             )
             (dom/input {:id "pac-input" :className "controls" :type "text" :style {:width "70%"} :placeholder "Поиск по адресу" })
