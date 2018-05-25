@@ -92,6 +92,18 @@
       true
       false
     )
+    9  (if (or (> (:index analog1) (:index analog2))
+        (and (= (:index analog1) (:index analog2)) (> (:pricepermetr analog1) (:pricepermetr analog2)))
+      )
+      false
+      true
+    )
+    10  (if (or (> (:index analog1) (:index analog2))
+        (and (= (:index analog1) (:index analog2)) (> (:pricepermetr analog1) (:pricepermetr analog2)))
+        )
+      true
+      false
+    )
   )
 )
 
@@ -387,7 +399,7 @@
       
     ]
     (let [
-      ;tr1 (.log js/console data)
+      tr1 (.log js/console  (:key (om/get-state owner)))
       
       ]
       (if (> (count (:analogs (:object @realty/app-state))) 0)
@@ -397,14 +409,14 @@
               ;; (dom/div {:className "col-xs-5  col-xs-offset-0" :style {:text-align "center"}}
               ;;   "Адрес"
               ;; )
-              (dom/div {:className "col-xs-5 col-xs-offset-0" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 1 2 1)))}
+              (dom/div {:className "col-xs-5 col-xs-offset-0" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @data) 1 "url(images/sort_asc.png" 2 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 1 2 1)))}
                           "Адрес"
                         )
               (dom/div {:className "col-xs-1"}
                 "Тип дома"
               )
 
-              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 3 4 3)))}
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @data) 3 "url(images/sort_asc.png" 4 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 3 4 3)))}
                           "Общая площадь"
                         )
 
@@ -415,28 +427,28 @@
                 "Год постройки"
               )
 
-              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 5 6 5)))}
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @data) 5 "url(images/sort_asc.png" 6 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 5 6 5)))}
                           "Цена"
                         )
 
 
-              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "5px" :text-align "center" :background-image (case (:sort-list @data) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 7 8 7)))}
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @data) 7 "url(images/sort_asc.png" 8 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 7 8 7)))}
                           "Цена за метр"
                         )
 
-              (dom/div {:className "col-xs-1" :style {:text-align "center"}}
-                "Включать"
+              (dom/div {:className "col-xs-1" :style {:cursor "pointer" :padding-left "0px" :padding-right "3px" :padding-top "0px" :text-align "center" :background-image (case (:sort-list @data) 9 "url(images/sort_asc.png" 10 "url(images/sort_desc.png" "url(images/sort_both.png") :background-repeat "no-repeat" :background-position "right center"} :onClick (fn [e] (swap! realty/app-state assoc-in [:sort-list] (case (:sort-list @data) 9 10 9)))}
+                "Релевантность"
               )
             )
           )
           (dom/div {:className "panel panel-body" :style {:padding "0px"}}
-            (map (fn [item]
+            (map-indexed (fn [idx item]
               (let [ 
                 square (str (:totalsquare item) (if (> (:leavingsquare item) 0) (str "/" (:leavingsquare item)) "") (if (> (:kitchensquare item) 0) (str "/" (:kitchensquare item)) "") )
                 ]
                 (dom/div {:className "row tablerow" :style {:margin-right "0px" :margin-left "0px"}}
                   (dom/div {:className "col-xs-5  col-xs-offset-0" :style {:text-align "left" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (:address item))
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (str (+ idx 1) ". " (:address item)))
 
                   )
 
@@ -459,12 +471,16 @@
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
                     (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (realty/split-thousands (gstring/format "%.0f" (:pricepermetr item) )))
                   )
-                  (dom/div {:className "col-xs-1" :style {:text-align "center"}}
-                    (dom/input {:id (str "isanalog" (:id item)) :type "checkbox" :style {:height "32px" :margin-top "1px"} :defaultChecked (:isinclude item) :onChange (fn [e] (handle-chkb-change e ))})
+
+                  (dom/div {:className "col-xs-1" :style {:text-align "center" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (realty/split-thousands (gstring/format "%.0f" (:index item) )))
                   )
+                  ;; (dom/div {:className "col-xs-1" :style {:text-align "center"}}
+                  ;;   (dom/input {:id (str "isanalog" (:id item)) :type "checkbox" :style {:height "32px" :margin-top "1px"} :defaultChecked (:isinclude item) :onChange (fn [e] (handle-chkb-change e ))})
+                  ;; )
                 )
               )
-              )(sort (comp comp-analogs) (:analogs (:object @realty/app-state)))
+              )(sort (comp comp-analogs) ((keyword (:key (om/get-state owner))) (:object @realty/app-state)))
             )
           )
         )
@@ -487,9 +503,10 @@
     kitchensquare (nth analog 14)
     pricepermetr (/ price totalarea)
     isinclude true
+    index (nth analog 17)
     ]
     ;
-    {:id idx :floor floor :isinclude true :floors floors :housetype housetype :address address :price price :buildyear buildyear :totalarea totalarea :pricepermetr pricepermetr}
+    {:id idx :index index :floor floor :isinclude true :floors floors :housetype housetype :address address :price price :buildyear buildyear :totalarea totalarea :pricepermetr pricepermetr}
   )
 )
 
@@ -501,6 +518,7 @@
     (swap! realty/app-state assoc-in [:object :cityAvrgPrice] (get response "cityAvrgPrice"))
     (swap! realty/app-state assoc-in [:object :data] (get response "data"))
     (swap! realty/app-state assoc-in [:object :analogs] (map-indexed map-analog (get response "analogs")))
+    (swap! realty/app-state assoc-in [:object :calcanalogs] (map-indexed map-analog (get response "calcanalogs")))
     (swap! realty/app-state assoc-in [:state] 0)
     ;;(.log js/console response)
   )
@@ -910,7 +928,20 @@
 
 
         )
-        (om/build showanalogs-view  data {})
+        (om/build showanalogs-view  data {:state {:key "calcanalogs"}})
+
+        (dom/div {:className "panel panel-primary"}
+          (dom/div {:className "panel panel-heading" :style {:text-align "center" :margin-bottom "0px"}}
+              "Все релевантные аналоги"
+          )
+          (dom/div {:className "panel panel-body"}
+              (om/build showanalogs-view  data {:state {:key "analogs"}})
+          )
+        )
+        
+
+       
+        
       )
 
 
