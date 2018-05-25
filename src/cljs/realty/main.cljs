@@ -44,6 +44,7 @@
 
 
 (defn error-handler [{:keys [status status-text]}]
+  (swap! realty/app-state assoc-in [:state] 0)
   (.log js/console (str "something bad happened: " status " " status-text))
 )
 
@@ -512,7 +513,7 @@
     ;user (:user (:filter @app-state))
     ]
     (swap! realty/app-state assoc-in [:state] 1)
-    (GET (str settings/apipath "estimate?totalsquare=" (:totalsquare (:object @realty/app-state)) "&repairRaw=" (:repair (:object @realty/app-state)) "&longitude=" (:lon (:object @realty/app-state)) "&latitude=" (:lat (:object @realty/app-state)) "&housetype=" (:buildingtype (:object @realty/app-state)) "&city=" (:city (:object @realty/app-state)) "&buildingyear=" (:buildingyear (:object @realty/app-state)) "&ceilingheight" (:ceilingheight (:object @realty/app-state)) "&storey=" (:storey (:object @realty/app-state)) "&storeysnum=" (:storeysnum (:object @realty/app-state)) "&metrodistance=" (:metrodistance (:object @realty/app-state)) "&leavingsquare=" (:leavingsquare (:object @realty/app-state)) "&kitchensquare=" (:kitchensquare (:object @realty/app-state)) "&analogscount=" (:analogscount (:object @realty/app-state))) {
+    (GET (str settings/apipath "estimate?totalsquare=" (:totalsquare (:object @realty/app-state)) "&repairRaw=" (:repair (:object @realty/app-state)) "&longitude=" (:lon (:object @realty/app-state)) "&latitude=" (:lat (:object @realty/app-state)) "&housetype=" (:buildingtype (:object @realty/app-state)) "&city=" (:city (:object @realty/app-state)) "&buildingyear=" (:buildingyear (:object @realty/app-state)) "&ceilingheight" (:ceilingheight (:object @realty/app-state)) "&storey=" (:storey (:object @realty/app-state)) "&storeysnum=" (:storeysnum (:object @realty/app-state)) "&metrodistance=" (:metrodistance (:object @realty/app-state)) "&leavingsquare=" (:leavingsquare (:object @realty/app-state)) "&kitchensquare=" (:kitchensquare (:object @realty/app-state)) "&roomsnum=" (:roomsnum (:object @realty/app-state)) "&analogscount=" (:analogscount (:object @realty/app-state))) {
       :handler OnGetData
       :error-handler error-handler
       :response-format :json
@@ -624,51 +625,51 @@
           (str "Параметры квартиры")
         )
         
-        (dom/div {:className "row" :style {:width "50%" :padding-left "200px"}}
+        (dom/div {:className "row" :style {:width "100%" :margin-left "15px" :margin-right "15px"}}
 
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 "Общая площадь:")
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "totalsquare" :class "form-control" :type "number" :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:totalsquare (:object @data))})
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}       
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 "Жилая площадь:")
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "leavingsquare" :class "form-control" :type "number" :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:leavingsquare (:object @data))})
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 "Площадь кухни:")
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "kitchensquare" :class "form-control" :type "number" :style {:width "100%"} :required true :onChange (fn [e] (handleChange e)) :value (:kitchensquare (:object @data))})
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Тип ремонта:"))
               )
-              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (omdom/select #js {:id "repair"
                                    :className "selectpicker"
                                    :data-width "100%"
@@ -683,16 +684,16 @@
               ;; (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
               ;;   (dom/input {:id "leavingsquare" :class "form-control" :style {:width "100%"} :type "text" :required true :onChange (fn [e] (handleChange e)) :value (:leavingsquare (:object @data))})
               ;; )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}       
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Город:"))
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (omdom/select #js {:id "city"
                                    :className "selectpicker"
                                    :data-width "100%"
@@ -704,17 +705,17 @@
                   (buildCitiesList data owner)
                 )
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Тип дома:"))
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (omdom/select #js {:id "buildingtype"
                                    :className "selectpicker"
                                    :data-width "100%"
@@ -726,82 +727,94 @@
                   (buildBuildingTypesList data owner)
                 )
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Год постройки:"))
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "buildingyear"  :class "form-control" :required true :type "number" :step "1" :onChange (fn [e] (handleChange e)) :value (:buildingyear (:object @data))})
               )
-              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
-                (dom/span {:className "asterisk"} "*")
-              )
-            )
-
-
-            (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
-                (dom/h5 (str "Высота потолков:"))
-              )
-              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
-                (dom/input {:id "ceilingheight" :class "form-control" :type "number" :step "0.1" :onChange (fn [e] (handleChange e)) :value (:ceilingheight (:object @data))})
-              )
-              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-xs-3 offset-xs-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
+                (dom/h5 (str "Количество комнат:"))
+              )
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+                (dom/input {:id "roomsnum" :type "number" :min 1 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:roomsnum (:object @data))})
+              )
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
+                (dom/span {:className "asterisk"} "*")
+              )
+            )
+
+
+            ;; (dom/div {:className "row"}
+            ;;   (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
+            ;;     (dom/h5 (str "Высота потолков:"))
+            ;;   )
+            ;;   (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+            ;;     (dom/input {:id "ceilingheight" :class "form-control" :type "number" :step "0.1" :onChange (fn [e] (handleChange e)) :value (:ceilingheight (:object @data))})
+            ;;   )
+            ;;   (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
+            ;;     (dom/span {:className "asterisk"} "*")
+            ;;   )
+            ;; )
+
+            (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Этаж:"))
               )
-              (dom/div {:className "col-xs-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "storey" :type "number" :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:storey (:object @data))})
               )
-              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Этажность дома:"))
               )
-              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "storeysnum" :type "number" :min 1 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:storeysnum (:object @data))})
               )
-              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Расстояние до метро:"))
               )
-              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "metrodistance" :type "number" :min 10 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:metrodistance (:object @data))})
               )
-              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
 
             (dom/div {:className "row"}
-              (dom/div {:className "col-md-3 offset-md-3" :style {:padding-left "0px" :padding-right "0px"}}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-sm-2 col-sm-offset-3" :style {:padding-left "0px" :padding-right "0px"}}
                 (dom/h5 (str "Количество аналогов:"))
               )
-              (dom/div {:className "col-md-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
+              (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px"}}
                 (dom/input {:id "analogscount" :type "number" :min 10 :max 100 :class "form-control" :step "1" :onChange (fn [e] (handleChange e)) :value (:analogscount (:object @data))})
               )
-              (dom/div {:className "col-md-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "0px" :text-align "right"}}
+              (dom/div {:className "col-xs-1" :style {:margin-top "4px" :padding-right "0px" :padding-left "30px" :text-align "left"}}
                 (dom/span {:className "asterisk"} "*")
               )
             )
@@ -832,7 +845,7 @@
             )
             (dom/input {:id "pac-input" :className "controls" :type "text" :style {:width "70%"} :placeholder "Поиск по адресу" })
 
-            (dom/div {:className "row" :style {:padding-top "0px" :height "400px" :display "block"}}
+            (dom/div {:className "row" :style {:margin-left "15px" :margin-right "35px" :padding-top "0px" :height "400px" :display "block"}}
               (dom/div  {:className "col-xs-12" :id "map" :style {:margin-top "0px" :height "100%"}})
               
             )
