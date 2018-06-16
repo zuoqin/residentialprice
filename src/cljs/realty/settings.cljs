@@ -13,3 +13,6 @@
 
 
 (def apipath "http://5.189.157.176:5000/")
+;(def screenpath "http://screenshots.eliz.site/")
+(def screenpath "https://omnia.f-case.ru/getimg/")
+
