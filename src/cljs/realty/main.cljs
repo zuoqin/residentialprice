@@ -687,20 +687,27 @@
 )
 
 (defn de-map-analog [analog]
-   [(:housetype analog) (:price analog) (:totalarea analog) (:city analog) (:lat analog) (:lon analog) (:roomsnum analog) (:floor analog) (:floors analog) (:address analog) (:district analog) (:repair analog) (:buildyear analog) (:livingsquare analog) (:kitchensquare analog) (:metrodistance analog) (:status analog) (:index analog)]
+   [(:id analog) (:housetype analog) (:price analog) (:totalarea analog) (:city analog) (:lat analog) (:lon analog) (:roomsnum analog) (:floor analog) (:floors analog) (:address analog) (:district analog) (:repair analog) (:buildyear analog) (:livingsquare analog) (:kitchensquare analog) (:metrodistance analog) (:status analog) (:index analog)]
 )
 
 (defn clarifyprice []
   (let [
     filtered (filter (fn [x] (:isinclude x)) (:calcanalogs (:object @realty/app-state)))
+    theprice (reduce (fn [x y] {:sum (+ (:sum x) (:pricepermetr y))}) {:sum 0} filtered)
     ]
-    (POST (str settings/apipath  "clarify") {
-      :handler OnClarifySuccess
-      :error-handler error-handler
-      ;; :headers {
-      ;;   :token (str (:token (:token @shelters/app-state)))}
-      :format :json
-      :params { :analogs (map de-map-analog filtered) :params (:param (:object @realty/app-state)) :roomsnum (:roomsnum (:object @realty/app-state)) :storey (js/parseInt (:storey (:object @realty/app-state))) :storeysnum (js/parseInt (:storeysnum (:object @realty/app-state))) :housetype (:buildingtype (:object @realty/app-state)) :totalsquare (js/parseFloat (:totalsquare (:object @realty/app-state)))  :city (:city (:object @realty/app-state)) :microdistrict "" :repair (:repair (:object @realty/app-state)) :latitude (:lat (:object @realty/app-state)) :longitude (:lon (:object @realty/app-state)) :buildingyear (:buildingyear (:object @realty/app-state)) :livingsquare (js/parseFloat (:leavingsquare (:object @realty/app-state)))  :kitchensquare (js/parseFloat (:kitchensquare (:object @realty/app-state)))  :metrodistance (js/parseInt (:metrodistance (:object @realty/app-state))) :analogscount (count filtered)}}) 
+    ;; (POST (str settings/apipath  "clarify") {
+    ;;   :handler OnClarifySuccess
+    ;;   :error-handler error-handler
+    ;;   ;; :headers {
+    ;;   ;;   :token (str (:token (:token @shelters/app-state)))}
+    ;;   :format :json
+    ;;   :params { :analogs (map de-map-analog filtered) :params (:param (:object @realty/app-state)) :roomsnum (:roomsnum (:object @realty/app-state)) :storey (js/parseInt (:storey (:object @realty/app-state))) :storeysnum (js/parseInt (:storeysnum (:object @realty/app-state))) :housetype (:buildingtype (:object @realty/app-state)) :totalsquare (js/parseFloat (:totalsquare (:object @realty/app-state)))  :city (:city (:object @realty/app-state)) :microdistrict "" :repair (:repair (:object @realty/app-state)) :latitude (:lat (:object @realty/app-state)) :longitude (:lon (:object @realty/app-state)) :buildingyear (:buildingyear (:object @realty/app-state)) :livingsquare (js/parseFloat (:leavingsquare (:object @realty/app-state)))  :kitchensquare (js/parseFloat (:kitchensquare (:object @realty/app-state)))  :metrodistance (js/parseInt (:metrodistance (:object @realty/app-state))) :analogscount (count filtered)}})
+    (swap! realty/app-state assoc-in [:object :calcanalogs]
+            filtered
+
+          )
+
+    (swap! realty/app-state assoc-in [:object :data] (/ (* (:totalsquare (:object @realty/app-state) ) (:sum theprice)) (count filtered)))
   )
 )
 
@@ -849,7 +856,7 @@
 
 
                 ;(dom/embed {:src "http://5.189.157.176:81/report_valuation.pdf" :width "300" :height "715"})
-                (dom/iframe {:src "http://5.189.157.176:81/report_valuation.pdf#zoom=100" :style {:width "870px" :height "610px"} :frameborder "0"})
+                (dom/iframe {:src "http://5.189.157.176:81/report_valuation.pdf#zoom=100" :style {:width "870px" :height "610px"} :frameBorder "0"})
               )
             )
             (dom/div {:className "modal-footer"}
@@ -1232,11 +1239,18 @@
             )
 
             (dom/div {:className "row"}
+              (dom/div {:className "col-xs-3 col-xs-offset-0 col-ms-2 col-sm-offset-3" :style {:padding-left "0px"}}
+                (dom/h5 "Пакетная переоценка") 
+              )
+
+            )
+
+            (dom/div {:className "row"}
               (dom/div {:className "col-xs-3 col-xs-offset-0 col-ms-2 col-sm-offset-3"}
-                (dom/input {:type "file" :style {:margin-top "50px" :width "220px"} :onChange (fn [e] (readurl (.. e -target))) :name "file" :value ""})
+                (dom/input {:type "file" :style {:margin-top "30px" :width "220px"} :onChange (fn [e] (readurl (.. e -target))) :name "file" :value ""})
               )
               (if (= true (:isloading @data))
-                (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "20px"}}
+                (dom/div {:className "col-xs-8 col-sm-4" :style {:margin-top "0px"}}
                   (dom/div {:className "loader"})
                 )
               )

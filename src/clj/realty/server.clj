@@ -140,17 +140,25 @@
 )
 
 (defn create-excel-report []
-  (let [
 
-    newpositions [{:address "address 1" :area 50.1 :floor 3 :floors 5 :year 1987 :price 14300000}
-      {:address "address 2" :area 45.1 :floor 7 :floors 9 :year 1989  :price 10890789}
-     {:address "address 3" :area 56.9 :floor 12 :floors 23 :year 2007 :price 21098560}
-     ]
+    (let [
+          ;file (create-client-report client)
     ]
-    (save-xls ["sheet1" (dataset [:address :area :floor :floors :year :price] newpositions)] (str xlsdir "report.xlsx"))
-    "Success"
-    ;(first newpositions)
-  )
+    {:status 200 :headers {"Content-Type" "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition" (str "attachment;filename=" "report" ".xlsx")} :body (io/input-stream (str "/var/www/html/depr/" "report.xlsx") )}
+    )
+
+
+  ;; (let [
+
+  ;;   newpositions [{:address "address 1" :area 50.1 :floor 3 :floors 5 :year 1987 :price 14300000}
+  ;;     {:address "address 2" :area 45.1 :floor 7 :floors 9 :year 1989  :price 10890789}
+  ;;    {:address "address 3" :area 56.9 :floor 12 :floors 23 :year 2007 :price 21098560}
+  ;;    ]
+  ;;   ]
+  ;;   (save-xls ["sheet1" (dataset [:address :area :floor :floors :year :price] newpositions)] (str xlsdir "report.xlsx"))
+  ;;   "Success"
+  ;;   ;(first newpositions)
+  ;; )
 )
 
 
@@ -170,9 +178,9 @@
   )
   (GET "/report" []
     (let [
-          file (create-excel-report)
+          ;file (create-excel-report)
     ]
-    {:status 200 :headers {"Content-Type" "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition" (str "attachment;filename=" "report" ".xlsx") } :body (io/input-stream (str xlsdir "report" ".xlsx") )}
+    {:status 200 :headers {"Content-Type" "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition" (str "attachment;filename=" "report" ".xlsx") } :body (io/input-stream (str "/var/www/html/depr/" "report.xlsx") ) } ;(io/input-stream (str xlsdir "report" ".xlsx") )
     )
   )
   (GET "/clientexcel/:client" [client]
