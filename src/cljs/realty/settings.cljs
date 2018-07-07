@@ -12,7 +12,9 @@
 (enable-console-print!)
 
 
-(def apipath "http://5.189.157.176:5000/")
+(def apipath "http://newcac.eliz.site/api/")
 ;(def screenpath "http://screenshots.eliz.site/")
-(def screenpath "https://omnia.f-case.ru/getimg/")
+(def screenpath "http://snapshots.eliz.site/")
 
+(def demouser "")
+(def demopassword "")

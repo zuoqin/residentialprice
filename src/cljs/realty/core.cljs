@@ -38,7 +38,7 @@
 (def allparams ["id",  "RoomsNum", "Storey", "StoreysNum",  "RawAddress", "MicroDistrict", "RepairRaw","BuildingYear", "LivingSpaceArea", "KitchenArea", "SubwayTime"])
 
 
-(defonce app-state (atom {:state 0 :sort-list 1 :isloading false :selectedimage 3031107 :object {:param ["id",  "RoomsNum", "Storey", "StoreysNum",  "RawAddress", "MicroDistrict", "RepairRaw","BuildingYear", "LivingSpaceArea", "KitchenArea", "SubwayTime"] :roomsnum 2 :analogs [] :foundation "" :project "" :data 0.0 :lat 55.751244 :lon 37.618423 :repair "косметический" :leavingsquare 73.5 :kitchensquare 18.9 :totalsquare 98.7 :city "Москва" :buildingtype "кирпичный" :analogscount 50 :buildingyear 2000 :ceilingheight 2.6 :storey 4 :storeysnum 9 :pricePerMetr 0.0 :metrodistance 15 :houseAvrgPrice 0.0 :regionAvrgPrice 0.0 :cityAvrgPrice 0.0}}))
+(defonce app-state (atom {:state 0 :sort-list 1 :isloading false :selectedimage "040-domofond.ru/Snapshots/991221425328110.jpg" :object {:param ["id",  "RoomsNum", "Storey", "StoreysNum",  "RawAddress", "MicroDistrict", "RepairRaw","BuildingYear", "LivingSpaceArea", "KitchenArea", "SubwayTime"] :roomsnum 2 :analogs [] :foundation "" :project "" :data 0.0 :lat 55.751244 :lon 37.618423 :repair "косметический" :leavingsquare 73.5 :kitchensquare 18.9 :totalsquare 98.7 :city "Москва" :buildingtype "кирпичный" :analogscount 50 :buildingyear 2000 :ceilingheight 2.6 :storey 4 :storeysnum 9 :pricePerMetr 0.0 :metrodistance 15 :houseAvrgPrice 0.0 :regionAvrgPrice 0.0 :cityAvrgPrice 0.0}}))
 
 
 

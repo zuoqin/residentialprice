@@ -61,10 +61,10 @@
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
                 ;; :figwheel {:on-jsload "realty.core/on-figwheel-reload"}
 
-                :compiler {:main realty.main
+                :compiler {:main realty.login
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/realty.js"
-                           :output-dir "resources/public/js/compiled2/out"
+                           :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true
                            :optimizations :none
                            :pretty-print true}}
@@ -72,7 +72,7 @@
                {:id "max"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main realty.main
+                :compiler {:main realty.login
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled1/realty.js"
                            :output-dir "resources/public/js/compiled1/out"
@@ -99,10 +99,10 @@
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main realty.main
+                :compiler {:main realty.login
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/realty.js"
-                           :output-dir "resources/public/js/compiled/out"
+                           :output-dir "resources/public/js/compiled2/out"
                            :source-map-timestamp false
                            :optimizations :simple
                            :closure-warnings {:externs-validation :off}

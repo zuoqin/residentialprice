@@ -498,45 +498,45 @@
                 ]
                 (dom/div {:className "row tablerow" :style {:margin-right "0px" :margin-left "0px"}}
                   (dom/div {:className "col-xs-5  col-xs-offset-0" :style {:text-align "left" :border "1px solid lightgrey" :padding-top "6px" :overflow "hidden" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item))) }
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item))) }
                     (str (+ idx 1) ". "   (:address item))
 
                     ))
                   )
 
                   (dom/div {:className "col-xs-1" :style {:text-align "left" :border "1px solid lightgrey" :padding-top "6px" :overflow "hidden" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item)))}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item)))}
                     (:housetype item)
 
                     ))
                   )
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item)))}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item)))}
                     (:totalarea item)
 
                     ))
                   )
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item)))}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item)))}
                     (str (:floor item) "/" (:floors item))
 
                     ) )
                   )
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item)))}
-                    (if (= 0 (:buildyear item)) "не известно" (:buildyear item))
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item)))}
+                    (if (= "" (:buildyear item)) "не известно" (:buildyear item))
 
                     ) )
                   )
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item)))}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item)))}
                     (realty/split-thousands (gstring/format "%.0f" (:price item)))
 
                     ))
                   )
 
                   (dom/div {:className "col-xs-1" :style {:text-align "right" :border "1px solid lightgrey" :padding-top "6px" :padding-bottom "6px"}}
-                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :href (str "#/" (:id item)) :onClick (fn [e] (showimage (:id item)))}
+                    (dom/h4 {:className "list-group-item-heading" :style {:font-weight "normal" :white-space "nowrap"}} (dom/a {:className "list-group-item" :style {:padding "0px" :border "none" :background "transparent"} :onClick (fn [e] (showimage (:screenshot item)))}
                     (realty/split-thousands (gstring/format "%.0f" (:pricepermetr item) ))
 
                     ))
@@ -719,9 +719,11 @@
     (swap! realty/app-state assoc-in [:state] 1)
     (swap! realty/app-state assoc-in [:object :calcanalogs] [])
     (swap! realty/app-state assoc-in [:object :analogs] [])
-    (GET (str settings/apipath "estimate?totalsquare=" (:totalsquare (:object @realty/app-state)) "&repairRaw=" (:repair (:object @realty/app-state)) "&longitude=" (:lon (:object @realty/app-state)) "&latitude=" (:lat (:object @realty/app-state)) "&housetype=" (:buildingtype (:object @realty/app-state)) "&city=" (:city (:object @realty/app-state)) "&buildingyear=" (:buildingyear (:object @realty/app-state)) "&ceilingheight" (:ceilingheight (:object @realty/app-state)) "&storey=" (:storey (:object @realty/app-state)) "&storeysnum=" (:storeysnum (:object @realty/app-state)) "&metrodistance=" (:metrodistance (:object @realty/app-state)) "&leavingsquare=" (:leavingsquare (:object @realty/app-state)) "&kitchensquare=" (:kitchensquare (:object @realty/app-state)) "&roomsnum=" (:roomsnum (:object @realty/app-state)) "&analogscount=" (:analogscount (:object @realty/app-state)) "&param=" (:param (:object @realty/app-state))) {
+    (GET (str settings/apipath "getparams?totalsquare=" (:totalsquare (:object @realty/app-state)) "&repairRaw=" (:repair (:object @realty/app-state)) "&longitude=" (:lon (:object @realty/app-state)) "&latitude=" (:lat (:object @realty/app-state)) "&housetype=" (:buildingtype (:object @realty/app-state)) "&city=" (:city (:object @realty/app-state)) "&buildingyear=" (:buildingyear (:object @realty/app-state)) "&ceilingheight" (:ceilingheight (:object @realty/app-state)) "&storey=" (:storey (:object @realty/app-state)) "&storeysnum=" (:storeysnum (:object @realty/app-state)) "&metrodistance=" (:metrodistance (:object @realty/app-state)) "&leavingsquare=" (:leavingsquare (:object @realty/app-state)) "&kitchensquare=" (:kitchensquare (:object @realty/app-state)) "&roomsnum=" (:roomsnum (:object @realty/app-state)) "&analogscount=" (:analogscount (:object @realty/app-state)) "&param=" (:param (:object @realty/app-state))) {
       :handler OnGetData
       :error-handler error-handler
+      :headers {
+          :Authorization (str "Bearer " (:token @realty/app-state)) }
       :response-format :json
     })
   )
@@ -1301,16 +1303,21 @@
               )
             )
             (dom/div {:style {:display (if (= (:state @data) 0) "block" "none")}}
-              (dom/div {:className "row" :style {:display (if (= 0.0 (:data (:object @realty/app-state))) "none" "block") :padding-top "10px"}}
-                (dom/div {:className "panel panel-primary"}
+              
+                (dom/div {:className "panel panel-primary" :style {:margin-top "10px" :margin-bottom "10px" :display (if (= 0.0 (:data (:object @realty/app-state))) "none" "block")}}
                   (dom/div {:className "panel-heading"}
-                    (str "Цена: " (realty/split-thousands (gstring/format "%.2f" (:data (:object @realty/app-state)))))
+                    (dom/div {:className "row" :style {}}
+                      (dom/div {:className "col-xs-3" :style {:text-align "left"}}
+                        (str "Цена: " (realty/split-thousands (gstring/format "%.2f" (:data (:object @realty/app-state)))) " р.")
+                      )
+
+                      (dom/div {:className "col-xs-3" :style {:text-align "left"}}
+                        (str "Цена за метр: " (realty/split-thousands (gstring/format "%.2f" (/ (:data (:object @realty/app-state)) (:totalsquare (:object @realty/app-state))))) " р.")
+                      )
+                    )
+
                   )
-
                 )
-
-              )
-
 
               ;; (dom/div {:className "row" :style {:display (if (= 0.0 (:data (:object @realty/app-state))) "none" "block") :padding-top "10px"}}
               ;;   (dom/div {:className "panel panel-primary"}
@@ -1423,13 +1430,13 @@
 )
 
 
-(defn main []
-  (-> js/document
-      .-location
-      (set! "#/main"))
-  (sec/dispatch! "/main")
+;(defn main []
+;  (-> js/document
+;      .-location
+;      (set! "#/main"))
+;  (sec/dispatch! "/main")
 
   ;;(aset js/window "location" "#/main")
-)
+;)
 
-(main)
+;(main)
