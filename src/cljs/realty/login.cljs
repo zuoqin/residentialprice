@@ -271,11 +271,17 @@
 
 
 (defn main []
-  (-> js/document
-      .-location
-      (set! "#/login"))
-
-  ;;(aset js/window "location" "#/login")
+  (let [
+    theurl (new js/URL (.-href (.-location js/window)))
+    username (.get (.-searchParams theurl) "username")
+    password (.get (.-searchParams theurl) "password")
+    ]
+    (if (and (not (nil? username)) (not (nil? password))) 
+      ;(swap! realty/app-state assoc-in [:user :login] username)
+      (dologin username password)
+      (-> js/document .-location (set! "#/login"))
+    )
+  )
 )
 
 (main)
