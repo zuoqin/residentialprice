@@ -39,9 +39,10 @@
 (def repairs [{:id 1 :name "отсутсвует"} { :id 2 :name "косметический"} { :id 3 :name "евроремонт"} { :id 4 :name "дизайнерский"}])
 
 (def params [{:id "RoomsNum" :name "Количество комнат"} {:id "Storey" :name "Этаж"} {:id "StoreysNum" :name "Количество этажей"} {:id "RawAddress" :name "Адрес"} {:id "MicroDistrict" :name "Район"} {:id "RepairRaw" :name "Ремонт"} {:id "BuildingYear" :name "Год постройки"} {:id "LivingSpaceArea" :name "Жилая площадь"} {:id "KitchenArea" :name "Площадь кухни"} {:id "SubwayTime" :name "Расстояние до метро"}])
-;(def cities [{:id 1 :name "Самара"} {:id 2 :name "Ростов-на-Дону"} {:id 3 :name "Краснодарский край"} {:id 4 :name "Уфа"} {:id 5 :name "Новосибирская область"} {:id 6 :name "Севастополь"} {:id 7 :name "Ростовская область"} {:id 8 :name "Республика Башкортостан"} {:id 9 :name "Московская область"} {:id 10 :name "Нижний Новгород"} {:id 11 :name "Москва"} {:id 12 :name "Нижегородская область"} {:id 13 :name "Ленинградская область"} {:id 14 :name "Калининградская область"} {:id 15 :name "Санкт-Петербург"} {:id 16 :name "Новосибирск"}])
 
-(def cities [{:id 9 :name "Московская область"} {:id 11 :name "Москва"}])
+(def cities [{:id 1 :name "Саратовская область"} {:id 2 :name "Кемеровская область"} {:id 3 :name "Челябинская область"} {:id 4 :name "Тюменская область"} {:id 5 :name "Пермский край"} {:id 6 :name "Архангельская область"} {:id 7 :name "Ростовская область"} {:id 8 :name "Воронежская область"}  {:id 9 :name "Московская область"}  {:id 10 :name "Ивановская область"} {:id 11 :name "Москва"} {:id 12 :name "Курганская область"} {:id 13 :name "Краснодарский край"} {:id 14 :name "Самарская область"} {:id 15 :name "Ярославская область"} {:id 16 :name "Кировская область"} {:id 17 :name "Ставропольский край"} {:id 18 :name "Тверская область"} {:id 19 :name "Красноярский край"} {:id 20 :name "Омская область"} {:id 21 :name "Алтайский край"} {:id 22 :name "Белгородская область"} {:id 23 :name "Нижегородская область"} {:id 24 :name "Смоленская область"}])
+
+;(def cities [{:id 9 :name "Московская область"} {:id 11 :name "Москва"} {:}])
 
 
 (defn error-handler [{:keys [status status-text]}]
@@ -58,8 +59,6 @@
 
 (defn comp-analogs
   [analog1 analog2]
-  ;(.log js/console group1)
-  ;(.log js/console group2)
   (case (:sort-list @realty/app-state)
     1  (if (> (compare (:address analog1) (:address analog2)) 0)
       false
@@ -114,7 +113,6 @@
 
 (defn openreportdialog []
   (let [
-    ;tr1 (.log js/console (:device @dev-state))
     ]
     (jquery
       (fn []
@@ -128,7 +126,6 @@
 
 (defn openimagedialog []
   (let [
-    ;tr1 (.log js/console (:device @dev-state))
     ]
     (jquery
       (fn []
@@ -140,15 +137,12 @@
   )
 )
 
-
 (defn showimage [number]
   (swap! realty/app-state assoc-in [:selectedimage] number)
   (put! ch 49)
 )
 
 (defn handleChange [e]
-  ;(.log js/console (.. e -nativeEvent -target)  )  
-  ;(.log js/console (.. e -nativeEvent -target -step))
   (swap! realty/app-state assoc-in [:object (keyword (.. e -nativeEvent -target -id))] (if (= "" (.. e -nativeEvent -target -step)) (.. e -nativeEvent -target -value) (js/parseFloat (.. e -nativeEvent -target -value))))
 )
 
@@ -177,7 +171,6 @@
         )
       )
     )
-    ;;(.log js/console response)
   )
 )
 
@@ -193,8 +186,10 @@
     ;user (:user (:filter @app-state))
     ]
     (swap! realty/app-state assoc-in [:state] 1)
-    (GET (str "http://api.residential.eliz.site/api/" "getzkh?address=" address) {
+    (GET (str settings/apipath "getzkh?address=" address) {
       :handler OnGetZKHData
+      :headers {
+          :Authorization (str "Bearer " (:token @realty/app-state)) }
       :error-handler error-handler-zkh
       :response-format :json
     })
@@ -208,7 +203,6 @@
     size (js/google.maps.Size. 48 48)
     image (clj->js {:url (str iconBase "green_point.ico") :scaledSize size})
 
-    ;tr1 (.log js/console place)
     marker-options (clj->js {"position" (.. place -geometry -location) "map" (:map @realty/app-state) "title" (.. place -name)})
 
     marker (js/google.maps.Marker. marker-options)
@@ -236,7 +230,6 @@
     ;;Create the search box and link it to the UI element.
     input (. js/document (getElementById "pac-input"))
     searchbox (js/google.maps.places.SearchBox. input)
-    ;tr1 (.log js/console input)
     ]
     (swap! realty/app-state assoc-in [:marker] marker)
     (.push (aget (.-controls (:map @realty/app-state)) 1) input)
@@ -275,7 +268,6 @@
                 (if (seq nums)
                   (let [
                         num (first nums)
-                        ;tr1 (.log js/console (str "num: " num "selected: " (.-selected (aget (.-options (js/document.getElementById id)) num))))
                         ]
                     (recur (if (= (.-selected (aget (.-options (js/document.getElementById id)) num)) true) (conj result (nth realty/allparams num)) result)
                          (rest nums))
@@ -283,7 +275,6 @@
                   result)
         )
 
-        tr1 (.log js/console (clj->js newvalues))
        ;newvalue (doall (map (fn [x] (if (= (.-selected (aget (.-options (js/document.getElementById id)) x)) true) (conj oldvalue) )) (range 9))) 
           ]
          ;(remove (fn [y] (if (= y value) true false)) oldvalue)
@@ -293,7 +284,6 @@
     )
     
   )
-  ;(.log js/console (str "id=" id "; value=" value))
 )
 
 (defn setDropDowns []
@@ -338,10 +328,7 @@
            (fn [e]
              (let []
                (onDropDownChange (.. e -target -id) (.. e -target -value))
-               (.log js/console (str (.. e -target -id) "val: " (.. e -target -value)))
              )
-             
-               ;(.log js/console e)
            )
          )
        )
@@ -356,7 +343,6 @@
          (.on "change"
            (fn [e]
              (onDropDownChange (.. e -target -id) (.. e -target -value))
-               ;(.log js/console e)
            )
          )
        )
@@ -370,7 +356,6 @@
          (.on "change"
            (fn [e]
              (onDropDownChange (.. e -target -id) (.. e -target -value))
-               ;(.log js/console e)
            )
          )
        )
@@ -384,7 +369,6 @@
          (.on "change"
            (fn [e]
              (onDropDownChange (.. e -target -id) (.. e -target -value))
-               ;(.log js/console e)
            )
          )
        )
@@ -406,7 +390,6 @@
   (let [     
       newdata { :error (get (:response response)  "error") }
     ]
-    (.log js/console (str  response )) 
     
   )
   
@@ -414,7 +397,6 @@
 )
 
 (defn handleFromChange [e]
-  ;;(.log js/console e  )  
   ;(.log js/console "The change ....")
 
 )
@@ -422,12 +404,9 @@
 
 
 (defn handle-change [e owner]
-  ;(.log js/console e)
   (swap! realty/app-state assoc-in [:object (keyword (.. e -target -id))] 
     (.. e -target -value)
   )
-
-  (.log js/console "jhghghghj")
 )
 
 
@@ -437,7 +416,6 @@
     isinclude (.. e -currentTarget -checked)
     newanalogs (map (fn [x] (if (= id (:id x)) (assoc-in x [:isinclude] isinclude) x)) (:calcanalogs (:object @realty/app-state)))
     ]
-    ;(.log js/console (str "id:" id ";" isinclude))
     (swap! realty/app-state assoc-in [:object :calcanalogs] newanalogs)
   )
 )
@@ -449,8 +427,6 @@
       
     ]
     (let [
-      ;tr1 (.log js/console  (:key (om/get-state owner)))
-      
       ]
       (if (> (count (:analogs (:object @realty/app-state))) 0)
         (dom/div {:className "panel panel-info"}
@@ -588,7 +564,6 @@
     index (nth analog 18)
     screenshot (nth analog 19)
     ]
-    (.log js/console screenshot)
     {:id id :housetype housetype :price price :totalarea totalarea :city city :lat lat :lon lon :roomsnum roomsnum :floor floor :floors floors :address address :district district :repair repair :buildyear buildyear :livingsquare livingsquare :kitchensquare kitchensquare :metrodistance metrodistance :status status :pricepermetr pricepermetr :index index :isinclude true :screenshot screenshot}
   )
 )
@@ -596,8 +571,6 @@
 
 (defn addMarker [analog]
   (let [
-    ;tr1 (.log js/console (str "token: " (:token (:token @shelters/app-state)) ))
-    ;tr1 (.log js/console (str "command1= " (:name (nth (:commands @shelters/app-state) 1))))
     wnd1  (str "<div id=\"content\" style=\" width: 200px;  \" >"
         "<h5 style=\"text-align: center; margin-bottom: 0px; margin-top: 5px  \">" (realty/split-thousands (gstring/format "%.0f" (:price analog))) " р." "</h5>"
       "<h5 style=\"text-align: center; margin-bottom: 0px; margin-top: 5px  \">" (:address analog) "</h5>"
@@ -609,8 +582,6 @@
 
     window-options (clj->js {"content" wnd1})
     infownd (js/google.maps.InfoWindow. window-options)
-    ;tr1 (.log js/console (str  "Lan=" (:lon device) " Lat=" (:lat device)))
-    
 
     size (js/google.maps.Size. 48 48)
     image (clj->js {:url (str iconBase "green_point.ico") :scaledSize size})
@@ -618,10 +589,8 @@
 
     marker-options (clj->js {"animation" 2 "position" (google.maps.LatLng. (:lat analog), (:lon analog))  "map" (:map @realty/app-state) "title" (:address analog) "id" (:id analog)})
     marker (js/google.maps.Marker. marker-options)
-    tr1 (.log js/console (str (:address analog)))
     infownds (map (fn [x] (if (= (:id x) (:id analog)) (assoc x :info infownd) x)) (:infownds @realty/app-state))
 
-    ;tr1 (.log js/console (str "info counts = " (count (filter (fn[x] (if (= (:id device) (:id x)) true false)) (:infownds @shelters/app-state)))))
     infownds (if (> (count (filter (fn[x] (if (= (:id analog) (:id x)) true false)) (:infownds @realty/app-state))) 0) infownds (conj infownds {:id (:id analog) :info infownd}))
 
     delmarker (remove (fn [x] (if (= (.. x -unitid) (:id analog)) true false)) (:markers @realty/app-state))
@@ -648,7 +617,6 @@
 
 (defn updateMarkers []
   (let[
-       tr1 (.log js/console (str "starting update markers: " (count (:calcanalogs @realty/app-state) ))) 
     ]
     (doall (map (fn [x] (.setMap x nil)) (:markers @realty/app-state)))
     (swap! realty/app-state assoc-in [:markers] [])
@@ -667,7 +635,6 @@
     (swap! realty/app-state assoc-in [:object :calcanalogs] (map-indexed map-analog (get response "calcanalogs")))
     (swap! realty/app-state assoc-in [:state] 0)
     (put! ch 45)
-    ;;(.log js/console response)
   )
 )
 
@@ -682,7 +649,6 @@
     ;(swap! realty/app-state assoc-in [:object :analogs] (map-indexed map-analog (get response "analogs")))
     (swap! realty/app-state assoc-in [:object :calcanalogs] (map-indexed map-analog (get response "calcanalogs")))
     (swap! realty/app-state assoc-in [:state] 0)
-    ;;(.log js/console response)
   )
 )
 
@@ -762,7 +728,6 @@
   (map
     (fn [text]
       (let [
-        ;tr1 (.log js/console (str  "name=" (:name text) ))
         ]
         (dom/option {:key (:id text) :data-width "100px" :value (:type text)} (:type text))
       )
@@ -818,8 +783,6 @@
            ;.log js/console v
            ;(setcalculatedfields) 
            setcontrols v
-           
-           ;(.log js/console v)  
           )
         )
       )
@@ -915,7 +878,6 @@
       size (.-size (aget (.-files input) 0))
         
       ]
-      (.log js/console (str "file size=" (.-size (aget (.-files input) 0))))
       (if (> size 200000)
         (let []
           (swap! realty/app-state assoc-in [:modalTitle]
@@ -958,7 +920,6 @@
                     marker (js/google.maps.Marker. marker-options)
                     ]
                     (if (not (nil? (:marker @realty/app-state))) (.setMap (:marker @realty/app-state) nil))
-                    ;(.log js/console (str "LatLng=" (.. e -latLng)))
 
                     (swap! realty/app-state assoc-in [:object :lat] (.lat (.. e -latLng)))
                     (swap! realty/app-state assoc-in [:object :lon] (.lng (.. e -latLng)))
@@ -978,14 +939,10 @@
 
 
   (did-update [this prev-props prev-state]
-    ;(.log js/console "Update happened") 
-
-    ;(put! ch 46)
   )
   (render
     [_]
     (let [
-        ;tr1 (.log js/console (clj->js (:param (:object @data))))
       ]
       (dom/div {:style {:padding-top "10px"}}
         ;(om/build realty/website-view realty/app-state {})
